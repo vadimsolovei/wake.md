@@ -1,0 +1,27 @@
+.grid {
+  margin-top: 75px;
+}
+
+.grid__item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 50px;
+}
+
+.grid__item-icon {
+  min-width: 64px;
+  min-height: 64px;
+  margin-right: 20px;
+}
+
+.grid__item-header {
+  display: flex;
+  align-items: center;
+  width: 150px;
+  margin-bottom: 20px;
+}
+
+.grid__item-content {
+  margin-left: 84px;
+  color: $gray;
+}
