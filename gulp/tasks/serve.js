@@ -23,7 +23,7 @@ module.exports = function serve(cb) {
   });
 
   gulp.watch(
-    "src/img/*.{gif,png,jpg,svg,webp}",
+    ["src/img/*.{gif,png,jpg,svg,webp}", "src/img/*/*.{gif,png,jpg,svg,webp}"],
     gulp.series(imageMinify, readyReload)
   );
   gulp.watch("src/img/sprite/*.svg", gulp.series(svgSprite, readyReload));
