@@ -17,11 +17,53 @@
 .grid__item-header {
   display: flex;
   align-items: center;
-  width: 150px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+}
+
+.grid__item-header > .heading {
+  width: 180px;
 }
 
 .grid__item-content {
   margin-left: 84px;
   color: $gray;
+}
+
+.grid__item-content_wide {
+  margin-top: 45px;
+}
+
+.grid__item-content > .heading {
+  margin-bottom: 10px;
+}
+
+.grid__item-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 230px;
+}
+
+.grid__item-container > h2 {
+  margin-right: 15px;
+  margin-bottom: 0;
+  font-size: 72px;
+  line-height: 62px;
+  font-weight: 600;
+  color: white;
+}
+
+.grid__item-container > p {
+  font-size: 24px;
+  color: white;
+  font-weight: 600;
+}
+
+.grid__item-price {
+  position: absolute;
+  bottom: -35px;
+  left: 0;
+  font-size: 32px;
+  line-height: 32px;
+  color: $yellow;
 }
