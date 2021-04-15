@@ -1,1 +1,1 @@
-console.log("Ready to go");
+import "./slider";

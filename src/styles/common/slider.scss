@@ -1,0 +1,9 @@
+.splide {
+  z-index: 1;
+
+  &__slide {
+    & img {
+      width: 155px;
+    }
+  }
+}
