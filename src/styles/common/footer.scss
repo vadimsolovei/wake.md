@@ -1,0 +1,17 @@
+.footer {
+  position: relative;
+  margin-top: 225px;
+  padding: 0 20px;
+
+  &__logo {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translate(-50%, 0);
+  }
+
+  &__socials {
+    position: relative;
+    z-index: 1;
+  }
+}
