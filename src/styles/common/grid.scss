@@ -11,9 +11,12 @@
     }
 
     &-icon {
-      min-width: 64px;
-      min-height: 64px;
       margin-right: 20px;
+
+      & svg {
+        width: 64px;
+        height: 64px;
+      }
     }
 
     &-header {
