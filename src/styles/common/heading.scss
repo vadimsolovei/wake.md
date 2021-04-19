@@ -19,3 +19,12 @@
     font-weight: 500;
   }
 }
+
+@media (min-width: $tablet) {
+  .heading {
+    &_h1 {
+      font-size: 72px;
+      line-height: 72px;
+    }
+  }
+}

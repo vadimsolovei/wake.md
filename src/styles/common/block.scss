@@ -1,4 +1,8 @@
-.block {
-  padding: 0 25px;
-  // background-color: $black;
+@media (min-width: $tablet) {
+  .block {
+    &__in {
+      max-width: 1140px;
+      margin: 0 auto;
+    }
+  }
 }

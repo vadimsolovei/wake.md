@@ -4,13 +4,17 @@
 
   &__background {
     position: fixed;
+    top: 0;
+    left: 0;
     height: 100%;
     width: 100%;
-    background-image: url("../img/hero.jpg");
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
     z-index: -1;
+
+    & img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
 
     &::before {
       content: "";
@@ -47,5 +51,48 @@
 
   &__socials {
     margin-bottom: 20px;
+
+    &_desktop {
+      display: none;
+    }
+  }
+
+  &__content {
+    width: 325px;
+  }
+}
+
+@media (min-width: $tablet) {
+  .hero {
+    &__background {
+      position: relative;
+    }
+
+    &__inner {
+      bottom: 65px;
+    }
+
+    &__socials {
+      display: none;
+
+      &_desktop {
+        display: block;
+        margin-bottom: 0;
+
+        & .facebook,
+        & .instagram {
+          display: none;
+        }
+      }
+    }
+
+    &__content {
+      margin-bottom: 20px;
+      width: 360px;
+
+      & p {
+        width: 285px;
+      }
+    }
   }
 }
