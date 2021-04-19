@@ -9,3 +9,11 @@
     fill: transparent;
   }
 }
+
+@media (min-width: $tablet) {
+  .socials {
+    & a:not(:last-child) {
+      margin-right: 45px;
+    }
+  }
+}
