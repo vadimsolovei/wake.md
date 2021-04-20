@@ -1,5 +1,6 @@
 .grid {
-  margin-top: 75px;
+  margin-top: 80px;
+  padding: 0 25px;
 
   &__item {
     display: flex;
@@ -71,6 +72,42 @@
       font-size: 32px;
       line-height: 32px;
       color: $yellow;
+    }
+  }
+}
+
+@media (min-width: $desktop) {
+  .grid {
+    margin-bottom: 80px;
+
+    &__in {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    &__item {
+      &:not(:first-child) {
+        width: 33%;
+
+        & .grid__item-content {
+          max-width: 255px;
+        }
+      }
+
+      &:first-child {
+        flex-direction: row;
+        width: 100%;
+        margin-bottom: 80px;
+
+        & .grid__item-header {
+          width: 33%;
+        }
+      }
+
+      &-content_wide {
+        width: 580px;
+        margin-top: 0;
+      }
     }
   }
 }
