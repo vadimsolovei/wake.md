@@ -50,6 +50,8 @@
   }
 
   &__socials {
+    display: flex;
+    justify-content: space-between;
     margin-bottom: 20px;
 
     &_desktop {
@@ -97,7 +99,7 @@
       display: none;
 
       &_desktop {
-        display: block;
+        display: flex;
         margin-bottom: 0;
 
         & .facebook,

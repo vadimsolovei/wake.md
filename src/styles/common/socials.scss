@@ -2,6 +2,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 33%;
 
   & svg {
     width: 24px;
@@ -15,5 +16,12 @@
     & a:not(:last-child) {
       margin-right: 45px;
     }
+  }
+}
+
+@media (min-width: $desktop) {
+  .socials {
+    width: auto;
+    justify-content: flex-end;
   }
 }
