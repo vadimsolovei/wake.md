@@ -1,17 +1,54 @@
 .footer {
   position: relative;
-  margin-top: 225px;
-  padding: 0 20px;
+
+  &__in {
+    margin-top: 225px;
+    padding: 0 20px;
+  }
 
   &__logo {
     position: absolute;
     bottom: -30px;
     left: 50%;
     transform: translate(-50%, 0);
+
+    & .logo {
+      display: none;
+    }
   }
 
   &__socials {
     position: relative;
+    display: flex;
+    justify-content: space-between;
     z-index: 1;
+  }
+}
+
+@media (min-width: $desktop) {
+  .footer {
+    background-color: #242d3e;
+    margin-top: 70px;
+    padding: 15px 0 70px;
+
+    &__in {
+      width: 100%;
+      margin-top: 80px;
+      padding: 0;
+    }
+
+    &__logo {
+      top: 50%;
+      bottom: unset;
+      transform: translate(-50%, 20%);
+
+      & .logo-with-lines {
+        display: none;
+      }
+
+      & .logo {
+        display: block;
+      }
+    }
   }
 }
