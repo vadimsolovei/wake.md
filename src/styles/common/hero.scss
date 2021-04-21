@@ -59,9 +59,9 @@
     }
   }
 
-  &__content {
-    width: 325px;
-  }
+  // &__content {
+  //   width: 325px;
+  // }
 
   &__chevron {
     display: none;
@@ -76,11 +76,16 @@
 
     &:hover {
       cursor: pointer;
+
+      & svg {
+        transform: translateY(10px);
+      }
     }
 
     & svg {
       width: 24px;
       height: 24px;
+      transition: 0.3s;
     }
   }
 }
