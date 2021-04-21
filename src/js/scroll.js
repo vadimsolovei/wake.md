@@ -26,3 +26,25 @@ window.addEventListener("scroll", () => {
   }
   document.querySelector(".hero__background").style.opacity = opacity;
 });
+
+// Show sticky footer on scroll
+const triggerScrollHeight = 700;
+
+window.addEventListener("scroll", () => {
+  if (window.innerWidth < 768) {
+    const currentScroll = window.pageYOffset;
+    if (
+      currentScroll > triggerScrollHeight &&
+      currentScroll < document.body.offsetHeight - 800
+    ) {
+      document.querySelector(".footer_sticky").style.display = "block";
+      // document.querySelector(".hero__socials").style.display = "none";
+    } else {
+      document.querySelector(".footer_sticky").style.display = "none";
+      // document.querySelector(".hero__socials").style.display = "flex";
+    }
+  } else {
+    document.querySelector(".footer_sticky").style.display = "none";
+    // document.querySelector(".hero__socials").style.display = "none";
+  }
+});
