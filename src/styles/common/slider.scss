@@ -7,3 +7,13 @@
     }
   }
 }
+
+@media (min-width: $desktop) {
+  .splide {
+    &__slide {
+      & img {
+        width: 272px;
+      }
+    }
+  }
+}
