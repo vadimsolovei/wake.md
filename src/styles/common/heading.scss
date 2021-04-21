@@ -20,6 +20,15 @@
   }
 }
 
+@media (max-width: $mobile) {
+  .heading {
+    &_h1 {
+      font-size: 35px;
+      line-height: 35px;
+    }
+  }
+}
+
 @media (min-width: $tablet) {
   .heading {
     &_h1 {

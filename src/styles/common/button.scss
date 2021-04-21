@@ -9,6 +9,12 @@
   text-decoration: none;
   border-radius: 30px;
 
+  &:hover {
+    cursor: pointer;
+    background-color: darken($yellow, 10%);
+    transition: 0.2s;
+  }
+
   & svg {
     width: 24px;
     height: 24px;

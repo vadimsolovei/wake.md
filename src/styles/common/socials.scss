@@ -4,6 +4,14 @@
   justify-content: space-between;
   width: 33%;
 
+  & a {
+    transition: 0.2s;
+
+    &:hover {
+      transform: scale(1.2);
+    }
+  }
+
   & svg {
     width: 24px;
     height: 24px;
