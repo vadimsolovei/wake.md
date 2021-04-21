@@ -35,7 +35,7 @@ window.addEventListener("scroll", () => {
     const currentScroll = window.pageYOffset;
     if (
       currentScroll > triggerScrollHeight &&
-      currentScroll < document.body.offsetHeight - 800
+      currentScroll < document.body.offsetHeight - 1000
     ) {
       document.querySelector(".footer_sticky").style.display = "block";
       // document.querySelector(".hero__socials").style.display = "none";
