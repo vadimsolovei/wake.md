@@ -20,7 +20,7 @@ const checkpoint = 600;
 const opacityOnScroll = () => {
   const currentScroll = window.scrollY;
   if (currentScroll <= checkpoint) {
-    opacity = 1 - currentScroll / checkpoint + 0.1;
+    opacity = 0.9 - currentScroll / checkpoint + 0.1;
   } else {
     opacity = 0.1;
   }
