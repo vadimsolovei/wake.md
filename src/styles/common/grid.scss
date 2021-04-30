@@ -1,6 +1,5 @@
 .grid {
-  margin-top: 150px;
-  padding: 0 25px;
+  padding: 80px 25px;
 
   &__item {
     display: flex;
@@ -33,36 +32,6 @@
     &-content {
       margin-left: 84px;
       color: $gray;
-
-      &_wide {
-        margin-top: 45px;
-      }
-
-      & > .heading {
-        margin-bottom: 10px;
-      }
-    }
-
-    &-container {
-      position: relative;
-      display: flex;
-      align-items: center;
-      width: 230px;
-
-      & > h2 {
-        margin-right: 15px;
-        margin-bottom: 0;
-        font-size: 72px;
-        line-height: 62px;
-        font-weight: 600;
-        color: white;
-      }
-
-      & > p {
-        font-size: 24px;
-        color: white;
-        font-weight: 600;
-      }
     }
 
     &-price {
@@ -76,37 +45,24 @@
   }
 }
 
+@media (min-width: $tablet) {
+  .grid {
+    background-color: $blue;
+  }
+}
+
 @media (min-width: $desktop) {
   .grid {
-    margin-bottom: 80px;
-
     &__in {
       display: flex;
       flex-wrap: wrap;
     }
 
     &__item {
-      &:not(:first-child) {
-        width: 33%;
+      width: 33%;
 
-        & .grid__item-content {
-          max-width: 255px;
-        }
-      }
-
-      &:first-child {
-        flex-direction: row;
-        width: 100%;
-        margin-bottom: 80px;
-
-        & .grid__item-header {
-          width: 33%;
-        }
-      }
-
-      &-content_wide {
-        width: 580px;
-        margin-top: 0;
+      &-content {
+        max-width: 255px;
       }
     }
   }
