@@ -19,6 +19,20 @@
     flex-direction: column;
     justify-content: space-between;
     margin-bottom: 50px;
+
+    &:first-child {
+      position: relative;
+
+      &::before {
+        content: "";
+        position: absolute;
+        left: -5px;
+        bottom: -15px;
+        width: 101%;
+        height: 2px;
+        background: url("../img/separator-horizontal.png") repeat-x;
+      }
+    }
   }
 
   &__image {
@@ -91,10 +105,9 @@
         padding-right: 50px;
 
         &::before {
-          content: "";
-          position: absolute;
           top: -25px;
           right: 39px;
+          left: unset;
           width: 2px;
           height: 105%;
           background: url("../img/separator.png") repeat-y;
