@@ -1,19 +1,3 @@
-// Smooth scroll to element
-const promoElement = document.getElementById("promo");
-const scrollButton = document.querySelector(".hero__chevron");
-
-function clickHandler(e) {
-  e.preventDefault();
-  const offsetTop = promoElement.offsetTop - 80;
-
-  scroll({
-    top: offsetTop,
-    behavior: "smooth",
-  });
-}
-
-scrollButton.addEventListener("click", clickHandler);
-
 // Add opacity on scroll
 const checkpoint = 600;
 
@@ -30,23 +14,31 @@ const opacityOnScroll = () => {
 window.addEventListener("scroll", opacityOnScroll);
 
 // Show sticky footer on scroll
-const triggerScrollHeight = 700;
+const triggerScrollHeight = 1;
 const footerSticky = document.querySelector(".footer_sticky");
+const heroSocials = document.querySelector(".hero__socials");
+const heroText = document.querySelector(".hero__text");
 
 const toggleFooterSticky = () => {
   const currentScroll = window.scrollY;
   if (window.innerWidth < 768) {
     if (currentScroll > triggerScrollHeight) {
       footerSticky.classList.remove("hidden");
+      heroSocials.style.opacity = 0;
+      heroText.style.opacity = 1;
     }
     if (
       currentScroll + window.innerHeight > document.body.offsetHeight - 100 ||
       currentScroll < triggerScrollHeight
     ) {
       footerSticky.classList.add("hidden");
+      heroSocials.style.opacity = 1;
+      heroText.style.opacity = 0;
     }
   } else {
     footerSticky.classList.add("hidden");
+    heroSocials.style.opacity = 0;
+    heroText.style.opacity = 1;
   }
 };
 
