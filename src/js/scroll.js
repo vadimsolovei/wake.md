@@ -43,3 +43,4 @@ const toggleFooterSticky = () => {
 };
 
 window.addEventListener("scroll", toggleFooterSticky);
+window.addEventListener("resize", toggleFooterSticky);
