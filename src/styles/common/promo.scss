@@ -1,77 +1,123 @@
 .promo {
   position: relative;
-  margin-top: 80px;
-  padding-bottom: 80px;
+  margin-top: 150px;
 
   &__in {
+    position: relative;
     padding: 0 25px;
   }
 
-  & h3 {
-    font-size: 32px;
-    font-weight: 300;
-    line-height: 32px;
-    color: $yellow;
+  &__card {
+    margin-bottom: 30px;
+    padding: 32px;
+    background: rgba(#11243d, 0.9);
+    border-radius: 16px;
+
+    @supports (backdrop-filter: blur(60px)) {
+      background: rgba(#11243d, 0.6);
+      backdrop-filter: blur(60px);
+    }
+
+    & .heading {
+      margin-bottom: 8px;
+    }
+
+    & .heading_h3 {
+      color: $gray;
+    }
+
+    & .subheading {
+      margin-bottom: 32px;
+    }
+
+    & span {
+      font-size: 32px;
+      line-height: 32px;
+      font-weight: 300;
+      color: $yellow;
+    }
   }
 
-  &__item {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    margin-bottom: 50px;
+  &__list {
+    & ul {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin: 32px 0 40px;
+    }
 
-    &:first-child {
-      position: relative;
+    &-item {
+      max-width: 200px;
+      margin: 0 20px 32px 0;
 
-      &::before {
-        content: "";
-        position: absolute;
-        left: -5px;
-        bottom: -15px;
-        width: 101%;
-        height: 2px;
-        background: url("../img/separator-horizontal.png") repeat-x;
+      & span {
+        display: inline-block;
+        margin-bottom: 15px;
+        width: 20px;
+        border-top: 2px solid $green;
+      }
+
+      & p {
+        font-size: 16px;
+        font-weight: 500;
+        color: $gray;
       }
     }
   }
 
-  &__image {
-    align-self: center;
-    width: 100%;
+  &__vehicle {
+    margin-top: 35px;
+  }
+
+  &__item {
+    flex: 1 1 0;
+    position: relative;
     margin-bottom: 50px;
+    padding: 32px;
+    background-color: linear-gradient(
+      71.92deg,
+      #5ad9d1 0%,
+      rgba(90, 217, 209, 0) 100%
+    );
+    border-radius: 16px;
 
-    &.hydrocycle {
-      max-width: 346px;
+    & img {
+      width: 100%;
+
+      &.hydrocycle {
+        max-width: 470px;
+      }
+
+      &.boat {
+        max-width: 585px;
+      }
     }
 
-    &.boat {
-      max-width: 420px;
+    &-title {
+      text-align: right;
+
+      & p {
+        color: $gray;
+        font-weight: 500;
+      }
+      & span {
+        color: $white;
+        font-weight: 700;
+      }
     }
   }
+}
 
-  &__header {
-    margin-bottom: 25px;
-
-    & > .heading {
-      margin-bottom: 15px;
-    }
-  }
-
-  &__footer {
-    margin-bottom: 25px;
-
-    & > .heading {
-      margin-bottom: 15px;
-    }
-
-    & > h3 {
-      margin-bottom: 15px;
-    }
+@media (min-width: $mobile) {
+  .promo {
+    margin-top: 80px;
   }
 }
 
 @media (min-width: $tablet) {
   .promo {
+    padding-bottom: 80px;
+
     &::after {
       content: "";
       position: absolute;
@@ -81,78 +127,51 @@
       height: 30px;
       background: url("../img/wave.png") repeat-x;
     }
+
+    &__item {
+      &-title {
+        font-size: 24px;
+
+        & p {
+          line-height: 32px;
+        }
+        & span {
+          line-height: 24px;
+        }
+      }
+    }
   }
 }
 
 @media (min-width: $desktop) {
   .promo {
-    &__in {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    &__card {
+      max-width: 460px;
+      position: absolute;
+      top: -300px;
+      right: 0;
     }
 
-    &__content {
+    &__list {
+      margin-bottom: 140px;
+    }
+
+    &__vehicle {
       display: flex;
       margin-bottom: 30px;
     }
 
     &__item {
-      height: 668px;
-
       &:first-child {
-        position: relative;
-        padding-right: 50px;
+        margin-right: 15px;
+      }
 
-        &::before {
-          top: -25px;
-          right: 39px;
-          left: unset;
-          width: 2px;
-          height: 105%;
-          background: url("../img/separator.png") repeat-y;
+      & img {
+        &.boat {
+          position: absolute;
+          bottom: 0;
+          left: -70px;
         }
-      }
-
-      &:not(:first-child) {
-        padding-left: 50px;
-      }
-    }
-
-    &__header,
-    &__footer {
-      max-width: 265px;
-    }
-
-    &__image {
-      align-self: start;
-
-      &.hydrocycle {
-        position: relative;
-        left: -115px;
-      }
-
-      &.boat {
-        position: absolute;
-        top: 182px;
-      }
-    }
-
-    &__addition {
-      width: 385px;
-      text-align: center;
-    }
-  }
-}
-
-@media (min-width: $desktop-lg) {
-  .promo {
-    overflow: hidden;
-
-    &__image {
-      &.boat {
-        top: 120px;
-        max-width: 659px;
       }
     }
   }

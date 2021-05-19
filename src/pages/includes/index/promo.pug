@@ -1,29 +1,52 @@
-section.promo.block#promo
+section.promo.block
   .promo__in.block__in
-    .promo__content
+    .promo__card
+      h2.heading.heading_h2 Intro Session
+
+      h3.heading.heading_h3 Освоение базовых навыков и трюков для новичков.
+
+      p.subheading В этом виде спорта задействуются все группы мышц. Один заезд равносилен полноценной тренироке в спортивном зале.
+
+      span 450 лей
+
+
+    .promo__list
+      h3.heading.heading_h3 В стоимость входит:
+
+      ul
+        li.promo__list-item
+          span
+          p Аренда оборудования и спасательного жилета
+
+        li.promo__list-item
+          span
+          p Ознакомление с техникой безопасности при катании
+
+        li.promo__list-item
+          span
+          p Инструктаж техники катания с отработкой основных навыков
+
+        li.promo__list-item
+          span
+          p Отработка вспомогательных приёмов в воде
+
+        li.promo__list-item
+          span
+          p Заезд за гидроциклом с инструктором — 15 минут
+
+    h2.heading.heading_h2 Парк техники
+
+    .promo__vehicle
       .promo__item
-        .promo__header
-          h2.heading.heading_h2 Один сет за гидроциклом
-          h3 Заезд 15 минут
+        .promo__item-title
+          p Гидроцикл
+          span Sea-Doo Spark
 
-        img.promo__image.hydrocycle(src="./img/hydrocycle.png", alt="гидроцикл")
-
-        .promo__footer
-          h3 450 лей
-          h2.heading.heading_h2 Вэйкборд, Лыжи
-          p.subheading Подходит для новичков, освоение базовых навыков и трюков. Инструктаж на суше и в воде.
+        img.hydrocycle(src="./img/hydrocycle.png", alt="гидроцикл")
 
       .promo__item
-        .promo__header
-          h2.heading.heading_h2 Один сет за катером
-          h3 Заезд 10 минут
+        .promo__item-title
+            p Катер
+            span Super Air <br /> Nautique
 
-        img.promo__image.boat(src="./img/boat.png", alt="катер")
-
-        .promo__footer
-          h3 450 лей
-          h2.heading.heading_h2 Вэйкборд, Лыжи, Серфинг
-          p.subheading Подходит для продвинутых райдеров, высокая волна. Экскурсия по Днестру.
-
-    .promo__addition.subheading
-      p В этом виде спорта задействуются все  группы мышц. Даже после одного заезда вам нужно будет несколько дней чтобы воcстановиться.
+        img.boat(src="./img/boat.png", alt="катер")
