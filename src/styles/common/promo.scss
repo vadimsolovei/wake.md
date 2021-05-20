@@ -8,7 +8,7 @@
   }
 
   &__card {
-    margin-bottom: 30px;
+    margin-bottom: 40px;
     padding: 32px;
     background: rgba(#11243d, 0.9);
     border-radius: 16px;
@@ -145,10 +145,12 @@
 
 @media (min-width: $desktop) and (min-height: 575px) {
   .promo {
+    margin-top: 220px;
+
     &__card {
       max-width: 460px;
       position: absolute;
-      top: -300px;
+      top: -440px;
       right: 0;
     }
 
