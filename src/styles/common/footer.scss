@@ -38,7 +38,7 @@
   }
 }
 
-@media (min-width: $desktop) {
+@media (min-width: $desktop) and (min-height: 575px) {
   .footer {
     padding: 15px 0 70px;
 

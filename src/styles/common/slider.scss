@@ -10,7 +10,7 @@
   }
 }
 
-@media (min-width: $desktop) {
+@media (min-width: $desktop) and (min-height: 575px) {
   .splide {
     &__slide {
       & img {

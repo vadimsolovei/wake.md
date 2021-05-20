@@ -21,7 +21,10 @@ const heroText = document.querySelector(".hero__text");
 
 const toggleFooterSticky = () => {
   const currentScroll = window.scrollY;
-  if (window.innerWidth < 768) {
+  if (
+    window.innerWidth < 768 ||
+    (window.innerWidth > 768 && window.innerHeight < 575)
+  ) {
     if (currentScroll > triggerScrollHeight) {
       footerSticky.classList.remove("hidden");
       heroSocials.style.opacity = 0;

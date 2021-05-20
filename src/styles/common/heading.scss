@@ -34,7 +34,7 @@
   }
 }
 
-@media (min-width: $tablet) {
+@media (min-width: $tablet) and (min-height: 575px) {
   .heading {
     &_h1 {
       font-size: 72px;
