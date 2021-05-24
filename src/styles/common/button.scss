@@ -2,16 +2,13 @@
   display: flex;
   align-items: center;
   padding: 16px 24px;
-  background-color: $yellow;
-  color: $black;
   font-size: 14px;
-  font-weight: bold;
+  font-weight: 500;
   text-decoration: none;
   border-radius: 30px;
 
   &:hover {
     cursor: pointer;
-    background-color: darken($yellow, 10%);
     transition: 0.2s;
   }
 
@@ -19,5 +16,14 @@
     width: 24px;
     height: 24px;
     margin-right: 10px;
+  }
+
+  &.number {
+    color: $black;
+    background-color: $yellow;
+
+    &:hover {
+      background-color: darken($yellow, 10%);
+    }
   }
 }

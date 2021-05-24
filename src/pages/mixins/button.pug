@@ -1,0 +1,5 @@
+mixin button(href, icon, text, className)
+  a.button(class=className href=href)&attributes(attributes)
+    svg
+      use(xlink:href=icon)
+    span=text
