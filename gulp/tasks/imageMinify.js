@@ -4,8 +4,8 @@ const imagemin = require("gulp-imagemin");
 module.exports = function imageMinify() {
   return gulp
     .src([
-      "src/img/*.{gif,png,jpg,svg,webp}",
-      "src/img/*/*.{gif,png,jpg,svg,webp}",
+      "src/img/*.{gif,png,jpg,svg,webp,ico}",
+      "src/img/*/*.{gif,png,jpg,svg,webp,ico}",
     ])
     .pipe(
       imagemin([
