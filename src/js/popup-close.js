@@ -1,6 +1,6 @@
-const closeButtonEl = document.getElementById("close-popup");
-const telegramIcon = document.getElementById("telegram");
-const popup = document.getElementById("popup");
+const closeButtonEl = document.querySelector(".socials__popup-close");
+const telegramIcon = document.querySelector(".telegram");
+const popup = document.querySelector(".socials__popup");
 
 const onCloseButtonClick = () => {
   popup.style.display = "none";
