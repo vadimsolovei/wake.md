@@ -46,7 +46,7 @@
 
 @media (min-width: $tablet) {
   .socials {
-    & a:not(:last-child) {
+    & a:not(:last-of-type) {
       margin-right: 45px;
     }
   }
