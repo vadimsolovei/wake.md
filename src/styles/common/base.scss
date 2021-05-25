@@ -4,6 +4,12 @@ body {
   font-family: "Montserrat", sans-serif;
 }
 
+@supports (-webkit-touch-callout: none) {
+  body {
+    height: -webkit-fill-available;
+  }
+}
+
 .hidden {
   display: none;
 }
