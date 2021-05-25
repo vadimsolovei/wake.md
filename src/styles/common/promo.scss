@@ -7,14 +7,26 @@
     padding: 0 25px;
   }
 
+  &__telegram {
+    margin-bottom: 40px;
+
+    & .telegram {
+      margin-bottom: 10px;
+    }
+
+    & p {
+      max-width: 200px;
+    }
+  }
+
   &__card {
     margin-bottom: 40px;
     padding: 32px;
-    background: rgba(#11243d, 0.9);
+    background-color: rgba(#11243d, 0.9);
     border-radius: 16px;
 
     @supports (backdrop-filter: blur(60px)) {
-      background: rgba(#11243d, 0.6);
+      background-color: rgba(#11243d, 0.6);
       backdrop-filter: blur(60px);
     }
 
@@ -126,6 +138,10 @@
       width: 100%;
       height: 30px;
       background: url("../img/wave.png") repeat-x;
+    }
+
+    &__telegram {
+      display: none;
     }
 
     &__item {
