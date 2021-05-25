@@ -28,6 +28,7 @@ const toggleFooterSticky = () => {
     if (currentScroll > triggerScrollHeight) {
       footerSticky.classList.remove("hidden");
       heroSocials.style.opacity = 0;
+      heroSocials.style.zIndex = -1;
       heroText.style.opacity = 1;
     }
     if (
@@ -36,11 +37,13 @@ const toggleFooterSticky = () => {
     ) {
       footerSticky.classList.add("hidden");
       heroSocials.style.opacity = 1;
+      heroSocials.style.zIndex = 1;
       heroText.style.opacity = 0;
     }
   } else {
     footerSticky.classList.add("hidden");
     heroSocials.style.opacity = 0;
+    heroSocials.style.zIndex = -1;
     heroText.style.opacity = 1;
   }
 };
