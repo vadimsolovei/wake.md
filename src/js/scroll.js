@@ -26,24 +26,19 @@ const toggleFooterSticky = () => {
     (window.innerWidth > 768 && window.innerHeight < 575)
   ) {
     if (currentScroll > triggerScrollHeight) {
+      footerSticky.style.backgroundColor = "#2f3e53";
       footerSticky.classList.remove("hidden");
-      heroSocials.style.opacity = 0;
-      heroSocials.style.zIndex = -1;
       heroText.style.opacity = 1;
     }
-    if (
-      currentScroll + window.innerHeight > document.body.offsetHeight - 100 ||
-      currentScroll < triggerScrollHeight
-    ) {
-      footerSticky.classList.add("hidden");
-      heroSocials.style.opacity = 1;
-      heroSocials.style.zIndex = 1;
+    if (currentScroll < triggerScrollHeight) {
+      footerSticky.style.backgroundColor = "transparent";
       heroText.style.opacity = 0;
     }
+    if (currentScroll + window.innerHeight > document.body.offsetHeight - 100) {
+      footerSticky.classList.add("hidden");
+    }
   } else {
-    footerSticky.classList.add("hidden");
-    heroSocials.style.opacity = 0;
-    heroSocials.style.zIndex = -1;
+    footerSticky.style.backgroundColor = "transparent";
     heroText.style.opacity = 1;
   }
 };

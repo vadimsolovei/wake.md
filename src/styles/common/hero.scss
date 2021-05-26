@@ -1,7 +1,7 @@
 @media (max-width: 10000px), (orientation: landscape) and (max-height: 575px) {
   .hero {
     position: relative;
-    height: 100vh;
+    height: 95vh;
 
     &__background {
       position: fixed;
@@ -60,14 +60,7 @@
     }
 
     &__socials {
-      display: flex;
-      justify-content: space-between;
-      position: relative;
-      z-index: 1;
-
-      &_desktop {
-        display: none;
-      }
+      display: none;
     }
   }
 }
@@ -91,16 +84,15 @@
     }
 
     &__socials {
-      display: none;
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin-bottom: 0;
+      z-index: 1;
 
-      &_desktop {
-        display: flex;
-        margin-bottom: 0;
-
-        & .facebook,
-        & .instagram {
-          display: none;
-        }
+      & .facebook,
+      & .instagram {
+        display: none;
       }
     }
 
