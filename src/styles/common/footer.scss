@@ -47,7 +47,7 @@
   }
 }
 
-@media (min-width: $tablet) {
+@media (min-width: $tablet) and (min-height: 575px) {
   .footer {
     &_sticky {
       display: none;

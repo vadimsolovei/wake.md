@@ -1,7 +1,8 @@
 @media (max-width: 10000px), (orientation: landscape) and (max-height: 575px) {
   .hero {
     position: relative;
-    height: 95vh;
+    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
 
     &__background {
       position: fixed;
@@ -50,7 +51,7 @@
     &__inner {
       padding: 0 25px;
       position: absolute;
-      bottom: 20px;
+      bottom: 70px;
     }
 
     &__text {
@@ -77,10 +78,6 @@
   .hero {
     &__background {
       position: relative;
-    }
-
-    &__inner {
-      bottom: 65px;
     }
 
     &__socials {

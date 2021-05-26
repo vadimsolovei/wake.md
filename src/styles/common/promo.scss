@@ -1,6 +1,6 @@
 .promo {
   position: relative;
-  margin-top: 210px;
+  margin-top: 160px;
 
   &__in {
     position: relative;
@@ -121,7 +121,7 @@
 
 @media (min-width: $mobile) {
   .promo {
-    margin-top: 140px;
+    margin-top: 90px;
 
     &__list-item {
       max-width: 200px;
@@ -169,7 +169,7 @@
     &__card {
       max-width: 460px;
       position: absolute;
-      top: -390px;
+      top: -440px;
       right: 55px;
     }
 
