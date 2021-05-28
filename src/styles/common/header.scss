@@ -16,12 +16,12 @@
       &::before {
         content: "";
         position: absolute;
-        top: 0;
+        top: 40px;
         bottom: 0;
         right: 0;
         left: 0;
         background-color: rgba(25, 53, 102, 0.4);
-        filter: blur(50px);
+        filter: blur(40px);
         z-index: -1;
       }
     }
