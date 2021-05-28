@@ -1,27 +1,26 @@
 .heading {
   font-weight: 600;
   color: $white;
+  line-height: 1.33;
 
   &_h1 {
     margin-bottom: 20px;
     font-size: 48px;
-    line-height: 48px;
+    letter-spacing: -0.03em;
   }
 
   &_h2 {
     font-size: 32px;
-    line-height: 32px;
   }
 
   &_h3 {
     font-size: 24px;
-    line-height: 24px;
   }
 
   &_h4 {
     margin-bottom: 10px;
-    line-height: 24px;
     font-weight: 500;
+    line-height: 1.5;
   }
 }
 

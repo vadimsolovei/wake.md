@@ -34,6 +34,10 @@
     & .socials__popup {
       display: none !important;
     }
+
+    & .socials {
+      justify-content: flex-end;
+    }
   }
 }
 

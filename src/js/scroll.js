@@ -17,7 +17,7 @@ window.addEventListener("scroll", opacityOnScroll);
 const triggerScrollHeight = 1;
 const footerSticky = document.querySelector(".footer_sticky");
 const heroSocials = document.querySelector(".hero__socials");
-const heroText = document.querySelector(".hero__text");
+const heroText = document.querySelector(".hero__text .subheading");
 
 const toggleFooterSticky = () => {
   const currentScroll = window.scrollY;
