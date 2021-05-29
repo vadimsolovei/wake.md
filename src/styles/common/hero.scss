@@ -74,6 +74,13 @@
 
 @media (min-width: $mobile) {
   .hero {
+    display: block;
+
+    &__inner {
+      position: absolute;
+      bottom: 180px;
+      padding-bottom: 0;
+    }
     // &__text {
     //   top: 140px;
     // }
