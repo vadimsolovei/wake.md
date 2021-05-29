@@ -1,6 +1,6 @@
 .promo {
   position: relative;
-  margin-top: 100px;
+  margin-top: -30px;
 
   &__in {
     position: relative;
@@ -121,7 +121,7 @@
 
 @media (min-width: $mobile) {
   .promo {
-    margin-top: 90px;
+    // margin-top: 90px;
 
     &__list-item {
       max-width: 200px;

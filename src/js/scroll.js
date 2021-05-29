@@ -28,20 +28,21 @@ const toggleFooterSticky = () => {
     if (currentScroll > triggerScrollHeight) {
       footerSticky.style.backgroundColor = "#2f3e53";
       footerSticky.classList.remove("hidden");
-      heroText.style.opacity = 1;
+      // heroText.style.opacity = 1;
     }
     if (currentScroll < triggerScrollHeight) {
       footerSticky.style.backgroundColor = "transparent";
-      heroText.style.opacity = 0;
+      // heroText.style.opacity = 0;
     }
     if (currentScroll + window.innerHeight > document.body.offsetHeight - 100) {
-      footerSticky.classList.add("hidden");
+      // footerSticky.classList.add("hidden");
+      footerSticky.style.backgroundColor = "transparent";
     }
   } else {
     footerSticky.style.backgroundColor = "transparent";
-    heroText.style.opacity = 1;
+    // heroText.style.opacity = 1;
   }
 };
 
-window.addEventListener("scroll", toggleFooterSticky);
-window.addEventListener("resize", toggleFooterSticky);
+// window.addEventListener("scroll", toggleFooterSticky);
+// window.addEventListener("resize", toggleFooterSticky);

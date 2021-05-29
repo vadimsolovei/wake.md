@@ -1,14 +1,19 @@
 @media (max-width: 10000px), (orientation: landscape) and (max-height: 575px) {
   .hero {
     position: relative;
-    height: 100vh;
-    height: calc(var(--vh, 1vh) * 100);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    // height: calc(var(--vh, 1vh) * 100);
+    display: -webkit-flex;
+    display: -ms-flex;
+    display: flex;
+    align-items: flex-end;
 
     &__background {
       position: fixed;
       top: 0;
       left: 0;
-      height: 110vh;
+      height: 100vh;
       width: 100%;
       z-index: -1;
 
@@ -50,18 +55,16 @@
 
     &__inner {
       padding: 0 25px;
-      position: absolute;
-      bottom: 180px;
+      padding-top: 170px;
+      padding-bottom: 110px;
+      // position: absolute;
+      // bottom: 320px;
     }
 
-    &__text {
-      position: absolute;
-      top: 100px;
-
-      .subheading {
-        opacity: 0;
-      }
-    }
+    // &__text {
+    //   position: absolute;
+    //   top: 100px;
+    // }
 
     &__socials {
       display: none;
@@ -71,9 +74,9 @@
 
 @media (min-width: $mobile) {
   .hero {
-    &__text {
-      top: 140px;
-    }
+    // &__text {
+    //   top: 140px;
+    // }
   }
 }
 
