@@ -1,11 +1,13 @@
+.header {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translate(-50%, 0);
+  z-index: 1;
+}
+
 @media (max-width: 10000px), (orientation: landscape) and (max-height: 575px) {
   .header {
-    position: absolute;
-    top: 35px;
-    left: 50%;
-    transform: translate(-50%, 0);
-    z-index: 1;
-
     &__socials {
       display: none;
     }
@@ -28,6 +30,11 @@
   }
 }
 
+@media (min-height: 490px) {
+  .header {
+    top: 35px;
+  }
+}
 @media (min-width: $tablet) and (min-height: 575px) {
   .header {
     max-width: 1140px;

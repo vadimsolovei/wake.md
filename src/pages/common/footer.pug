@@ -1,10 +1,10 @@
-footer.footer.block
+footer.footer.block.footer_static
   include ../includes/index/slider
 
   .footer__in.block__in
     .footer__logo
       include ../includes/index/logo
 
-    //- .footer__socials.hidden
-    //-   +button("tel:+37368884689", "./img/sprite.svg#phone", "68 884 689", "number")
-    //-   include ../includes/index/socials
+    .footer__socials
+      +button("tel:+37368884689", "./img/sprite.svg#phone", "68 884 689", "number")
+      include ../includes/index/socials

@@ -39,6 +39,10 @@
       justify-content: flex-end;
     }
   }
+
+  &_static &__socials {
+    display: none;
+  }
 }
 
 @media (min-width: $mobile) {
@@ -47,6 +51,9 @@
 
     &_sticky {
       background-color: $grey;
+    }
+    &_static &__socials {
+      display: flex;
     }
   }
 }
