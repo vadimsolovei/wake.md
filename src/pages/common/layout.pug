@@ -1,10 +1,22 @@
+block vars
+  - var lang = 'ru'
+  - var langRo = false
+
 doctype html
-html(lang="ru")
+html(lang=lang)
     block head
         head
             meta(charset="utf-8")
-            title Wake.md
-            meta(content="width=device-width, initial-scale=1" name="viewport")
+            if langRo
+              title Wakeboarding în Moldova. Wakeboard, ski nautice, wakesurf şi alte sporturi acvatice în Moldova
+              meta(name="viewport" content="width=device-width, initial-scale=1")
+              meta(name="description" content="Wakeboarding în Moldova. Wakeboard, schi nautice, wakesurf şi alte sporturi acvatice. Tractare dupa (hidrociclu) jet-ski şi wake barcă în Moldova pe Nistru şi în apropiere or. Chişinău. Instuire şi antrenament în wakeboarding. Descoperiţi o nouă activitate sportiva şi faceţi progres în fiecare set!")
+              meta(name="keywords" content="wakeboard, wakeboarding, wakesurf, water ski, schi nautice, tractare pe apă, sport, activităţi, odihna")
+            else
+              title Вейкбординг в Молдове. Вейкборд (wakeboard), водные лыжи, вейксерф и другой водный спорт в Молдове
+              meta(name="viewport" content="width=device-width, initial-scale=1")
+              meta(name="description" content="Вейкбординг в Молдове. Вейкборд, водные лыжи, вейксерф и другой водный спорт. Катание за гидроциклом и катером в Молдове на Днестре и вблизи Кишинева. Инструктаж, обучение и тренировки по вейкборду. Откройте для себя новый увлекательный вид спорта и прогрессируйте с каждым заедом!")
+              meta(name="keywords" content="wakeboard, wakeboarding, wakesurf, water ski, вейкборд, вейкбординг, вейксерф, катание, спорт, активный, отдых")
             link(rel="shortcut icon" type="image/jpg" href="img/favicon.ico")
             link(rel="stylesheet" href="css/styles.min.css")
             link(rel="stylesheet" href="css/splide-core.min.min.css")
