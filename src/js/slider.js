@@ -11,4 +11,6 @@ new Splide("#splide", {
   gap: "15px",
   pagination: false,
   arrows: false,
+  autoplay: true,
+  interval: 2500
 }).mount();

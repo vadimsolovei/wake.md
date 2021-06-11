@@ -32,6 +32,11 @@
         fill: $black;
       }
     }
+
+    span {
+      font-size: 0;
+      display: none;
+    }
   }
 
   & svg {

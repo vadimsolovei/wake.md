@@ -6,10 +6,16 @@ section.grid.block
           svg
             use(xlink:href="./img/sprite.svg#fi_map-pin")
 
-        h3.heading.heading_h3 Где всё происходит
+        if langRo
+          h3.heading.heading_h3 Unde se află
+        else
+          h3.heading.heading_h3 Где всё происходит
 
       .grid__item-content
-        p.subheading Чаще всего заезды происходят вблизи мун. Кишинёва: вдхр. Гидигич, Днестр.
+        if langRo
+          p.subheading Cel mai adesea tururi au loc lângă mun. Chișinău: rez. Ghidighici, Nistru.
+        else
+          p.subheading Чаще всего заезды происходят вблизи мун. Кишинёва: вдхр. Гидигич, Днестр.
 
     .grid__item
       .grid__item-header
@@ -17,10 +23,16 @@ section.grid.block
           svg
             use(xlink:href="./img/sprite.svg#fi_sun")
 
-        h3.heading.heading_h3 Что <br /> нужно
+        if langRo
+          h3.heading.heading_h3 Ce este <br /> necesar
+        else
+          h3.heading.heading_h3 Что <br /> нужно
 
       .grid__item-content
-        p.subheading Мы предоставим всё снаряжение. Вам желательно иметь плавательные шорты, тапочки для воды, полотенце и крем от солнца.
+        if langRo
+          p.subheading Vom furniza toate echipamentele. Este recomandabil să aveți șorți de apă, papuci pentru apă, un prosop și protecție solară.
+        else
+          p.subheading Мы предоставим всё снаряжение. Вам желательно иметь плавательные шорты, тапочки для воды, полотенце и крем от солнца.
 
     .grid__item
       .grid__item-header
@@ -28,10 +40,16 @@ section.grid.block
           svg
             use(xlink:href="./img/sprite.svg#u_water")
 
-        h3.heading.heading_h3 Умение плавать
+        if langRo
+          h3.heading.heading_h3 Înotul
+        else
+          h3.heading.heading_h3 Умение плавать
 
       .grid__item-content
-        p.subheading Доска и жилет имеет положительную плавучесть. Уметь плавать не нужно, главное не бояться воды. Но и с этим мы поможем.
+        if langRo
+          p.subheading Placa și vesta au o flotabilitate pozitivă. Nu e neaparat să știți să înotați, principal să nu aveți frică de apă. Dar vom ajuta și cu aceasta.
+        else
+          p.subheading Доска и жилет имеет положительную плавучесть. Уметь плавать не нужно, главное не бояться воды. Но и с этим мы поможем.
 
     .grid__item
       .grid__item-header
@@ -39,10 +57,16 @@ section.grid.block
           svg
             use(xlink:href="./img/sprite.svg#u_smile")
 
-        h3.heading.heading_h3 Первый заезд
+        if langRo
+          h3.heading.heading_h3 Prima tură
+        else
+          h3.heading.heading_h3 Первый заезд
 
       .grid__item-content
-        p.subheading Перед заездом с вами будет проведен инструктаж. Во время катания вас будет сопровождать инструктор.
+        if langRo
+          p.subheading Înainte de tură, veți fi instruiți. Tot timpul veți fi însoțit de un instructor.
+        else
+          p.subheading Перед заездом с вами будет проведен инструктаж. Во время катания вас будет сопровождать инструктор.
 
     .grid__item
       .grid__item-header
@@ -50,10 +74,16 @@ section.grid.block
           svg
             use(xlink:href="./img/sprite.svg#group_alt")
 
-        h3.heading.heading_h3 Для <br /> детей
+        if langRo
+          h3.heading.heading_h3 Pentru copii
+        else
+          h3.heading.heading_h3 Для <br /> детей
 
       .grid__item-content
-        p.subheading Вэйкбордом занимаются дети с 3-х лет, но пока мы можем предоставить оборудование для подростков от 12 лет.
+        if langRo
+          p.subheading În wakeboarding sunt implicați copiii de la 3 ani, dar deocamdată putem furniza echipamente pentru adolescenți de la 12 ani.
+        else
+          p.subheading Вэйкбордом занимаются дети с 3-х лет, но пока мы можем предоставить оборудование для подростков от 12 лет.
 
     .grid__item
       .grid__item-header
@@ -61,7 +91,13 @@ section.grid.block
           svg
             use(xlink:href="./img/sprite.svg#fi_life-buoy")
 
-        h3.heading.heading_h3 Безопасность
+        if langRo
+          h3.heading.heading_h3 Securitate
+        else
+          h3.heading.heading_h3 Безопасность
 
       .grid__item-content
-        p.subheading Это не травмоопасный вид спорта. Инструктора прошли подготовку и на борту имеется спасательное оборудование.
+        if langRo
+          p.subheading Acesta nu este un sport traumatic. Instructorii au fost pregătiți, dar la bord este echipament de salvare.
+        else
+          p.subheading Это не травмоопасный вид спорта. Инструктора прошли подготовку и на борту имеется спасательное оборудование.

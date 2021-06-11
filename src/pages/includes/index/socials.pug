@@ -1,19 +1,26 @@
 .socials
-  a(href="https://www.facebook.com/wake.md" target="_blank" rel="noopener noreferrer").facebook
+  a(href="https://www.facebook.com/wake.md" target="_blank" rel="noopener noreferrer" title="Facebook").facebook
     svg
       use(xlink:href="./img/sprite.svg#fi_facebook")
+    span Facebook
 
-  a(href="https://www.instagram.com/wake.md/" target="_blank" rel="noopener noreferrer").instagram
+  a(href="https://www.instagram.com/wake.md/" target="_blank" rel="noopener noreferrer" title="Instagram").instagram
     svg
       use(xlink:href="./img/sprite.svg#fi_instagram")
+    span Instagram
 
-  a(href="https://t.me/wakemd" target="_blank" rel="noopener noreferrer").telegram.active
+  a(href="https://t.me/wakemd" target="_blank" rel="noopener noreferrer" title="Telegram").telegram.active
     svg
       use(xlink:href="./img/sprite.svg#u_telegram")
+    span Telegram
 
   .socials__popup
-    h4.heading.heading_h4 Телеграм-канал
-    p.subheading Подпишитесь на наш телеграм-канал, чтобы быть в курсе о времени и месте заездов
+    if langRo
+      h4.heading.heading_h4 Canal Telegram
+      p.subheading Abonați-vă la Telegram canalul nostru pentru a fi la curent cu ora și locul curselor
+    else
+      h4.heading.heading_h4 Телеграм-канал
+      p.subheading Подпишитесь на наш телеграм-канал, чтобы быть в курсе о времени и месте заездов
 
     button.socials__popup-close
       svg
