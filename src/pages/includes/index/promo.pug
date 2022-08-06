@@ -7,65 +7,69 @@ section.promo.block
       else
         p.subheading Подпишитесь на наш телеграм-канал, чтобы быть в курсе о времени и месте заездов
 
-    .promo__card
-      if langRo
-        h2.heading.heading_h2 Sesiune Intro
-        h3.heading.heading_h3 Un curs introductiv pentru cei care vor să se încerce într-un sport nou
-        p.subheading Veți învăța cum să stați pe wakeboard / schiuri și o sa mergeți prima tură. Vă garantăm impresii vii, antrenament complet și prieteni noi.
-        span 450 lei
-      else
-        h2.heading.heading_h2 Intro Session
-        h3.heading.heading_h3 Вводный курс для тех, кто хочет попробовать себя в новом спорте
-        p.subheading Вы научитесь вставать на доску/лыжи и проедете свой первый сет. Мы гарантируем вам яркие впечатления, тренировку всего тела и новых друзей.
-        span 450 лей
+    //- .promo__card
+    //-   if langRo
+    //-     h2.heading.heading_h2 Wakeboard Sesiune Intro
+    //-     h3.heading.heading_h3 Un curs introductiv pentru cei care vor să se încerce într-un sport nou
+    //-     p.subheading Veți învăța cum să stați pe wakeboard / schiuri și o sa mergeți prima tură. Vă garantăm impresii vii, antrenament complet și prieteni noi.
+    //-     span 450 lei
+    //-   else
+    //-     h2.heading.heading_h2 Wakeboard Intro Session
+    //-     h3.heading.heading_h3 Вводный курс для тех, кто хочет попробовать себя в новом спорте
+    //-     p.subheading Вы научитесь вставать на вейкборд доску/лыжи и проедете свой первый сет. Мы гарантируем вам яркие впечатления, тренировку всего тела и новых друзей.
+    //-     span 450 лей
+    //-
+    //-
+    //- .promo__list
+    //-   h3.heading.heading_h3
+    //-     if langRo
+    //-       | În preț sunt incluse:
+    //-     else
+    //-       | В стоимость входит:
+    //-
+    //-   ul
+    //-     li.promo__list-item
+    //-       span
+    //-       if langRo
+    //-         p Chirie echipamentului wakeboard și vestei de salvare
+    //-       else
+    //-         p Аренда wakeboard-снаряжения и спасательного жилета
+    //-
+    //-     li.promo__list-item
+    //-       span
+    //-       if langRo
+    //-         p Instuire in tehnica și regulile de securitate
+    //-       else
+    //-         p Инструктаж по технике катания и правилам безопасности
+    //-
+    //-     li.promo__list-item
+    //-       span
+    //-       if langRo
+    //-         p Exersarea mișcărilor și tehnicilor în apă
+    //-       else
+    //-         p Отработка движений и приёмов в воде
+    //-
+    //-     li.promo__list-item
+    //-       span
+    //-       if langRo
+    //-         p Tura dupa hidrociclu cu instructor
+    //-       else
+    //-         p Заезд за гидроциклом с инструктором
 
-
-    .promo__list
-      h3.heading.heading_h3
-        if langRo
-          | În preț sunt incluse:
-        else
-          | В стоимость входит:
-
-      ul
-        li.promo__list-item
-          span
-          if langRo
-            p Chiria echipamentului și vestei de salvare
-          else
-            p Аренда снаряжения и спасательного жилета
-
-        li.promo__list-item
-          span
-          if langRo
-            p Instuire in tehnica și regulile de securitate
-          else
-            p Инструктаж по технике катания и правилам безопасности
-
-        li.promo__list-item
-          span
-          if langRo
-            p Exersarea mișcărilor și tehnicilor în apă
-          else
-            p Отработка движений и приёмов в воде
-
-        li.promo__list-item
-          span
-          if langRo
-            p Tura dupa hidrociclu cu instructor
-          else
-            p Заезд за гидроциклом с инструктором
-
-    h2.heading.heading_h2 Парк техники
+    //- h2.heading.heading_h2 Парк техники
 
     .promo__vehicle
       .promo__item
         .promo__item-title
           if langRo
-            p Hidrociclu
+            p Jet ski
           else
-            p Гидроцикл
+            p Катание за гидроциклом
           span Sea-Doo Spark
+          if langRo
+            i 30 lei/min
+          else
+            i 30 лей/мин
 
         img.hydrocycle(src="./img/hydrocycle.png", alt=(langRo ? "Hidrociclu" : "Гидроцикл"))
 
@@ -74,7 +78,11 @@ section.promo.block
           if langRo
             p Barca
           else
-            p Катер
-          span Super Air <br /> Nautique
+            p Катание за катером
+          span Super Air Nautique
+          if langRo
+            i 45 lei/min
+          else
+            i 45 лей/мин
 
         img.boat(src="./img/boat.png", alt=(langRo ? "Barca wake" : "Вейк катер"))

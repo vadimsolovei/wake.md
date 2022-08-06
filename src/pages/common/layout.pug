@@ -8,20 +8,41 @@ html(lang=lang)
         head
             meta(charset="utf-8")
             if langRo
-              title Wakeboarding în Moldova. Wakeboard, ski nautice, wakesurf şi alte sporturi acvatice în Moldova
+              title Wakeboarding în Moldova. Wakeboard, ski nautice, wakesurfing şi alte sporturi acvatice în Moldova
               meta(name="viewport" content="width=device-width, initial-scale=1")
               meta(name="description" content="Wakeboarding în Moldova. Wakeboard, schi nautice, wakesurf şi alte sporturi acvatice. Tractare dupa hidrociclu (jet-ski) şi wake barcă în Moldova pe Nistru şi în apropiere or. Chişinău. Instuire şi antrenament în wakeboarding. Descoperiţi o nouă activitate sportiva şi faceţi progres în fiecare set!")
               meta(name="keywords" content="wakeboard, wakeboarding, wakesurf, water ski, schi nautice, tractare pe apă, sport, activităţi, odihna")
+              meta(property="og:title" content="Wakeboarding în Moldova. Wakeboard, ski nautice, wakesurf şi alte sporturi acvatice în Moldova")
+              meta(property="og:description" content="Wakeboarding în Moldova. Wakeboard, schi nautice, wakesurf şi alte sporturi acvatice. Tractare dupa hidrociclu (jet-ski) şi wake barcă în Moldova pe Nistru şi în apropiere or. Chişinău. Instuire şi antrenament în wakeboarding. Descoperiţi o nouă activitate sportiva şi faceţi progres în fiecare set!")
+
             else
-              title Вейкбординг в Молдове. Вейкборд (wakeboard), водные лыжи, вейксерф и другой водный спорт в Молдове
+              title Вейкбординг в Молдове. Wakeboard Moldova, водные лыжи, вейксерфинг и другой водный спорт в Молдове
               meta(name="viewport" content="width=device-width, initial-scale=1")
-              meta(name="description" content="Вейкбординг в Молдове. Вейкборд, водные лыжи, вейксерф и другой водный спорт. Катание за гидроциклом и катером в Молдове на Днестре и вблизи Кишинева. Инструктаж, обучение и тренировки по вейкборду. Откройте для себя новый увлекательный вид спорта и прогрессируйте с каждым заедом!")
+              meta(name="description" content="Wakeboard в Молдове. Вейкборд, водные лыжи, вейксерф и другой водный спорт. Катание за гидроциклом и катером в Молдове на Днестре и вблизи Кишинева. Инструктаж, обучение и тренировки по вейкборду. Откройте для себя новый увлекательный вид спорта и прогрессируйте с каждым заедом!")
               meta(name="keywords" content="wakeboard, wakeboarding, wakesurf, water ski, вейкборд, вейкбординг, вейксерф, катание, спорт, активный, отдых")
+              meta(property="og:title" content="Вейкбординг в Молдове. Вейкборд (wakeboard), водные лыжи, вейксерф и другой водный спорт в Молдове")
+              meta(property="og:description" content="Вейкбординг в Молдове. Вейкборд, водные лыжи, вейксерф и другой водный спорт. Катание за гидроциклом и катером в Молдове на Днестре и вблизи Кишинева. Инструктаж, обучение и тренировки по вейкборду. Откройте для себя новый увлекательный вид спорта и прогрессируйте с каждым заедом!")
+
+
+            meta(property="og:url" content="https://wake.md/")
+            meta(property="og:type" content="website")
+            meta(property="og:image" content="./img/og_image.jpg")
+
             link(rel="shortcut icon" type="image/jpg" href="img/favicon.ico")
             link(rel="stylesheet" href="css/styles.min.css")
             link(rel="stylesheet" href="css/splide-core.min.min.css")
             link(rel="preconnect" href="https://fonts.gstatic.com")
             link(href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet")
+
+            // Global site tag (gtag.js) - Google Analytics
+            script(async='' src='https://www.googletagmanager.com/gtag/js?id=G-410GLD7733')
+            script.
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-410GLD7733');
+
+
     body
         include ../mixins/button.pug
         block header
@@ -32,3 +53,41 @@ html(lang=lang)
             include footer_sticky
         block scripts
             script(src='js/main.min.js')
+            
+            // Messenger Плагин чата Code
+            #fb-root
+            // Your Плагин чата code
+            #fb-customer-chat.fb-customerchat
+            script.
+              var chatbox = document.getElementById('fb-customer-chat');
+              chatbox.setAttribute("page_id", "105716724827060");
+              chatbox.setAttribute("attribution", "biz_inbox");
+            // Your SDK code
+            script.
+              window.fbAsyncInit = function() {
+              FB.init({
+              xfbml            : true,
+              version          : 'v14.0'
+              });
+              };
+              (function(d, s, id) {
+              var js, fjs = d.getElementsByTagName(s)[0];
+              if (d.getElementById(id)) return;
+              js = d.createElement(s); js.id = id;
+              js.src = 'https://connect.facebook.net/ru_RU/sdk/xfbml.customerchat.js';
+              fjs.parentNode.insertBefore(js, fjs);
+              }(document, 'script', 'facebook-jssdk'));
+
+              
+            script(type='text/javascript').
+              (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+              m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+              (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+              ym(77727100, "init", {
+              clickmap:true,
+              trackLinks:true,
+              accurateTrackBounce:true
+              });
+            noscript
+              div
+                img(src='https://mc.yandex.ru/watch/77727100' style='position:absolute; left:-9999px;' alt='')

@@ -85,12 +85,12 @@
     position: relative;
     margin-bottom: 50px;
     padding: 32px;
-    background-color: linear-gradient(
-      71.92deg,
-      #5ad9d1 0%,
-      rgba(90, 217, 209, 0) 100%
-    );
-    border-radius: 16px;
+    // background-color: linear-gradient(
+    //   71.92deg,
+    //   #5ad9d1 0%,
+    //   rgba(90, 217, 209, 0) 100%
+    // );
+    // border-radius: 16px;
 
     & img {
       width: 100%;
@@ -105,15 +105,24 @@
     }
 
     &-title {
-      text-align: right;
-
       & p {
         color: $gray;
         font-weight: 500;
+        opacity: .9;
+        margin-bottom: 8px;
       }
       & span {
         color: $white;
         font-weight: 700;
+        font-size: 32px;
+      }
+      & i {
+        display: block;
+        font-size: 16px;
+        font-weight: 500;
+        color: $yellow;
+        margin-bottom: -20px;
+        margin-top: 5px;
       }
     }
   }
@@ -164,7 +173,7 @@
 
 @media (min-width: $desktop) and (min-height: 575px) {
   .promo {
-    margin-top: 110px;
+    // margin-top: 110px;
 
     &__card {
       max-width: 460px;
@@ -189,9 +198,15 @@
 
       & img {
         &.boat {
-          position: absolute;
-          bottom: 0;
-          left: -70px;
+          margin-left: -10%;
+          width: 120%;
+          // position: absolute;
+          // bottom: 0;
+          // left: -70px;
+        }
+        &.hydrocycle {
+          margin-top: 30px;
+          margin-left: -5%;
         }
       }
     }
