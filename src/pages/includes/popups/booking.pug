@@ -1,0 +1,18 @@
+extends popup_layout
+block header
+  .popup__header
+    .popup__logo
+      include ../index/logo
+    .popup__title
+      if langRo
+        h2.heading.heading_h3 Rezervare
+        span Alegeti data si timpul potrivit
+      else
+        h2.heading.heading_h3 Бронирование катания
+        span Выберите удобный день и время
+      
+    ul.popup__buttons
+      li.popup__buttons_item
+        +button("tel:+37368884689", "./img/sprite.svg#phone", "Позвонить 68 884 689", "button-number button-icon", (langRo ? "Număr de telefon" : "Номер телефона"))
+      li.popup__buttons_item
+        span.button.button-icon.button-close Закрыть
