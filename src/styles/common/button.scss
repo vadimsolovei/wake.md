@@ -44,4 +44,25 @@
       fill: $yellow;
     }
   }
+
+  &-icon {
+    border: 1px solid rgba($white, 0.2);
+    color: $white;
+
+    svg {
+      fill: $white;
+      border-color: $white;
+    }
+
+    & > span {
+      font-size: 0;
+      line-height: 0;
+      text-indent: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    svg {
+      margin-right: 0
+    }
+  }
 }
