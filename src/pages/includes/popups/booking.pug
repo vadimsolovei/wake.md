@@ -13,6 +13,6 @@ block header
       
     ul.popup__buttons
       li.popup__buttons_item
-        +button("tel:+37368884689", "./img/sprite.svg#phone", "Позвонить 68 884 689", "button-number button-icon", (langRo ? "Număr de telefon" : "Номер телефона"))
+        +button("tel:+37368884689", "./img/sprite.svg#phone", "Позвонить 68 884 689", "button-primary button-number button-icon", (langRo ? "Număr de telefon" : "Номер телефона"))
       li.popup__buttons_item
-        span.button.button-icon.button-close Закрыть
+        +button(false, "./img/sprite.svg#close", "Закрыть", "button-close button-icon", (langRo ? "Închide" : "Закрыть"))

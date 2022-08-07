@@ -45,6 +45,8 @@
     }
   }
 
+  &-s {}
+
   &-icon {
     border: 1px solid rgba($white, 0.2);
     color: $white;
@@ -63,6 +65,33 @@
     }
     svg {
       margin-right: 0
+    }
+
+    &:hover {
+      border-color: $yellow;
+      svg {
+        fill: $yellow;
+        border-color: $yellow;
+      }
+    }
+  }
+
+  &-primary {
+    border-color: $yellow;
+    color: $yellow;
+
+    svg {
+      fill: $yellow;
+      border-color: $yellow;
+    }
+
+    &:hover {
+      color: $black;
+      background-color: $yellow;
+      svg {
+        fill: $black;
+        border-color: $black;
+      }
     }
   }
 }

@@ -21,6 +21,7 @@
   }
 
   &__header {
+    padding-top: 60px;
     display: flex;
     justify-content: space-between;
   }
@@ -37,6 +38,10 @@
   &__buttons {
     width: 25%;
     display: flex;
+
+    &_item {
+      margin-left: 20px;
+    }
   }
 }
 
