@@ -32,6 +32,15 @@
     &-content {
       margin-left: 84px;
       color: $gray;
+      a {
+        color: $yellow;
+        cursor: pointer;
+
+        &:hover {
+          color: white;
+          cursor: pointer;
+        }
+      }
     }
 
     &-price {
