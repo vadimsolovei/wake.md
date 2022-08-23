@@ -5,14 +5,94 @@ block header
       include ../index/logo
     .popup__title
       if langRo
-        h2.heading.heading_h3 Rezervare
-        span Alegeti data si timpul potrivit
+        h2.heading.heading_h2.popup__title_heading Rezervare
+        // span Alegeti data si timpul potrivit
       else
-        h2.heading.heading_h3 Бронирование катания
-        span Выберите удобный день и время
+        h2.heading.heading_h2.popup__title_heading Бронирование катания
+        // span Выберите удобный день и время
       
     ul.popup__buttons
       li.popup__buttons_item
         +button("tel:+37368884689", "./img/sprite.svg#phone", "Позвонить 68 884 689", "button-primary button-number button-icon", (langRo ? "Număr de telefon" : "Номер телефона"))
       li.popup__buttons_item
         +button(false, "./img/sprite.svg#close", "Закрыть", "button-close button-icon", (langRo ? "Închide" : "Закрыть"))
+
+  .popup__content
+    .popup__content_text
+      if langRo
+        | Numărul de persoane
+      else
+        | Перед оплатой свяжитесь с нами по телефону #[a(href="tel:+37368884689") 68 884 689] или в месенджерах #[a(href="http://m.me/wake.md") Facebook], #[a(href="http://instagram.com/wake.md/") Instagram]
+
+    form.form
+      fieldset.form__block
+        h4.form__block_header
+          if langRo
+            | Numărul de persoane
+          else
+            | Сколько человек будет кататься?
+            
+        - var n = 0
+        ul.form__row
+          while n < 7
+            li.form__row_item
+              - n++
+              label.form__radio(for="num_"+n)
+                input(type="radio" name="persons_number" id="num_"+n checked=(n === 1 ? "checked" : false))
+                span=n
+          
+          li.form__row_item
+            label.form__radio.form__radio-text(for="whole") 
+              input(type="radio" name="persons_number" id="whole")
+              if langRo
+                span Ziua întreaga
+              else
+                span Весь день
+            
+      fieldset.form__block
+        if langRo
+          h4.form__block_header Informaţie de contact
+        else
+          h4.form__block_header Контактная информация
+          
+        .form__row
+          .form__field.form__row_item
+            input(type="text" placeholder="Имя" name="first_name" id="first_name")
+          .form__field.form__row_item
+            input(type="text" placeholder="Фамилия" name="last_name" id="last_name")
+          
+        .form__row
+          .form__field
+            input(type="text" placeholder="Номер телефона" name="phone_number" id="phone_number")
+        .form__row
+          .form__field
+            input(type="text" placeholder="E-mail" name="email" id="email")
+      
+      ul.popup__notes
+        li.popup__notes_item
+          p Бронирование считается подтвержденным только после оплаты  задатка в сумме, указанной ниже.
+        li.popup__notes_item
+          p Задаток возвращается в полном объеме при отмене бронирования  не менее чем за 72 часа до назначенного времени катания.
+        li.popup__notes_item
+          p Задаток возвращается в полном объеме при отмене выезда  организаторами в назначенный день.
+        li.popup__notes_item
+          p Изменить время бронирования можно не позднее 24 часов до  назначенного времени катания, по согласованию сторон.
+
+block footer
+  .popup__footer
+    .popup__footer_in.booking__footer_in
+      .booking__price
+        span 400 
+        | леев
+      .popup__footer_actions
+        .form__field
+          label.form__check.booking__agree(for="agree")
+            input(type="checkbox" name="agree" id="agree")
+            i
+            if langRo
+              span Sunt de acord cu #[a(href="./conditions.html" target="_blank") termenii si conditiile]
+            else
+              span Согласен с #[a(href="./conditions.html" target="_blank") условиями бронирования]
+          
+        +button("tel:+37368884689", "./img/sprite.svg#calendar_check", "Оплатить", "button-primary button-fill")
+      

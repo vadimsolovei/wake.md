@@ -1,0 +1,19 @@
+.booking {
+  &__price {
+    font-size: 32px;
+    font-weight: bold;
+    color: $yellow;
+  }
+  &__agree {
+    font-weight: bold;
+    margin-right: 42px;
+
+    a {
+      color: $yellow;
+    }
+  }
+  &__footer_in {
+    display: flex;
+    justify-content: space-between;
+  }
+}

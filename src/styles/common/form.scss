@@ -1,0 +1,134 @@
+.form {
+  &__row {
+    display: flex;
+    margin-bottom: 24px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    &_item {
+      margin-right: 16px;
+
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+
+  &__block {
+    padding: 40px;
+    margin-bottom: 40px;
+    border-radius: 24px;
+    background: rgba($black, .6);
+
+    &_header {
+      font-size: 24px;
+      font-weight: bold;
+      color: $white;
+      margin-bottom: 24px;
+    }
+  }
+
+  &__radio {
+    display: inline-block;
+    color: white;
+    cursor: pointer;
+    font-size: 24px;
+
+    &-text {
+      font-size: 16px;
+      line-height: 33px;
+      white-space: nowrap;
+    }
+
+    &:hover {
+      color: $yellow;
+
+      span {
+        border-color: $yellow;
+      }
+    }
+
+    input {
+      position: absolute;
+      opacity: 0;
+      height: 0;
+      width: 0;
+
+      &:checked ~ span {
+        border-color: $yellow;
+        background: $yellow;
+        color: $black;
+      }
+    }
+
+    span {
+      min-width: 64px;
+      height: 64px;
+      display: block;
+      text-align: center;
+      box-sizing: border-box;
+      padding: 14px 20px;
+      border: 1px solid rgba($white, 0.1);
+      border-radius: 32px;
+    }
+  }
+
+  &__check {
+    display: inline-block;
+    color: white;
+    cursor: pointer;
+
+    input {
+      position: absolute;
+      opacity: 0;
+      height: 0;
+      width: 0;
+
+      & + i {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid $yellow;
+        border-radius: 4px;
+        position: relative;
+        margin-right: 8px;
+        top: 3px;
+      }
+      &:checked ~ i:after {
+        content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z' fill='%23ffc700'/%3E%3C/svg%3E");
+        fill: $yellow;
+        width: 18px;
+        height: 18px;
+        position: absolute;
+        top: -4px;
+        left: 1px;
+      }
+    }
+  }
+
+  &__field {
+    flex-grow: 1;
+
+    input {
+      background: none;
+      padding: 14px 20px;
+      border: 1px solid rgba($white, 0.1);
+      border-radius: 32px;
+      font-size: 16px;
+      width: 100%;
+      box-sizing: border-box;
+      color: $white;
+
+      &:focus {
+        border-color: rgba($white, 0.5);
+        outline: none;
+      }
+
+      &::-webkit-contacts-auto-fill-button {
+        background-color: rgba($white, 0.5);
+      }
+    }
+  }
+}

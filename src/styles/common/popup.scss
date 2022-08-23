@@ -16,14 +16,20 @@
     backdrop-filter: blur(20px);
   }
 
+  &__container {
+    overflow-y: auto;
+    height: 100%;
+  }
   &__main {
     position: relative;
+    padding-bottom: 100px;
   }
 
   &__header {
-    padding-top: 60px;
+    padding-top: 55px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
   }
   &__logo {
     width: 25%;
@@ -34,13 +40,69 @@
   &__title {
     width: 50%;
     text-align: center;
+
+    &_heading {
+      font-weight: 700;
+    }
   }
   &__buttons {
     width: 25%;
     display: flex;
+    justify-content: flex-end;
 
     &_item {
       margin-left: 20px;
+    }
+  }
+
+  &__content {
+    padding-top: 24px;
+    max-width: 770px;
+    margin: 0 auto;
+    color: $white;
+
+    &_text {
+      margin-bottom: 24px;
+
+      a {
+        color: $yellow;
+
+        &:hover {
+          color: $yellow;
+        }
+      }
+    }
+  }
+
+  &__notes {
+    column-count: 2;
+    column-gap: 48px;
+
+    &_item {
+      margin-bottom: 24px;
+    }
+  }
+
+  &__footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: $black;
+    color: $white;
+    padding: 16px 0;
+    box-shadow: 0px -10px 40px 0px rgba(black,.4);
+    font-size: 16px;
+
+    &_in {
+      max-width: 1140px;
+      margin: 0 auto;
+    }
+
+    &_actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
   }
 }
