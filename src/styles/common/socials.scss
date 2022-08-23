@@ -5,7 +5,7 @@
   position: relative;
   width: 33%;
 
-  & a {
+  & > a {
     position: relative;
     transition: 0.2s;
     padding: 16px;
@@ -124,6 +124,10 @@
         &:hover svg {
           opacity: 1;
         }
+      }
+
+      a {
+        color: $yellow;
       }
     }
 

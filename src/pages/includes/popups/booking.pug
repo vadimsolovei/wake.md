@@ -1,4 +1,8 @@
 extends popup_layout
+
+block vars
+  - var popupId = "popup_booking";
+
 block header
   .popup__header
     .popup__logo
@@ -15,7 +19,7 @@ block header
       li.popup__buttons_item
         +button("tel:+37368884689", "./img/sprite.svg#phone", "Позвонить 68 884 689", "button-primary button-number button-icon", (langRo ? "Număr de telefon" : "Номер телефона"))
       li.popup__buttons_item
-        +button(false, "./img/sprite.svg#close", "Закрыть", "button-close button-icon", (langRo ? "Închide" : "Закрыть"))
+        +button(false, "./img/sprite.svg#close", "Закрыть", "button-close button-icon js-popup_close", (langRo ? "Închide" : "Закрыть"))
 
   .popup__content
     .popup__content_text
