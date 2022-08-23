@@ -38,12 +38,12 @@ block header
             li.form__row_item
               - n++
               label.form__radio(for="num_"+n)
-                input(type="radio" name="persons_number" id="num_"+n checked=(n === 1 ? "checked" : false))
+                input(type="radio" name="persons_number" id="num_"+n value=n*200 checked=(n === 1 ? "checked" : false))
                 span=n
           
           li.form__row_item
             label.form__radio.form__radio-text(for="whole") 
-              input(type="radio" name="persons_number" id="whole")
+              input(type="radio" name="persons_number" id="whole" value="4200")
               if langRo
                 span Ziua întreaga
               else
@@ -94,5 +94,5 @@ block footer
             else
               span Согласен с #[a(href="./conditions.html" target="_blank") условиями бронирования]
           
-        +button("tel:+37368884689", "./img/sprite.svg#calendar_check", "Оплатить", "button-primary button-fill")
+        +button("", "./img/sprite.svg#calendar_check", "Оплатить", "button-primary button-fill", "", true)
       

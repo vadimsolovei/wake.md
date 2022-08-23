@@ -1,5 +1,11 @@
-mixin button(href, icon, text, className, title)
-  a.button(class=className href=href title=title)&attributes(attributes)
-    svg
-      use(xlink:href=icon)
-    span=text
+mixin button(href, icon, text, className, title, submit)
+  if submit
+    button.button(type="submit" class=className)
+      svg
+        use(xlink:href=icon)
+      span=text
+  else
+    a.button(class=className href=href title=title)&attributes(attributes)
+      svg
+        use(xlink:href=icon)
+      span=text

@@ -6,6 +6,10 @@
   font-weight: 600;
   text-decoration: none;
   border-radius: 30px;
+  outline: none;
+  font-family: $ff;
+  border-width: 1px;
+  border-style: solid;
 
   &:hover {
     cursor: pointer;
