@@ -88,15 +88,13 @@ block footer
       .booking__price
         span 400 
         | леев
-      .popup__footer_actions
-        .form__field
-          label.form__check.booking__agree(for="agree")
-            input(type="checkbox" name="agree" id="agree")
-            i
-            if langRo
-              span Sunt de acord cu #[a(href="./conditions.html" target="_blank") termenii si conditiile]
-            else
-              span Согласен с #[a(href="./conditions.html" target="_blank") условиями бронирования]
-          
-        +button("", "./img/sprite.svg#calendar_check", "Оплатить", "button-primary button-fill", "", true)
-      
+      label.form__check.booking__agree(for="agree")
+        input(type="checkbox" name="agree" id="agree")
+        i
+        if langRo
+          span Sunt de acord cu #[a(href="./conditions.html" target="_blank") termenii si conditiile]
+        else
+          span Согласен с #[a(href="./conditions.html" target="_blank") условиями бронирования]
+        
+      +button("", "./img/sprite.svg#calendar_check", "Оплатить", "button-primary button-fill", "", true)
+    

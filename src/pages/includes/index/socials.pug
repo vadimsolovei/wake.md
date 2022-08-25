@@ -9,7 +9,7 @@
       use(xlink:href="./img/sprite.svg#fi_instagram")
     span Instagram
 
-  a(href="https://t.me/wakemd" target="_blank" rel="noopener noreferrer" title="Telegram").telegram.active
+  a(href="https://t.me/wakemd" target="_blank" rel="noopener noreferrer" title="Telegram").telegram
     svg
       use(xlink:href="./img/sprite.svg#u_telegram")
     span Telegram
@@ -23,3 +23,8 @@
     button.socials__popup-close
       svg
         use(xlink:href="./img/sprite.svg#fi_close")
+
+  a(href="#" title=(langRo ? "Înscrie-te" : "Записаться") data-target="popup_booking").js-popup_opener.booking.active
+    svg
+      use(xlink:href="./img/sprite.svg#calendar_check")
+    span=(langRo ? "Înscrie-te" : "Записаться")

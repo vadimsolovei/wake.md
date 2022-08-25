@@ -24,18 +24,30 @@
 
     &.telegram {
       display: none;
-      border-radius: 50%;
-      margin-left: 15px;
-      background-color: $yellow;
 
-      & svg {
-        fill: $black;
+      svg {
+        fill: $white;
+      }
+    }
+
+    &.phone {
+      svg {
+        fill: $white;
       }
     }
 
     span {
       font-size: 0;
       display: none;
+    }
+
+    &.active {
+      border-radius: 50%;
+      background-color: $yellow;
+
+      & svg {
+        fill: $black;
+      }
     }
   }
 
@@ -69,7 +81,7 @@
     &__popup {
       display: block;
       position: absolute;
-      left: -50px;
+      left: -64px;
       top: 100%;
       margin-top: 30px;
       width: 205px;

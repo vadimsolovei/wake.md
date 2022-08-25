@@ -31,11 +31,7 @@
     justify-content: space-between;
     z-index: 1;
 
-    & .socials__popup {
-      display: none !important;
-    }
-
-    & .socials {
+    .socials {
       justify-content: flex-end;
     }
   }

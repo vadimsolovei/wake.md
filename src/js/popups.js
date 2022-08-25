@@ -1,7 +1,7 @@
 const bodyEl = document.querySelector("body");
 const closeButtonEl = document.querySelector(".js-popup_close");
 const popup = document.querySelector(".js-popup");
-const popupOpener = document.querySelector(".js-popup_opener");
+const popupOpener = document.querySelectorAll(".js-popup_opener");
 
 const onCloseButtonClick = () => {
   popup.classList.remove("active");
@@ -15,4 +15,6 @@ const onOpenPopupClick = (e) => {
 };
 
 closeButtonEl.addEventListener("click", onCloseButtonClick);
-popupOpener.addEventListener("click", onOpenPopupClick);
+popupOpener.forEach(opener => {
+  opener.addEventListener("click", onOpenPopupClick);
+})

@@ -6,15 +6,28 @@
   }
   &__agree {
     font-weight: bold;
-    margin-right: 32px;
-    padding: 10px;
+    padding: 10px 0;
 
     a {
       color: $yellow;
     }
   }
-  &__footer_in {
-    display: flex;
-    justify-content: space-between;
+
+}
+
+@media (min-width: $tablet) {
+  .booking {
+    &__footer_in {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    &__agree {
+      flex-grow: 1;
+      display: block;
+      text-align: right;
+      margin-right: 32px;
+      padding: 10px;
+    }
   }
 }
