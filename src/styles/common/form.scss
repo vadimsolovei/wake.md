@@ -142,11 +142,12 @@
     &__row {
       &_item {
         margin-bottom: 14px;
+        margin-right: 14px;
       }
     }
 
     &__radio {
-      margin-right: 14px;
+      margin-right: 0;
       span {
         min-width: 56px;
         height: 56px;
@@ -162,12 +163,6 @@
       padding: 40px;
     }
 
-    // &__row {
-    //   &_item {
-    //     margin-bottom: 24px;
-    //   }
-    // }
-    //
     // &__radio {
     //   margin-right: 16px;
     //   span {
