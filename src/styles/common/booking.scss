@@ -1,33 +1,60 @@
 .booking {
+  &__footer_in {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+  }
   &__price {
-    font-size: 32px;
+    font-size: 26px;
     font-weight: bold;
     color: $yellow;
   }
   &__agree {
     font-weight: bold;
     padding: 10px 0;
+    order: 3;
+    flex-basis: 100%;
 
     a {
       color: $yellow;
     }
   }
-
+  &__submit {
+    order: 2;
+  }
 }
 
+@media (min-width: 340px) {
+  .booking {
+    &__price {
+      font-size: 28px;
+    }
+  }
+}
 @media (min-width: $tablet) {
   .booking {
-    &__footer_in {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    &__price {
+      font-size: 32px;
     }
+    &__footer_in {}
     &__agree {
-      flex-grow: 1;
       display: block;
       text-align: right;
+    }
+  }
+}
+@media (min-width: $desktop) {
+  .booking {
+    &__agree {
+      flex-basis: auto;
+      flex-grow: 1;
       margin-right: 32px;
       padding: 10px;
+      order: 2;
+    }
+    &__submit {
+      order: 3;
     }
   }
 }

@@ -1,7 +1,7 @@
 .button {
   $b: &;
   display: inline-block;
-  padding: 16px 24px;
+  padding: 16px 18px;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
@@ -117,5 +117,10 @@
         background-color: darken($yellow, 10%);
       }
     }
+  }
+}
+@media (min-width: 340px) {
+  .button {
+    padding: 16px 24px;
   }
 }
