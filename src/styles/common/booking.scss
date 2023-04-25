@@ -6,7 +6,7 @@
     align-items: center;
   }
   &__price {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: bold;
     color: $yellow;
   }
@@ -29,6 +29,13 @@
   .booking {
     &__price {
       font-size: 28px;
+    }
+  }
+}
+@media (min-width: $mobile) {
+  .booking {
+    &__price {
+      font-size: 26px;
     }
   }
 }

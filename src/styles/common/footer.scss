@@ -10,6 +10,11 @@
     border-radius: 30px 30px 0 0;
     z-index: 5;
     background: $grey;
+
+    .facebook,
+    .instagram {
+      display: none;
+    }
   }
 
   &__in {
@@ -47,6 +52,11 @@
 
     &_sticky {
       background-color: $grey;
+
+      .facebook,
+      .instagram {
+        display: block;
+      }
     }
     &_static &__socials {
       display: flex;

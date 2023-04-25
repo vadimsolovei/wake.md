@@ -1,5 +1,4 @@
 const booking = document.querySelector("#popup_booking");
-console.log(booking);
 if (booking) {
   const personsNumberEl = document.querySelectorAll('input[name="persons_number"]');
   const bookingPriceEl = document.querySelector('.js-booking_price');
