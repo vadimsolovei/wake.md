@@ -27,10 +27,52 @@ const fetchData = () => {
   const companyClient = new Client(clientRequestManager);
 
   const company = async () => {
-    events = await companyClient.request({method: 'getWorkCalendar', params: ['2023', '05', '2']});
+    // let year = 2020;
+    // let month = 5;
+    // let performerId = null;
+
+    let dateFrom = '2023-04-29';
+    let dateTo = '2023-04-30';
+    let serviceId = 2;
+    let performerId = null;
+    let qty = 1;
+
+    events = await companyClient.request({method: 'getStartTimeMatrix', params: [dateFrom, dateTo, serviceId, performerId, qty]});
   };
 
   company().then(() => {
     console.log(events);
+    for (var key in events) {
+      // skip loop if the property is from prototype
+      if (!events.hasOwnProperty(key)) continue;
+
+
+      var event = events[key];
+
+      let li = document.createElement('li');
+      li.classList.add('form__row_item');
+      
+      li.innerHTML += '<p>' + key + '</p>';
+      
+      event.forEach(time => li.innerHTML += '<span data-booking-time>' + time + '</span>');
+      
+      document.querySelector('#booking_dates').appendChild(li)
+      // for (var prop in event) {
+      //   // skip loop if the property is from prototype
+      //   if (!event.hasOwnProperty(prop)) continue;    
+      // }
+
+      const time = document.querySelectorAll('[data-booking-time]');
+      console.log(time);
+      time.forEach(timeSlot => {
+        timeSlot.addEventListener("click", onTimeClick);
+      });
+    };
   });  
 };
+
+const onTimeClick = (e) => {
+  e.target.classList.toggle('-active');
+};
+
+

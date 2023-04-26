@@ -30,28 +30,28 @@ block header
 
     form.form
       fieldset.form__block
-        h4.form__block_header
-          if langRo
-            | Numărul de persoane
-          else
-            | Сколько человек будет кататься?
+        //- h4.form__block_header
+        //-   if langRo
+        //-     | Numărul de persoane
+        //-   else
+        //-     | Сколько человек будет кататься?
             
-        - var n = 0
-        ul.form__row
-          while n < 7
-            li.form__row_item
-              - n++
-              label.form__radio(for="num_"+n)
-                input(type="radio" name="persons_number" id="num_"+n value=n*200 checked=(n === 1 ? "checked" : false))
-                span=n
+        //- - var n = 0
+        ul.form__row#booking_dates
+          //- while n < 7
+          //-   li.form__row_item
+          //-     - n++
+          //-     label.form__radio(for="num_"+n)
+          //-       input(type="radio" name="persons_number" id="num_"+n value=n*200 checked=(n === 1 ? "checked" : false))
+          //-       span=n
           
-          li.form__row_item
-            label.form__radio.form__radio-text(for="whole") 
-              input(type="radio" name="persons_number" id="whole" value="4200")
-              if langRo
-                span Ziua întreaga
-              else
-                span Весь день
+          //- li.form__row_item
+          //-   label.form__radio.form__radio-text(for="whole") 
+          //-     input(type="radio" name="persons_number" id="whole" value="4200")
+          //-     if langRo
+          //-       span Ziua întreaga
+          //-     else
+          //-       span Весь день
             
       fieldset.form__block
         if langRo

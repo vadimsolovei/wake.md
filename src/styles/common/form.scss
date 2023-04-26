@@ -11,6 +11,22 @@
           margin-right: 0;
         }
       }
+
+      span {
+        display: inline-block;
+        margin-right: 5px;
+        cursor: pointer;
+        padding: 5px 10px;
+
+        &:hover {
+          color: $yellow;
+        }
+
+        &.-active {
+          background: $yellow;
+          color: $white;
+        }
+      }
     }
 
     &:last-child {
