@@ -54,42 +54,45 @@ html(lang=lang)
             include footer
             include footer_sticky
         block scripts
+
+            script(src='https://code.jquery.com/jquery-3.6.4.min.js' integrity='sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=' crossorigin='anonymous')
+            
             script(src='js/main.min.js')
             
-            // Messenger Плагин чата Code
-            #fb-root
-            // Your Плагин чата code
-            #fb-customer-chat.fb-customerchat
-            script.
-              var chatbox = document.getElementById('fb-customer-chat');
-              chatbox.setAttribute("page_id", "105716724827060");
-              chatbox.setAttribute("attribution", "biz_inbox");
-            // Your SDK code
-            script.
-              window.fbAsyncInit = function() {
-              FB.init({
-              xfbml            : true,
-              version          : 'v14.0'
-              });
-              };
-              (function(d, s, id) {
-              var js, fjs = d.getElementsByTagName(s)[0];
-              if (d.getElementById(id)) return;
-              js = d.createElement(s); js.id = id;
-              js.src = 'https://connect.facebook.net/ru_RU/sdk/xfbml.customerchat.js';
-              fjs.parentNode.insertBefore(js, fjs);
-              }(document, 'script', 'facebook-jssdk'));
+            //- // Messenger Плагин чата Code
+            //- #fb-root
+            //- // Your Плагин чата code
+            //- #fb-customer-chat.fb-customerchat
+            //- script.
+            //-   var chatbox = document.getElementById('fb-customer-chat');
+            //-   chatbox.setAttribute("page_id", "105716724827060");
+            //-   chatbox.setAttribute("attribution", "biz_inbox");
+            //- // Your SDK code
+            //- script.
+            //-   window.fbAsyncInit = function() {
+            //-   FB.init({
+            //-   xfbml            : true,
+            //-   version          : 'v14.0'
+            //-   });
+            //-   };
+            //-   (function(d, s, id) {
+            //-   var js, fjs = d.getElementsByTagName(s)[0];
+            //-   if (d.getElementById(id)) return;
+            //-   js = d.createElement(s); js.id = id;
+            //-   js.src = 'https://connect.facebook.net/ru_RU/sdk/xfbml.customerchat.js';
+            //-   fjs.parentNode.insertBefore(js, fjs);
+            //-   }(document, 'script', 'facebook-jssdk'));
 
               
-            script(type='text/javascript').
-              (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-              m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-              (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-              ym(77727100, "init", {
-              clickmap:true,
-              trackLinks:true,
-              accurateTrackBounce:true
-              });
-            noscript
-              div
-                img(src='https://mc.yandex.ru/watch/77727100' style='position:absolute; left:-9999px;' alt='')
+            //- script(type='text/javascript').
+            //-   (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            //-   m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+            //-   (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+            //-   ym(77727100, "init", {
+            //-   clickmap:true,
+            //-   trackLinks:true,
+            //-   accurateTrackBounce:true
+            //-   });
+            //- noscript
+            //-   div
+            //-     img(src='https://mc.yandex.ru/watch/77727100' style='position:absolute; left:-9999px;' alt='')

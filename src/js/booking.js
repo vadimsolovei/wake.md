@@ -1,16 +1,36 @@
-const booking = document.querySelector("#popup_booking");
-if (booking) {
-  const personsNumberEl = document.querySelectorAll('input[name="persons_number"]');
-  const bookingPriceEl = document.querySelector('.js-booking_price');
-  var bookingPrice = document.querySelector('input[name="persons_number"]:checked').value;
+import { RequestManager, Client, HTTPTransport} from "@open-rpc/client-js";
 
-  bookingPriceEl.innerHTML = bookingPrice;
+const loginTransport = new HTTPTransport('https://user-api.simplybook.me' + '/login');
+const loginRequestManager = new RequestManager([loginTransport]);
+const loginClient = new Client(loginRequestManager);
 
-  for (var i = 0; i < personsNumberEl.length; i++) {
-    personsNumberEl[i].addEventListener('change', function() {
-      bookingPrice = document.querySelector('input[name="persons_number"]:checked').value;
-      bookingPriceEl.innerHTML = bookingPrice;
-    });
-  }
+let token
+let events
 
-}
+const login = async () => {
+  token = await loginClient.request({method: 'getToken', params: ['wakemd', '8bed206feed9dd8f2e24fc616bfb4b300fcab3e7a34b2d0cd2b9cd3efab55901']});
+};
+
+login().then(() => {
+  fetchData();
+}); 
+
+const fetchData = () => {
+  let clientTransport = new HTTPTransport('https://user-api.simplybook.me');
+
+
+  clientTransport.headers.set('X-Company-Login', 'wakemd');
+  clientTransport.headers.set('X-Token', token);
+
+
+  const clientRequestManager = new RequestManager([clientTransport]);
+  const companyClient = new Client(clientRequestManager);
+
+  const company = async () => {
+    events = await companyClient.request({method: 'getWorkCalendar', params: ['2023', '05', '2']});
+  };
+
+  company().then(() => {
+    console.log(events);
+  });  
+};
