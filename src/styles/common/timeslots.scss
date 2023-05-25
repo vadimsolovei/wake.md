@@ -1,0 +1,29 @@
+.timeslots {
+  span {
+    display: inline-block;
+    margin-right: 5px;
+    cursor: pointer;
+    padding: 5px 10px;
+
+    &:hover {
+      color: $yellow;
+    }
+
+    &.-active {
+      background: $yellow;
+      color: $white;
+    }
+  }
+}
+
+@media (min-width: $tablet) {
+  .timeslots {
+
+  }
+}
+
+@media (min-width: $desktop) {
+  .timeslots {
+    
+  }
+}

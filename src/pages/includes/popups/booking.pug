@@ -29,61 +29,46 @@ block header
         | Описание получасового катания, Минимальное время катания 15 мин в получасовом диапазоне.
 
     form.form
-      fieldset.form__block
-        //- h4.form__block_header
-        //-   if langRo
-        //-     | Numărul de persoane
-        //-   else
-        //-     | Сколько человек будет кататься?
+      fieldset.bookin_form
+        .bookin_form__calendar
+          .form__block
+            .calendar
+              input(type="text" id="datepicker")
+        
+        .bookin_form__time
+          .form__block
+            .timeslots#booking_dates
+  
+        .bookin_form__name
+          .form__block
+            .form__field
+              input(type="text" placeholder="Имя" name="first_name" id="first_name")
+          
+        .bookin_form__lastname
+          .form__block
+            .form__field
+              input(type="text" placeholder="Фамилия" name="last_name" id="last_name")
+        
+        .bookin_form__phone
+          .form__block
+            .form__field
+              input(type="text" placeholder="Номер телефона" name="phone_number" id="phone_number")
+        
+        .bookin_form__email
+          .form__block
+            .form__field
+              input(type="text" placeholder="E-mail" name="email" id="email")
             
-        //- - var n = 0
-        .form__calendar
-          input(type="text" id="datepicker")
-        .form__row
-          .form__row_item#booking_dates
-          //- while n < 7
-          //-   li.form__row_item
-          //-     - n++
-          //-     label.form__radio(for="num_"+n)
-          //-       input(type="radio" name="persons_number" id="num_"+n value=n*200 checked=(n === 1 ? "checked" : false))
-          //-       span=n
-          
-          //- li.form__row_item
-          //-   label.form__radio.form__radio-text(for="whole") 
-          //-     input(type="radio" name="persons_number" id="whole" value="4200")
-          //-     if langRo
-          //-       span Ziua întreaga
-          //-     else
-          //-       span Весь день
-            
-      fieldset.form__block
-        if langRo
-          h4.form__block_header Informaţie de contact
-        else
-          h4.form__block_header Контактная информация
-          
-        .form__row
-          .form__field.form__row_item
-            input(type="text" placeholder="Имя" name="first_name" id="first_name")
-          .form__field.form__row_item
-            input(type="text" placeholder="Фамилия" name="last_name" id="last_name")
-          
-        .form__row
-          .form__field
-            input(type="text" placeholder="Номер телефона" name="phone_number" id="phone_number")
-        .form__row
-          .form__field
-            input(type="text" placeholder="E-mail" name="email" id="email")
       
       ul.popup__notes
         li.popup__notes_item
-          p Бронирование считается подтвержденным только после оплаты  задатка в сумме, указанной ниже.
+          p Бронирование считается подтвержденным только после оплаты задатка в сумме, указанной ниже.
         li.popup__notes_item
-          p Задаток возвращается в полном объеме при отмене бронирования  не менее чем за 72 часа до назначенного времени катания.
+          p Задаток возвращается в полном объеме при отмене бронирования не менее чем за 72 часа до назначенного времени катания.
         li.popup__notes_item
-          p Задаток возвращается в полном объеме при отмене выезда  организаторами в назначенный день.
+          p Задаток возвращается в полном объеме при отмене выезда организаторами в назначенный день.
         li.popup__notes_item
-          p Изменить время бронирования можно не позднее 24 часов до  назначенного времени катания, по согласованию сторон.
+          p Изменить время бронирования можно не позднее 24 часов до назначенного времени катания, по согласованию сторон.
 
 block footer
   .popup__footer
