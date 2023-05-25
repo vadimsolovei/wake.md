@@ -29,10 +29,12 @@
     grid-template-columns: repeat(3, 1fr);
 
     &__calendar {
-      grid-row-end: 4;
+      grid-row-end: 5;
     }
     &__time {
       grid-column-end: 4;
+      grid-row-start: 3;
+      grid-row-end: 4;
     }
     &__phone {
       grid-column-start: 2;

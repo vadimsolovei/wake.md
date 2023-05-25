@@ -33,31 +33,38 @@ block header
         .bookin_form__calendar
           .form__block
             .calendar
-              input(type="text" id="datepicker")
+              input.calendar__input(
+                type="text" 
+                id="datepicker" 
+                data-months='["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]'
+                data-days='["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]'
+                )
         
         .bookin_form__time
           .form__block
-            .timeslots#booking_dates
+            .timeslots
+              .timeslots__times#booking_slots
+              .timeslots__empty(style="display:none;" data-times-empty)
+                if langRo
+                  | На выбранную дату нет доступного времени
+                else
+                  | На выбранную дату нет доступного времени
   
         .bookin_form__name
-          .form__block
-            .form__field
-              input(type="text" placeholder="Имя" name="first_name" id="first_name")
+          .form__field
+            input(type="text" placeholder="Имя" name="first_name" id="first_name" tabindex="1")
           
         .bookin_form__lastname
-          .form__block
-            .form__field
-              input(type="text" placeholder="Фамилия" name="last_name" id="last_name")
+          .form__field
+            input(type="text" placeholder="Фамилия" name="last_name" id="last_name" tabindex="2")
         
         .bookin_form__phone
-          .form__block
-            .form__field
-              input(type="text" placeholder="Номер телефона" name="phone_number" id="phone_number")
+          .form__field
+            input(type="text" placeholder="Номер телефона" name="phone_number" id="phone_number" tabindex="3")
         
         .bookin_form__email
-          .form__block
-            .form__field
-              input(type="text" placeholder="E-mail" name="email" id="email")
+          .form__field
+            input(type="text" placeholder="E-mail" name="email" id="email" tabindex="4")
             
       
       ul.popup__notes

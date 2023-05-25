@@ -112,17 +112,23 @@
 
   &__field {
     flex-grow: 1;
-    margin-bottom: 16px;
+    background: rgba($black, .6);
+    border-radius: 24px;
 
     input {
-      background: none;
-      padding: 14px 20px;
-      border: 1px solid rgba($white, 0.1);
-      border-radius: 32px;
-      font-size: 16px;
+      padding: 24px;
+      font-size: 20px;
+      font-weight: bold;
+      border-radius: 24px;
       width: 100%;
       box-sizing: border-box;
       color: $white;
+      border: 1px solid transparent;
+      background: transparent;
+
+      &::placeholder {
+        color: rgba(white, 0.3);
+      }
 
       &:focus {
         border-color: rgba($white, 0.5);

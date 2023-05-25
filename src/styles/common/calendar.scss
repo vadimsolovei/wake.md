@@ -1,0 +1,96 @@
+.calendar {
+  &__input {
+    display: none;
+  }
+}
+
+.qs {
+  &-datepicker-container {
+    position: relative;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100%;
+    background: none;
+    border: none;
+    color: $white;
+    font-family: $ff;
+    box-shadow: none;
+  }
+
+  &-controls {
+    background: none;
+  }
+
+  &-arrow {
+    height: 2.5em;
+    width: 2.5em;
+    border-radius: 1.25em;
+    border: 1px solid transparent;
+    transition: border-color .15s;
+
+    &:hover {
+      background: none;
+      border-color: $yellow;
+      &.qs-left:after {
+        border-right-color: $yellow;
+      }
+      &.qs-right:after {
+        border-left-color: $yellow;
+      }
+    }
+  }
+
+  &-month {
+    font-size: 32px
+  }
+  &-year {
+    font-size: 32px;
+    opacity: .3;
+  }
+
+  &-squares {
+    margin-top: calc($gap/2);
+    padding: 0;
+    justify-content: space-between;
+  }
+  &-square {
+    height: 2.5em;
+    width: 2.5em;
+    border-radius: 1.25em;
+
+    &:not(.qs-empty):not(.qs-disabled):not(.qs-day):not(.qs-active):hover {
+      background: none;
+      border-color: $yellow;
+    }
+  }
+
+  &-day {
+    font-weight: normal;
+    margin-bottom: 10px;
+  }
+
+  &-num {
+    border: 1px solid rgba($white, .1);
+    margin-bottom: calc($gap/2);
+  }
+
+  &-disabled {
+    border-color: transparent;
+    opacity: .3;
+  }
+  
+  &-outside-current-month {
+    opacity: .15;
+  }
+
+
+  &-current {
+    text-decoration: none;
+    color: $yellow;
+  }
+
+  &-active {
+    background: $yellow;
+    color: $black;
+  }
+}

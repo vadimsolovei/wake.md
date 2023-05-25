@@ -94,11 +94,18 @@ const prepareFirstData = () => {
 
 
 const renderTimes = (timeSlots) => {
-  let datesEl = document.querySelector('#booking_dates')
+  let timesEl = document.querySelector('#booking_slots')
+  let timesEmptyEl = document.querySelector('[data-times-empty]')
   
-  datesEl.innerHTML = '';
+  if (timeSlots.length == 0) {
+    timesEmptyEl.style.display = "block";
+  } else {
+    timesEmptyEl.style.display = "none";
+  }
 
-  timeSlots.forEach(time => datesEl.innerHTML += '<span data-booking-time>' + time + '</span>');
+  timesEl.innerHTML = '';
+
+  timeSlots.forEach(time => timesEl.innerHTML += '<span data-booking-time>' + time + '</span>');
 
   const time = document.querySelectorAll('[data-booking-time]');
 
@@ -116,14 +123,21 @@ const onTimeClick = (e) => {
 };
 
 const initCalendar = () => {
+  let datepickerEl = document.querySelector('#datepicker');
+  let months = JSON.parse(datepickerEl.dataset.months);
+  let days = JSON.parse(datepickerEl.dataset.days);
+  
   const picker = datepicker('#datepicker', {
     alwaysShow: true,
+    showAllDates: true,
     dateSelected: firstAvailableDate,
     startDay: 1,
     disableYearOverlay: true,
     minDate: new Date(),
     maxDate: new Date(2023, 9, 31),
     disabler: date => [1,2,3,4,5].includes(date.getDay()), // weekend days only,
+    customMonths: months,
+    customDays: days,
     onSelect: (instance, date) => {
       selectedDate = date;
       updateTimeSlots(date);
