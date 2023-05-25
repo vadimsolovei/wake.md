@@ -81,15 +81,19 @@ block footer
   .popup__footer
     .popup__footer_in.booking__footer_in
       .booking__price
-        span.js-booking_price 
+        span.js-booking_price 600
         | &nbsp;леев
-      label.form__check.booking__agree(for="agree")
-        input(type="checkbox" name="agree" id="agree")
+      label.form__check.booking__agree(for="agree_terms")
+        input(type="checkbox" name="agree" id="agree_terms")
         i
         if langRo
           span Sunt de acord cu #[a(href="./conditions.html" target="_blank") termenii si conditiile]
         else
           span Согласен с #[a(href="./conditions.html" target="_blank") условиями бронирования]
-        
-      +button("", "./img/sprite.svg#calendar_check", "Оплатить", "booking__submit button-primary button-fill", "", true)
+      
+      button.button(type="submit" class="booking__submit button-primary button-fill" id="booking_submit" disabled)
+        svg
+          use(xlink:href="./img/sprite.svg#calendar_check")
+        span Оплатить
+
     

@@ -16,6 +16,11 @@
     transition: 0.2s;
   }
 
+  &:disabled {
+    cursor: auto;
+    opacity: .8;
+  }
+
   & svg {
     width: 24px;
     height: 24px;
@@ -90,7 +95,7 @@
       border-color: $yellow;
     }
 
-    &:hover {
+    &:not([disabled]):hover {
       color: $black;
       background-color: $yellow;
       svg {
@@ -113,7 +118,13 @@
     &#{$b}-primary {
       background-color: $yellow;
       border-color: $yellow;
-      &:hover {
+
+      &:disabled {
+        border-color: desaturate($yellow, 80%);
+        background-color: desaturate($yellow, 80%);
+      }
+
+      &:not([disabled]):hover {
         background-color: darken($yellow, 10%);
       }
     }

@@ -5,6 +5,8 @@ const loginTransport = new HTTPTransport('https://user-api.simplybook.me' + '/lo
 const loginRequestManager = new RequestManager([loginTransport]);
 const loginClient = new Client(loginRequestManager);
 const todayDate = new Date();
+const submitButton = document.querySelector('#booking_submit')
+const agreeTerms = document.querySelector('#agree_terms')
 
 
 let companyClient
@@ -15,6 +17,7 @@ let eventsDays = []
 let firstAvailableDate
 let firstTimeSlots
 let selectedDate
+let selectedTime
 
 const login = async () => {
   token = await loginClient.request({method: 'getToken', params: ['mdwake', 'd176a78ad9784e86894dac99506c7beaced5668ea2becf46d835a866ef9a7e42']});
@@ -105,9 +108,27 @@ const renderTimes = (timeSlots) => {
 
   timesEl.innerHTML = '';
 
-  timeSlots.forEach(time => timesEl.innerHTML += '<span data-booking-time>' + time + '</span>');
+
+  timeSlots.forEach((time) => {
+    let timeArr = time.split(':');
+    let untilArr = [];
+
+    if (timeArr[1] == '00') {
+      untilArr[0] = timeArr[0];
+      untilArr[1] = '30'
+    } else {
+      untilArr[0] = parseInt(timeArr[0]) + 1;
+      untilArr[1] = '00'
+    }
+
+    timesEl.innerHTML += '<span data-booking-time>' + timeArr[0] + ':' + timeArr[1] + ' &mdash; ' + untilArr[0] + ':' + untilArr[1] + '</span>'
+  });
 
   const time = document.querySelectorAll('[data-booking-time]');
+
+  time[0].classList.add('-active');
+  selectedTime = time[0].innerText;
+  updateSubmitButton();
 
   time.forEach(timeSlot => {
     timeSlot.addEventListener("click", onTimeClick);
@@ -120,6 +141,10 @@ const onTimeClick = (e) => {
     timeSlot.classList.remove('-active');
   });
   e.target.classList.add('-active');
+
+  selectedTime = e.target.innerText;
+
+  updateSubmitButton();
 };
 
 const initCalendar = () => {
@@ -141,6 +166,9 @@ const initCalendar = () => {
     onSelect: (instance, date) => {
       selectedDate = date;
       updateTimeSlots(date);
+      
+      selectedTime = null;
+      updateSubmitButton();
     }
   });
 
@@ -171,5 +199,19 @@ const addToDate = (date, type, ammount) => {
   return newDate;
 };
 
+const updateSubmitButton = () => {
+  if (selectedTime != null && agree_terms.checked) {
+    submitButton.disabled = false;
+  } else {
+    submitButton.disabled = true;  
+  }
+};
+
+const addListeners = () => {
+  agree_terms.addEventListener('change', (e) => {
+    updateSubmitButton();
+  });
+};
 
 
+addListeners();

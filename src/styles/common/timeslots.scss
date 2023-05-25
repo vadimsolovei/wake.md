@@ -1,17 +1,31 @@
 .timeslots {
-  span {
-    display: inline-block;
-    margin-right: 5px;
-    cursor: pointer;
-    padding: 5px 10px;
 
-    &:hover {
-      color: $yellow;
+  &__times {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    &::after {
+      content: "";
+      flex: auto;
     }
 
-    &.-active {
-      background: $yellow;
-      color: $white;
+    span {
+      display: inline-block;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 36px;
+      text-align: center;
+      min-width: 110px;
+
+      &:hover {
+        color: $yellow;
+      }
+
+      &.-active {
+        background: $yellow;
+        color: $black;
+      }
     }
   }
 }
