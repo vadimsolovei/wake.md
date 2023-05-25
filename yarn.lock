@@ -6425,6 +6425,11 @@ jquery@^3.5.0:
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.6.0.tgz#c72a09f15c1bdce142f49dbf1170bdf8adac2470"
   integrity sha512-JVzAR/AjBvVt2BmYhxRCSYysDsPcssdmTFnzyLEts9qNwmjmu4JTAMYubEfwVOSwpQ1I1sKKFcxhZCI2buerfw==
 
+js-datepicker@^5.18.2:
+  version "5.18.2"
+  resolved "https://registry.yarnpkg.com/js-datepicker/-/js-datepicker-5.18.2.tgz#2f25c7a4d25207dd5a3053efe95173ddf840527f"
+  integrity sha512-lBh5tIwb1ewDVlNHuwczoLiMhTFWnGYuHSA7ONAPKyMeofIFZDFGeOZ71UTY/Mk2evJJt+L66ec/RiXUy8XzEg==
+
 js-library-detector@^5.5.0:
   version "5.9.0"
   resolved "https://registry.yarnpkg.com/js-library-detector/-/js-library-detector-5.9.0.tgz#ad0add7f4991424326895b273e774876555d0e1b"

@@ -1,0 +1,13 @@
+{
+    "name": "wake.md/wake.md",
+    "description": "Composer file for wake.md project",
+    "type": "project",
+    "require": {
+        "maib/maibapi": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "WakeMd\\WakeMd\\": "src/"
+        }
+    }
+}

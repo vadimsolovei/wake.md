@@ -64,6 +64,7 @@
   "dependencies": {
     "@open-rpc/client-js": "^1.8.1",
     "jquery": "^3.5.0",
+    "js-datepicker": "^5.18.2",
     "normalize.css": "^8.0.1"
   },
   "editorconfig-cli": [

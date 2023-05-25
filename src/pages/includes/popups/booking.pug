@@ -24,9 +24,9 @@ block header
   .popup__content
     .popup__content_text
       if langRo
-        | Numărul de persoane
+        | Описание получасового катания, Минимальное время катания 15 мин в получасовом диапазоне.
       else
-        | Перед оплатой свяжитесь с нами по телефону #[a(href="tel:+37368884689") 68 884 689] или в месенджерах #[a(href="http://m.me/wake.md") Facebook], #[a(href="http://instagram.com/wake.md/") Instagram]
+        | Описание получасового катания, Минимальное время катания 15 мин в получасовом диапазоне.
 
     form.form
       fieldset.form__block
@@ -37,7 +37,10 @@ block header
         //-     | Сколько человек будет кататься?
             
         //- - var n = 0
-        ul.form__row#booking_dates
+        .form__calendar
+          input(type="text" id="datepicker")
+        .form__row
+          .form__row_item#booking_dates
           //- while n < 7
           //-   li.form__row_item
           //-     - n++

@@ -1,78 +1,161 @@
 import { RequestManager, Client, HTTPTransport} from "@open-rpc/client-js";
+import datepicker from 'js-datepicker'
 
 const loginTransport = new HTTPTransport('https://user-api.simplybook.me' + '/login');
 const loginRequestManager = new RequestManager([loginTransport]);
 const loginClient = new Client(loginRequestManager);
+const todayDate = new Date();
 
+
+let companyClient
 let token
 let events
+let eventsNext
+let eventsDays = []
+let firstAvailableDate
+let firstTimeSlots
+let selectedDate
 
 const login = async () => {
-  token = await loginClient.request({method: 'getToken', params: ['wakemd', '8bed206feed9dd8f2e24fc616bfb4b300fcab3e7a34b2d0cd2b9cd3efab55901']});
+  token = await loginClient.request({method: 'getToken', params: ['mdwake', 'd176a78ad9784e86894dac99506c7beaced5668ea2becf46d835a866ef9a7e42']});
 };
 
 login().then(() => {
-  fetchData();
-}); 
-
-const fetchData = () => {
   let clientTransport = new HTTPTransport('https://user-api.simplybook.me');
 
 
-  clientTransport.headers.set('X-Company-Login', 'wakemd');
+  clientTransport.headers.set('X-Company-Login', 'mdwake');
   clientTransport.headers.set('X-Token', token);
 
 
   const clientRequestManager = new RequestManager([clientTransport]);
-  const companyClient = new Client(clientRequestManager);
+  companyClient = new Client(clientRequestManager);
 
-  const company = async () => {
-    // let year = 2020;
-    // let month = 5;
-    // let performerId = null;
+  fetchData();
+}); 
 
-    let dateFrom = '2023-04-29';
-    let dateTo = '2023-04-30';
-    let serviceId = 2;
-    let performerId = null;
-    let qty = 1;
-
-    events = await companyClient.request({method: 'getStartTimeMatrix', params: [dateFrom, dateTo, serviceId, performerId, qty]});
-  };
-
-  company().then(() => {
-    console.log(events);
-    for (var key in events) {
-      // skip loop if the property is from prototype
-      if (!events.hasOwnProperty(key)) continue;
-
-
-      var event = events[key];
-
-      let li = document.createElement('li');
-      li.classList.add('form__row_item');
-      
-      li.innerHTML += '<p>' + key + '</p>';
-      
-      event.forEach(time => li.innerHTML += '<span data-booking-time>' + time + '</span>');
-      
-      document.querySelector('#booking_dates').appendChild(li)
-      // for (var prop in event) {
-      //   // skip loop if the property is from prototype
-      //   if (!event.hasOwnProperty(prop)) continue;    
-      // }
-
-      const time = document.querySelectorAll('[data-booking-time]');
-      console.log(time);
-      time.forEach(timeSlot => {
-        timeSlot.addEventListener("click", onTimeClick);
-      });
-    };
+const fetchData = () => {
+  getAvailableDates().then(() => {
+    prepareFirstData();
+    renderTimes(firstTimeSlots);
+    initCalendar();
   });  
 };
 
-const onTimeClick = (e) => {
-  e.target.classList.toggle('-active');
+const updateTimeSlots = (date) => {
+  getAvailableDates(date).then(() => {
+    renderTimes(events[formatDate(selectedDate)]);
+  });  
 };
+
+const getAvailableDates = async (date) => {
+  let dateFrom 
+  let dateTo 
+
+  if (date == null) {
+    dateFrom = formatDate();
+    dateTo = addToDate(null, 'month', 1);
+    dateTo = formatDate(dateTo);
+  } else {
+    dateFrom = formatDate(date);
+    dateTo = formatDate(date);
+  }
+
+  let serviceId = 2;
+  let performerId = null;
+  let qty = 1;
+
+
+  events = await companyClient.request({method: 'getStartTimeMatrix', params: [dateFrom, dateTo, serviceId, performerId, qty]});
+
+  return events
+  
+};
+
+const prepareFirstData = () => {
+  for (var key in events) {
+    // skip loop if the property is from prototype
+    if (!events.hasOwnProperty(key)) continue;
+
+    var event = events[key];
+
+    // skip empty days
+    if (!event.length) continue;
+    if (firstAvailableDate == null) {
+      firstAvailableDate = new Date(key);
+    };
+
+    firstTimeSlots = event;
+
+    break;
+
+  };
+};
+
+
+const renderTimes = (timeSlots) => {
+  let datesEl = document.querySelector('#booking_dates')
+  
+  datesEl.innerHTML = '';
+
+  timeSlots.forEach(time => datesEl.innerHTML += '<span data-booking-time>' + time + '</span>');
+
+  const time = document.querySelectorAll('[data-booking-time]');
+
+  time.forEach(timeSlot => {
+    timeSlot.addEventListener("click", onTimeClick);
+  });
+};
+
+const onTimeClick = (e) => {
+  const time = document.querySelectorAll('[data-booking-time]');
+  time.forEach(timeSlot => {
+    timeSlot.classList.remove('-active');
+  });
+  e.target.classList.add('-active');
+};
+
+const initCalendar = () => {
+  const picker = datepicker('#datepicker', {
+    alwaysShow: true,
+    dateSelected: firstAvailableDate,
+    startDay: 1,
+    disableYearOverlay: true,
+    minDate: new Date(),
+    maxDate: new Date(2023, 9, 31),
+    disabler: date => [1,2,3,4,5].includes(date.getDay()), // weekend days only,
+    onSelect: (instance, date) => {
+      selectedDate = date;
+      updateTimeSlots(date);
+    }
+  });
+
+};
+
+const formatDate = (date) => {
+  if (date == null) {
+    date = todayDate;
+  };
+  return date.getFullYear() + "-" + ("0"+(date.getMonth()+1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2)
+};
+
+const addToDate = (date, type, ammount) => {
+  if (date == null) {
+    date = todayDate;
+  };
+  let newDate = date;
+
+  switch (type) {
+    case 'day':
+      newDate.setDate(date.getDate() + ammount);
+      break;
+    case 'month':
+      newDate.setMonth(date.getMonth() + ammount);
+      break;
+  };
+
+  return newDate;
+};
+
 
 

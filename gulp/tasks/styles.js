@@ -13,6 +13,7 @@ module.exports = function styles() {
     .src([
       "src/styles/*.scss",
       "node_modules/@splidejs/splide/dist/css/splide-core.min.css",
+      "node_modules/js-datepicker/dist/datepicker.min.css",
     ])
     .pipe(plumber())
     .pipe(
