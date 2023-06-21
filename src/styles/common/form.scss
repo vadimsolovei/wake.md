@@ -119,12 +119,14 @@
       padding: 24px;
       font-size: 20px;
       font-weight: bold;
+      font-family: $ff;
       border-radius: 24px;
       width: 100%;
       box-sizing: border-box;
       color: $white;
       border: 1px solid transparent;
       background: transparent;
+      letter-spacing: 0.02em;
 
       &::placeholder {
         color: rgba(white, 0.3);
@@ -137,6 +139,13 @@
 
       &::-webkit-contacts-auto-fill-button {
         background-color: rgba($white, 0.5);
+      }
+    }
+
+    &.-error {
+      input {
+        border-color: $error;
+        color: $error;
       }
     }
   }

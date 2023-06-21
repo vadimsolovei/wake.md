@@ -5,9 +5,14 @@ const loginTransport = new HTTPTransport('https://user-api.simplybook.me' + '/lo
 const loginRequestManager = new RequestManager([loginTransport]);
 const loginClient = new Client(loginRequestManager);
 const todayDate = new Date();
-const submitButton = document.querySelector('#booking_submit')
-const agreeTerms = document.querySelector('#agree_terms')
+const submitButton = document.getElementById('booking_submit')
+const agreeTerms = document.getElementById('agree_terms')
 
+const name = document.getElementById('first_name')
+const phone = document.getElementById('phone_number')
+const email = document.getElementById('email')
+
+const textInputs = document.querySelectorAll('.form__field input');
 
 let companyClient
 let token
@@ -86,6 +91,7 @@ const prepareFirstData = () => {
     if (!event.length) continue;
     if (firstAvailableDate == null) {
       firstAvailableDate = new Date(key);
+      selectedDate = key;
     };
 
     firstTimeSlots = event;
@@ -121,13 +127,13 @@ const renderTimes = (timeSlots) => {
       untilArr[1] = '00'
     }
 
-    timesEl.innerHTML += '<span data-booking-time>' + timeArr[0] + ':' + timeArr[1] + ' &mdash; ' + untilArr[0] + ':' + untilArr[1] + '</span>'
+    timesEl.innerHTML += '<span data-booking-time="' + time + '">' + timeArr[0] + ':' + timeArr[1] + ' &mdash; ' + untilArr[0] + ':' + untilArr[1] + '</span>'
   });
 
   const time = document.querySelectorAll('[data-booking-time]');
 
   time[0].classList.add('-active');
-  selectedTime = time[0].innerText;
+  selectedTime = time[0].dataset.bookingTime;
   updateSubmitButton();
 
   time.forEach(timeSlot => {
@@ -142,7 +148,7 @@ const onTimeClick = (e) => {
   });
   e.target.classList.add('-active');
 
-  selectedTime = e.target.innerText;
+  selectedTime = e.target.dataset.bookingTime;
 
   updateSubmitButton();
 };
@@ -164,7 +170,7 @@ const initCalendar = () => {
     customMonths: months,
     customDays: days,
     onSelect: (instance, date) => {
-      selectedDate = date;
+      selectedDate = formatDate(date);
       updateTimeSlots(date);
       
       selectedTime = null;
@@ -178,6 +184,7 @@ const formatDate = (date) => {
   if (date == null) {
     date = todayDate;
   };
+  date = new Date(date);
   return date.getFullYear() + "-" + ("0"+(date.getMonth()+1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2)
 };
 
@@ -207,11 +214,75 @@ const updateSubmitButton = () => {
   }
 };
 
+const submitFormAjax = () => {
+  validateFields();
+  // let xmlhttp= window.XMLHttpRequest ?
+  //     new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
+
+  // xmlhttp.onreadystatechange = function() {
+  //     if (this.readyState === 4 && this.status === 200)
+  //         alert(this.responseText); // Here is the response
+  // }
+
+  let clientData = {
+    'name' : name.value,
+    'phone' : phone.value,
+    'email' : email.valuel
+  }
+
+  // companyClient.request({method: 'book', params: [2, 2, selectedDate, selectedTime, clientData]});
+
+  // xmlhttp.open("POST","booking.php",true);
+  // xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+  // xmlhttp.send("date=" + selectedDate + "&time=" + selectedTime + "&name=" + name + "&phone=" + phone + "&email=" + email);
+}
+
+const validateFields = () => {
+  textInputs.forEach((input) => {
+    if (input.value == '') {
+      input.closest('.form__field').classList.add('-error');
+    }
+  });
+
+  if (email.value.match(
+    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  )) {
+    email.closest('.form__field').classList.remove('-error');
+  } else {
+    email.closest('.form__field').classList.add('-error');
+  }
+
+  if (phone.value.length < 8) {
+    phone.closest('.form__field').classList.add('-error');
+  } else {
+    phone.closest('.form__field').classList.remove('-error');
+  }
+
+}
+
 const addListeners = () => {
+  // Check terms agreed
   agree_terms.addEventListener('change', (e) => {
     updateSubmitButton();
   });
-};
 
+  // On button submit
+  submitButton.onclick = (e) => {
+    e.preventDefault();
+    if (submitButton.disabled) { 
+      return
+    } else {
+      submitFormAjax()
+    };
+  };
+
+  // Clear validation inputs on focusout
+  textInputs.forEach((input) => {
+    input.addEventListener('focusin', (e) => {
+        e.target.closest('.form__field').classList.remove('-error');
+    });
+  });
+
+};
 
 addListeners();

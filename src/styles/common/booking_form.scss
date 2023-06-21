@@ -2,6 +2,25 @@
   display: grid;
   grid-row-gap: calc($gap / 2);
   margin-bottom: 40px;
+
+  &__phone {
+    position: relative;
+
+    &::before {
+      content: "+373";
+      top: -2px;
+      left: 1px;
+      position: absolute;
+      font-size: 20px;
+      font-weight: bold;
+      padding: 24px;
+      z-index: 2;
+    }
+
+    input {
+      padding-left: 78px;
+    }
+  }
 }
 
 @media (min-width: $tablet) {

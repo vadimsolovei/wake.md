@@ -1,15 +1,6 @@
 .timeslots {
 
   &__times {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-
-    &::after {
-      content: "";
-      flex: auto;
-    }
-
     span {
       display: inline-block;
       cursor: pointer;
@@ -17,6 +8,7 @@
       border-radius: 36px;
       text-align: center;
       min-width: 110px;
+      margin-bottom: 5px;
 
       &:hover {
         color: $yellow;
