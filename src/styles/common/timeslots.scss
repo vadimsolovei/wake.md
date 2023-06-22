@@ -1,13 +1,15 @@
 .timeslots {
 
   &__times {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+
     span {
       display: inline-block;
       cursor: pointer;
       padding: 5px 10px;
       border-radius: 36px;
       text-align: center;
-      min-width: 110px;
       margin-bottom: 5px;
 
       &:hover {

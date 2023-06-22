@@ -1,0 +1,19 @@
+.loader {
+	background: url("../img/logo.svg") no-repeat center center / contain;
+	width: 60px;
+	height: 60px;
+	transform-origin: center;
+	animation: pulse 1.5s alternate infinite ease-in;
+	margin: auto;
+	display: none;
+}
+
+.-loading > .loader,
+.-loading > * > .loader {
+	display: block;
+}
+
+@keyframes pulse {
+  0%   {transform: scale(1);}
+  100% {transform: scale(1.2);}
+}

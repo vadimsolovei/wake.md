@@ -7,6 +7,8 @@ const loginClient = new Client(loginRequestManager);
 const todayDate = new Date();
 const submitButton = document.getElementById('booking_submit')
 const agreeTerms = document.getElementById('agree_terms')
+const timesEl = document.getElementById('booking_slots')
+const timesEmptyEl = document.querySelector('[data-times-empty]')
 
 const name = document.getElementById('first_name')
 const phone = document.getElementById('phone_number')
@@ -51,6 +53,10 @@ const fetchData = () => {
 };
 
 const updateTimeSlots = (date) => {
+  timesEl.innerHTML = '';
+  timesEl.closest('.form__block').classList.add('-loading');
+  timesEmptyEl.style.display = "none";
+
   getAvailableDates(date).then(() => {
     renderTimes(events[formatDate(selectedDate)]);
   });  
@@ -103,15 +109,13 @@ const prepareFirstData = () => {
 
 
 const renderTimes = (timeSlots) => {
-  let timesEl = document.querySelector('#booking_slots')
-  let timesEmptyEl = document.querySelector('[data-times-empty]')
-  
   if (timeSlots.length == 0) {
     timesEmptyEl.style.display = "block";
   } else {
     timesEmptyEl.style.display = "none";
   }
 
+  timesEl.closest('.form__block').classList.remove('-loading')
   timesEl.innerHTML = '';
 
 
