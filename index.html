@@ -1,0 +1,2536 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="utf-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, viewport-fit=cover"
+        />
+        <meta name="theme-color" content="#000000" />
+        <meta name="msapplication-navbutton-color" content="#000000" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <title>Wake.md — Вода, экстрим и отличное настроение!</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@500&family=Montserrat:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+        />
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+    <body>
+        <!-- Animated logo (top-left fixed) -->
+        <div class="logo-anim" aria-hidden="true">
+            <img src="assets/design/brand/logo.webp" alt="Wake.md" />
+        </div>
+
+        <div class="page-scale">
+            <main class="page">
+                <!-- HERO -->
+                <section class="hero">
+                    <div class="hero__bg"></div>
+                    <div class="hero__shadow"></div>
+
+                    <div class="hero__content">
+                        <div class="pill pill--ghost pill--icon">
+                            <span class="ico" aria-hidden="true">
+                                <svg
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        d="M12 1C14.3869 1 16.6764 1.94791 18.3643 3.63574C20.0521 5.32357 21 7.61305 21 10C21 17 12 23 12 23C12 23 3 17 3 10C3 7.61305 3.94791 5.32357 5.63574 3.63574C7.32357 1.94791 9.61305 1 12 1ZM12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7Z"
+                                        fill="white"
+                                    />
+                                </svg>
+                            </span>
+                            <span class="pill__text"
+                                >Днестр,<br />Вадул луй Воды</span
+                            >
+                        </div>
+
+                        <h1 class="hero__title">
+                            Вейкбординг<br />
+                            <span class="emoji">🏄</span>
+                            в Молдове
+                        </h1>
+
+                        <p class="hero__lead">
+                            Яркие впечатления, драйв и незабываемые эмоции —
+                            вэйкбординг, вэйксёрфинг, водные лыжи и другие
+                            активности на воде.
+                        </p>
+
+                        <div class="hero__row">
+                            <div class="cta-group" data-cta-source>
+                                <button
+                                    class="btn btn--primary"
+                                    data-booking-open
+                                >
+                                    <span class="ico" aria-hidden="true">
+                                        <svg
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z"
+                                                stroke="#111B2D"
+                                                stroke-width="1.6"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            />
+                                            <path
+                                                d="M3 10H21"
+                                                stroke="#111B2D"
+                                                stroke-width="1.6"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            />
+                                            <path
+                                                d="M16 2V6"
+                                                stroke="#111B2D"
+                                                stroke-width="1.6"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            />
+                                            <path
+                                                d="M8 2V6"
+                                                stroke="#111B2D"
+                                                stroke-width="1.6"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            />
+                                        </svg>
+                                    </span>
+                                    Забронировать
+                                </button>
+
+                                <button class="btn btn--ghost">
+                                    <span class="ico" aria-hidden="true">
+                                        <svg
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                d="M21.9975 16.9201V19.9201C21.9986 20.1986 21.9416 20.4743 21.83 20.7294C21.7184 20.9846 21.5548 21.2137 21.3496 21.402C21.1443 21.5902 20.9021 21.7336 20.6382 21.8228C20.3744 21.912 20.0949 21.9452 19.8175 21.9201C16.7403 21.5857 13.7845 20.5342 11.1875 18.8501C8.77132 17.3148 6.72283 15.2663 5.18749 12.8501C3.49747 10.2413 2.44573 7.27109 2.11749 4.1801C2.0925 3.90356 2.12537 3.62486 2.21399 3.36172C2.30262 3.09859 2.44506 2.85679 2.63226 2.65172C2.81945 2.44665 3.0473 2.28281 3.30128 2.17062C3.55527 2.05843 3.82983 2.00036 4.10749 2.0001H7.10749C7.5928 1.99532 8.06328 2.16718 8.43125 2.48363C8.79922 2.80008 9.03957 3.23954 9.10749 3.7201C9.23411 4.68016 9.46894 5.62282 9.80749 6.5301C9.94204 6.88802 9.97115 7.27701 9.8914 7.65098C9.81164 8.02494 9.62635 8.36821 9.35749 8.6401L8.08749 9.9101C9.51105 12.4136 11.5839 14.4865 14.0875 15.9101L15.3575 14.6401C15.6294 14.3712 15.9726 14.1859 16.3466 14.1062C16.7206 14.0264 17.1096 14.0556 17.4675 14.1901C18.3748 14.5286 19.3174 14.7635 20.2775 14.8901C20.7633 14.9586 21.2069 15.2033 21.524 15.5776C21.8412 15.9519 22.0097 16.4297 21.9975 16.9201Z"
+                                                stroke="#111B2D"
+                                                stroke-width="1.6"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            />
+                                        </svg>
+                                    </span>
+                                    Позвонить
+                                </button>
+                            </div>
+
+                            <div class="social">
+                                <a
+                                    class="ico-btn ico-btn--white"
+                                    href="#"
+                                    aria-label="Telegram"
+                                >
+                                    <svg
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            d="M7.99698 12.6902L16.987 20.6002C17.0909 20.6922 17.2169 20.7556 17.3527 20.7841C17.4885 20.8127 17.6294 20.8054 17.7615 20.763C17.8936 20.7207 18.0125 20.6447 18.1064 20.5425C18.2002 20.4403 18.2659 20.3155 18.297 20.1802L22.057 3.76022C22.0885 3.61881 22.081 3.4715 22.0354 3.334C21.9897 3.1965 21.9076 3.07399 21.7977 2.97953C21.6879 2.88507 21.5544 2.82222 21.4116 2.79769C21.2688 2.77315 21.1221 2.78785 20.987 2.84022L2.52698 10.0902C1.78698 10.3802 1.88698 11.4602 2.66698 11.6202L7.99698 12.6902Z"
+                                            stroke="#111B2D"
+                                            stroke-width="1.6"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
+                                        <path
+                                            d="M8 12.6899L21.61 2.85986"
+                                            stroke="#111B2D"
+                                            stroke-width="1.6"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
+                                        <path
+                                            d="M12.49 16.6399L9.37 19.7599C9.25869 19.873 9.11629 19.9504 8.9609 19.9823C8.80551 20.0142 8.64414 19.9992 8.4973 19.9391C8.35046 19.8791 8.22478 19.7768 8.13623 19.6452C8.04769 19.5135 8.00027 19.3586 8 19.1999V12.6899"
+                                            stroke="#111B2D"
+                                            stroke-width="1.6"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
+                                    </svg>
+                                </a>
+                                <a
+                                    class="ico-btn ico-btn--white"
+                                    href="#"
+                                    aria-label="Instagram"
+                                >
+                                    <svg
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            d="M17 2H7C4.23858 2 2 4.23858 2 7V17C2 19.7614 4.23858 22 7 22H17C19.7614 22 22 19.7614 22 17V7C22 4.23858 19.7614 2 17 2Z"
+                                            stroke="#111B2D"
+                                            stroke-width="2"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
+                                        <path
+                                            d="M16.0036 11.3698C16.127 12.2021 15.9849 13.052 15.5974 13.7988C15.2099 14.5456 14.5968 15.1512 13.8452 15.5295C13.0937 15.9077 12.2421 16.0394 11.4114 15.9057C10.5807 15.7721 9.81337 15.3799 9.21845 14.785C8.62353 14.1901 8.23135 13.4227 8.09768 12.592C7.96402 11.7614 8.09568 10.9097 8.47394 10.1582C8.8522 9.40667 9.4578 8.79355 10.2046 8.40605C10.9514 8.01856 11.8014 7.8764 12.6336 7.99981C13.4825 8.1257 14.2685 8.52128 14.8753 9.12812C15.4822 9.73496 15.8777 10.5209 16.0036 11.3698Z"
+                                            stroke="#111B2D"
+                                            stroke-width="2"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
+                                        <path
+                                            d="M17.5 6.5H17.51"
+                                            stroke="#111B2D"
+                                            stroke-width="2"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
+                                    </svg>
+                                </a>
+                                <a
+                                    class="ico-btn ico-btn--white"
+                                    href="#"
+                                    aria-label="Facebook"
+                                >
+                                    <svg
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            d="M18 2H15C13.6739 2 12.4021 2.52678 11.4645 3.46447C10.5268 4.40215 10 5.67392 10 7V10H7V14H10V22H14V14H17L18 10H14V7C14 6.73478 14.1054 6.48043 14.2929 6.29289C14.4804 6.10536 14.7348 6 15 6H18V2Z"
+                                            stroke="#111B2D"
+                                            stroke-width="2"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TELEGRAM CHANNEL -->
+                <section class="telegram-channel" aria-label="Телеграм-канал">
+                    <a
+                        class="telegram-card"
+                        href="#"
+                        aria-label="Телеграм-канал Wake.md"
+                    >
+                        <span class="telegram-card__icon" aria-hidden="true">
+                            <svg
+                                width="64"
+                                height="64"
+                                viewBox="0 0 64 64"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <g clip-path="url(#clip0_6317_94017)">
+                                    <path
+                                        d="M32 64C49.6731 64 64 49.6731 64 32C64 14.3269 49.6731 0 32 0C14.3269 0 0 14.3269 0 32C0 49.6731 14.3269 64 32 64Z"
+                                        fill="url(#paint0_linear_6317_94017)"
+                                    />
+                                    <path
+                                        d="M21.7286 34.7143L13.919 32.1697C13.919 32.1697 12.9857 31.7911 13.2862 30.9324C13.3481 30.7553 13.4729 30.6047 13.8462 30.3457C15.5766 29.1396 45.8745 18.2497 45.8745 18.2497C45.8745 18.2497 46.7299 17.9615 47.2345 18.1532C47.3593 18.1918 47.4716 18.2629 47.5599 18.3592C47.6482 18.4555 47.7094 18.5735 47.7371 18.7012C47.7916 18.9267 47.8144 19.1587 47.8049 19.3905C47.8025 19.5911 47.7782 19.7769 47.7598 20.0684C47.5752 23.0457 42.0531 45.2665 42.0531 45.2665C42.0531 45.2665 41.7227 46.5668 40.539 46.6113C40.2481 46.6207 39.9583 46.5715 39.6868 46.4665C39.4154 46.3615 39.1678 46.2029 38.959 46.0001C36.6361 44.002 28.6073 38.6063 26.8331 37.4196C26.7931 37.3923 26.7594 37.3568 26.7343 37.3154C26.7092 37.274 26.6932 37.2277 26.6875 37.1796C26.6627 37.0545 26.7987 36.8996 26.7987 36.8996C26.7987 36.8996 40.779 24.4729 41.151 23.1684C41.1798 23.0673 41.071 23.0175 40.9249 23.0617C39.9963 23.4033 23.8998 33.5684 22.1233 34.6903C21.9954 34.729 21.8602 34.7372 21.7286 34.7143Z"
+                                        fill="white"
+                                    />
+                                </g>
+                                <defs>
+                                    <linearGradient
+                                        id="paint0_linear_6317_94017"
+                                        x1="32"
+                                        y1="64"
+                                        x2="32"
+                                        y2="0"
+                                        gradientUnits="userSpaceOnUse"
+                                    >
+                                        <stop stop-color="#1D93D2" />
+                                        <stop offset="1" stop-color="#38B0E3" />
+                                    </linearGradient>
+                                    <clipPath id="clip0_6317_94017">
+                                        <rect
+                                            width="64"
+                                            height="64"
+                                            fill="white"
+                                        />
+                                    </clipPath>
+                                </defs>
+                            </svg>
+                            <span class="telegram-card__badge">1</span>
+                        </span>
+                        <span class="telegram-card__copy">
+                            <span class="telegram-card__title"
+                                >Телеграм–канал</span
+                            >
+                            <span class="telegram-card__text">
+                                Подпишитесь на наш телеграм-канал, чтобы быть в
+                                курсе всех последних событий!
+                            </span>
+                        </span>
+                    </a>
+                </section>
+
+                <!-- VIDEO STRIP -->
+                <section class="video-strip">
+                    <div
+                        class="video-strip__inner swiper video-carousel"
+                        aria-label="Wake.md media carousel"
+                    >
+                        <div class="swiper-wrapper">
+                            <div class="swiper-slide">
+                                <figure class="video-tile video-tile--image">
+                                    <img
+                                        src="assets/content/video-slider/video1.jpg"
+                                        alt="Wakeboarding on the water"
+                                    />
+                                    <span
+                                        class="play-circle"
+                                        aria-hidden="true"
+                                    ></span>
+                                </figure>
+                            </div>
+                            <div class="swiper-slide">
+                                <figure class="video-tile video-tile--image">
+                                    <img
+                                        src="assets/content/video-slider/video2.jpg"
+                                        alt="Wake session near the boat"
+                                    />
+                                    <span
+                                        class="play-circle"
+                                        aria-hidden="true"
+                                    ></span>
+                                </figure>
+                            </div>
+                            <div class="swiper-slide">
+                                <figure class="video-tile video-tile--image">
+                                    <img
+                                        src="assets/content/video-slider/video3.jpg"
+                                        alt="Rider carving across the wake"
+                                    />
+                                    <span
+                                        class="play-circle"
+                                        aria-hidden="true"
+                                    ></span>
+                                </figure>
+                            </div>
+                            <div class="swiper-slide">
+                                <figure class="video-tile video-tile--image">
+                                    <img
+                                        src="assets/content/video-slider/video4.jpg"
+                                        alt="Watersport ride at speed"
+                                    />
+                                    <span
+                                        class="play-circle"
+                                        aria-hidden="true"
+                                    ></span>
+                                </figure>
+                            </div>
+                            <div class="swiper-slide">
+                                <figure class="video-tile video-tile--image">
+                                    <img
+                                        src="assets/content/video-slider/video5.jpg"
+                                        alt="Wakeboarding turn on open water"
+                                    />
+                                    <span
+                                        class="play-circle"
+                                        aria-hidden="true"
+                                    ></span>
+                                </figure>
+                            </div>
+                            <div class="swiper-slide">
+                                <figure class="video-tile video-tile--image">
+                                    <img
+                                        src="assets/content/video-slider/video6.jpg"
+                                        alt="Wake ride with spray"
+                                    />
+                                    <span
+                                        class="play-circle"
+                                        aria-hidden="true"
+                                    ></span>
+                                </figure>
+                            </div>
+                            <div class="swiper-slide">
+                                <figure class="video-tile video-tile--image">
+                                    <img
+                                        src="assets/content/video-slider/video1.jpg"
+                                        alt="Wakeboarding practice on the water"
+                                    />
+                                    <span
+                                        class="play-circle"
+                                        aria-hidden="true"
+                                    ></span>
+                                </figure>
+                            </div>
+                            <div class="swiper-slide">
+                                <figure class="video-tile video-tile--image">
+                                    <img
+                                        src="assets/content/video-slider/video3.jpg"
+                                        alt="Wake rider crossing the boat wake"
+                                    />
+                                    <span
+                                        class="play-circle"
+                                        aria-hidden="true"
+                                    ></span>
+                                </figure>
+                            </div>
+                            <div class="swiper-slide">
+                                <figure class="video-tile video-tile--image">
+                                    <img
+                                        src="assets/content/video-slider/video5.jpg"
+                                        alt="Wakeboarding session with water spray"
+                                    />
+                                    <span
+                                        class="play-circle"
+                                        aria-hidden="true"
+                                    ></span>
+                                </figure>
+                            </div>
+                            <div class="swiper-slide">
+                                <figure class="video-tile video-tile--image">
+                                    <img
+                                        src="assets/content/video-slider/video2.jpg"
+                                        alt="Wake session test slide"
+                                    />
+                                    <span
+                                        class="play-circle"
+                                        aria-hidden="true"
+                                    ></span>
+                                </figure>
+                            </div>
+
+                            <!-- Local video slide example:
+          <div class="swiper-slide">
+            <figure class="video-tile video-tile--video">
+              <video controls playsinline preload="metadata" poster="assets/content/video-slider/video1.jpg">
+                <source src="assets/content/video-slider/wake-session.mp4" type="video/mp4" />
+              </video>
+            </figure>
+          </div>
+          -->
+
+                            <!-- Embedded video slide example:
+          <div class="swiper-slide">
+            <figure class="video-tile video-tile--embed">
+              <iframe src="https://www.youtube.com/embed/VIDEO_ID" title="Wake.md video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </figure>
+          </div>
+          -->
+                        </div>
+
+                        <div
+                            class="video-carousel__pagination swiper-pagination"
+                        ></div>
+                    </div>
+                </section>
+
+                <!-- FAMILY -->
+                <section class="section section--white">
+                    <header class="section__head">
+                        <h2 class="section__title">
+                            Для всей <span class="emoji">❤️</span> семьи
+                        </h2>
+                        <p class="section__lead">
+                            Яркие впечатления, драйв и незабываемые эмоции —
+                            вэйкбординг, вэйксёрфинг, водные лыжи и другие
+                            активности на воде.
+                        </p>
+                    </header>
+
+                    <ul class="activities">
+                        <li class="activity">
+                            <div class="activity__avatar">
+                                <img
+                                    src="assets/content/activities/act-wakeboard.jpg"
+                                    alt=""
+                                />
+                                <span class="activity__emoji">😍</span>
+                            </div>
+                            <span class="activity__name">Wakeboard</span>
+                        </li>
+                        <li class="activity">
+                            <div class="activity__avatar">
+                                <img
+                                    src="assets/content/activities/act-skate.jpg"
+                                    alt=""
+                                />
+                                <span class="activity__emoji">🤪</span>
+                            </div>
+                            <span class="activity__name">Skate</span>
+                        </li>
+                        <li class="activity">
+                            <div class="activity__avatar">
+                                <img
+                                    src="assets/content/activities/act-kneeboard.jpg"
+                                    alt=""
+                                />
+                                <span class="activity__emoji">😀</span>
+                            </div>
+                            <span class="activity__name">Kneeboard</span>
+                        </li>
+                        <li class="activity">
+                            <div class="activity__avatar">
+                                <img
+                                    src="assets/content/activities/act-waterski.jpg"
+                                    alt=""
+                                />
+                                <span class="activity__emoji">😎</span>
+                            </div>
+                            <span class="activity__name">Water-Ski</span>
+                        </li>
+                        <li class="activity">
+                            <div
+                                class="activity__avatar activity__avatar--circle"
+                            >
+                                <img
+                                    src="assets/content/activities/act-foil.jpg"
+                                    alt=""
+                                />
+                                <span class="activity__emoji">🙃</span>
+                            </div>
+                            <span class="activity__name">Foil board</span>
+                        </li>
+                        <li class="activity activity--free">
+                            <div class="activity__avatar">
+                                <img
+                                    src="assets/content/activities/act-barefoot.jpg"
+                                    alt=""
+                                />
+                                <img
+                                    class="activity__free-label"
+                                    src="assets/design/sections/free.webp"
+                                    alt="Free"
+                                />
+                                <span class="activity__emoji">🫣</span>
+                            </div>
+                            <span class="activity__name"
+                                >Barefoot<br /><small>Бесплатно!</small></span
+                            >
+                        </li>
+                        <li class="activity">
+                            <div
+                                class="activity__avatar activity__avatar--circle"
+                            >
+                                <img
+                                    src="assets/content/activities/act-wakesurf.jpg"
+                                    alt=""
+                                />
+                                <span class="activity__emoji">🤩</span>
+                            </div>
+                            <span class="activity__name"
+                                >Wakesurf<br /><small>Тирасполь</small></span
+                            >
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- BIG VIDEO -->
+                <section class="big-video" aria-label="Wake.md feature video">
+                    <video
+                        class="big-video__media"
+                        controls
+                        playsinline
+                        preload="metadata"
+                        poster="assets/content/video-slider/video-large.jpg"
+                    >
+                        <!-- Add the final video file here, for example:
+        <source src="assets/content/video-slider/wake-session.mp4" type="video/mp4" />
+        -->
+                    </video>
+                    <button
+                        class="play-big"
+                        type="button"
+                        aria-label="Play video"
+                    >
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="6,4 20,12 6,20" />
+                        </svg>
+                    </button>
+                </section>
+
+                <!-- TEACH (8 step cards) -->
+                <section class="section section--teach">
+                    <header class="section__head">
+                        <h2 class="section__title">
+                            Всему <span class="emoji">📚</span> научим!
+                        </h2>
+                        <p class="section__lead">
+                            Яркие впечатления, драйв и незабываемые эмоции —
+                            вэйкбординг, вэйксёрфинг, водные лыжи и другие
+                            активности на воде.
+                        </p>
+                    </header>
+
+                    <div
+                        class="steps swiper"
+                        aria-label="Wake.md learning steps carousel"
+                    >
+                        <div class="swiper-wrapper">
+                            <div class="swiper-slide">
+                                <div class="step-card__num">1</div>
+                                <article class="step-card">
+                                    <div
+                                        class="step-card__img"
+                                        style="
+                                            background-image: url(&quot;assets/content/learning-slider/step1.jpg&quot;);
+                                        "
+                                    ></div>
+                                    <h3 class="step-card__title">
+                                        Расслабьтесь!
+                                    </h3>
+                                    <p class="step-card__desc">
+                                        Лежим на воде, прямые руки,
+                                        расслабленное тело.
+                                    </p>
+                                </article>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="step-card__num">2</div>
+                                <article class="step-card">
+                                    <div
+                                        class="step-card__img"
+                                        style="
+                                            background-image: url(&quot;assets/content/learning-slider/step2.jpg&quot;);
+                                        "
+                                    ></div>
+                                    <h3 class="step-card__title">
+                                        Не упираемся
+                                    </h3>
+                                    <p class="step-card__desc">
+                                        Не сопротивляемся тяге, попа прижимается
+                                        к доске.
+                                    </p>
+                                </article>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="step-card__num">3</div>
+                                <article class="step-card">
+                                    <div
+                                        class="step-card__img"
+                                        style="
+                                            background-image: url(&quot;assets/content/learning-slider/step3.jpg&quot;);
+                                        "
+                                    ></div>
+                                    <h3 class="step-card__title">
+                                        Подаёмся вперед
+                                    </h3>
+                                    <p class="step-card__desc">
+                                        Округляем спину и тянемся вперед, за
+                                        ручкой.
+                                    </p>
+                                </article>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="step-card__num">4</div>
+                                <article class="step-card">
+                                    <div
+                                        class="step-card__img"
+                                        style="
+                                            background-image: url(&quot;assets/content/learning-slider/step4.jpg&quot;);
+                                        "
+                                    ></div>
+                                    <h3 class="step-card__title">
+                                        Держим спину
+                                    </h3>
+                                    <p class="step-card__desc">
+                                        Немного напрягая спину держим баланс в
+                                        вертикальном положении.
+                                    </p>
+                                </article>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="step-card__num">5</div>
+                                <article class="step-card">
+                                    <div
+                                        class="step-card__img"
+                                        style="
+                                            background-image: url(&quot;assets/content/learning-slider/step5.jpg&quot;);
+                                        "
+                                    ></div>
+                                    <h3 class="step-card__title">
+                                        Еще держим баланс
+                                    </h3>
+                                    <p class="step-card__desc">
+                                        Подъемная сила сама поднимет доску на
+                                        поверхность.
+                                    </p>
+                                </article>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="step-card__num">6</div>
+                                <article class="step-card">
+                                    <div
+                                        class="step-card__img"
+                                        style="
+                                            background-image: url(&quot;assets/content/learning-slider/step6.jpg&quot;);
+                                        "
+                                    ></div>
+                                    <h3 class="step-card__title">Едем боком</h3>
+                                    <p class="step-card__desc">
+                                        Отводим ручку в сторону ведущей ноги.
+                                    </p>
+                                </article>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="step-card__num">7</div>
+                                <article class="step-card">
+                                    <div
+                                        class="step-card__img"
+                                        style="
+                                            background-image: url(&quot;assets/content/learning-slider/step7.jpg&quot;);
+                                        "
+                                    ></div>
+                                    <h3 class="step-card__title">Встаем</h3>
+                                    <p class="step-card__desc">
+                                        Медленно поднимаемся, с ровной спиной,
+                                        держа равновесие.
+                                    </p>
+                                </article>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="step-card__num">8</div>
+                                <article class="step-card">
+                                    <div
+                                        class="step-card__img"
+                                        style="
+                                            background-image: url(&quot;assets/content/learning-slider/step8.jpg&quot;);
+                                        "
+                                    ></div>
+                                    <h3 class="step-card__title">Ииииху!</h3>
+                                    <p class="step-card__desc">
+                                        Можно отпустить одну руку, будет проще
+                                        балансировать.
+                                    </p>
+                                </article>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button
+                        class="scroll-indicator"
+                        type="button"
+                        aria-label="Go to next learning step"
+                    >
+                        <span
+                            class="scroll-indicator__bar"
+                            aria-hidden="true"
+                        ></span>
+                        <span
+                            class="scroll-indicator__handle"
+                            aria-hidden="true"
+                            >🙂</span
+                        >
+                    </button>
+                </section>
+
+                <!-- GIFT CERTIFICATE -->
+                <section class="gift-certificate">
+                    <div class="gift-certificate__copy">
+                        <h2 class="section__title">
+                            Подарочный<br /><span class="emoji">🎉</span
+                            >сертификат
+                        </h2>
+                        <p class="section__lead">
+                            Стоимость рассчитывается по количеству сетов. Вы
+                            можете купить сертификат на любую сумму.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- BITALENT / CONTACT -->
+                <section class="contact">
+                    <div class="contact__copy">
+                        <img
+                            class="contact__logo"
+                            src="assets/design/brand/bitalent-logo.webp"
+                            alt="Bitalent"
+                        />
+                        <h2 class="section__title contact__title">
+                            Постоянно<br />на <span class="emoji">☎</span> связи
+                        </h2>
+                        <p class="contact__lead">
+                            Стоимость рассчитывается по количеству сетов. Вы
+                            можете купить сертификат на любую сумму.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- MAP -->
+                <section class="section section--map">
+                    <div
+                        class="map"
+                        style="
+                            background-image: url(&quot;assets/design/map/map.png&quot;);
+                        "
+                    >
+                        <div class="map__overlay"></div>
+                        <header class="section__head section__head--white">
+                            <h2 class="section__title">
+                                Как <span class="emoji">🗺️</span> добраться
+                            </h2>
+                            <p class="section__lead">
+                                Мы находимся на городском пляже Вадул-луй-Воды.
+                            </p>
+                        </header>
+
+                        <div class="map__buttons">
+                            <button class="btn btn--primary">
+                                <span class="ico" aria-hidden="true">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    >
+                                        <path
+                                            d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"
+                                        />
+                                        <circle cx="12" cy="10" r="3" />
+                                    </svg>
+                                </span>
+                                Google Map
+                            </button>
+                            <button class="btn btn--dark">130 Маршрутка</button>
+                            <button class="btn btn--dark">131 Маршрутка</button>
+                            <button class="btn btn--dark">
+                                31 Автобус + 2км
+                            </button>
+                        </div>
+
+                        <div class="map__pin">
+                            <img src="assets/design/brand/logo.webp" alt="" />
+                        </div>
+                    </div>
+                </section>
+
+                <!-- BOATS -->
+                <section class="section">
+                    <h2 class="section__title section__title--center">
+                        <span class="emoji">⛵</span> Лодочки
+                    </h2>
+
+                    <div class="boats">
+                        <article class="boat-card">
+                            <div class="boat-card__copy">
+                                <p class="boat-card__sub">Гидроцикл</p>
+                                <h3 class="boat-card__title">Sea-Doo Spark</h3>
+                            </div>
+                        </article>
+
+                        <article class="boat-card">
+                            <div class="boat-card__copy">
+                                <p class="boat-card__sub">Гидроцикл</p>
+                                <h3 class="boat-card__title">Sea-Doo Wake</h3>
+                            </div>
+                        </article>
+                    </div>
+
+                    <article class="boat-card boat-card--wide">
+                        <div class="boat-card__copy">
+                            <p class="boat-card__sub">Катер</p>
+                            <h3 class="boat-card__title">Super Air Nautique</h3>
+                            <p class="boat-card__sub">г. Тирасполь</p>
+                        </div>
+                    </article>
+                </section>
+
+                <!-- FAQ -->
+                <section class="section">
+                    <h2 class="section__title section__title--center">
+                        <span class="emoji">🤓</span> Вопросики
+                    </h2>
+
+                    <ul class="faq">
+                        <li class="faq-card">
+                            <span class="faq-card__emoji">📍</span>
+                            <div>
+                                <h3>Где все<br />происходит</h3>
+                                <p>
+                                    Чаще всего заезды происходят вблизи
+                                    Кишинева. Вдх. Гидигич, Днестр, Данчены.
+                                </p>
+                            </div>
+                        </li>
+                        <li class="faq-card">
+                            <span class="faq-card__emoji">🩳</span>
+                            <div>
+                                <h3>Что<br />нужно</h3>
+                                <p>
+                                    Мы предоставим все снаряжение. Вам
+                                    желательно иместь плавательные шорты,
+                                    тапочки для воды, полотенце и крем от
+                                    солнца.
+                                </p>
+                            </div>
+                        </li>
+                        <li class="faq-card">
+                            <span class="faq-card__emoji">🏄‍♂️</span>
+                            <div>
+                                <h3>Первый<br />заезд</h3>
+                                <p>
+                                    Перед заездом с вами будет проведен
+                                    инструктаж. Во время катания вас будет
+                                    сопровождать инструктор.
+                                </p>
+                            </div>
+                        </li>
+                        <li class="faq-card">
+                            <span class="faq-card__emoji">👶</span>
+                            <div>
+                                <h3>Для<br />детей</h3>
+                                <p>
+                                    Вэйкбрдом занимаются дети с 3х лет, но пока
+                                    мы можем предоставить оборудование для
+                                    подростков от 12 лет.
+                                </p>
+                            </div>
+                        </li>
+                        <li class="faq-card">
+                            <span class="faq-card__emoji">🥲</span>
+                            <div>
+                                <h3>Отмена<br />бронирования</h3>
+                                <p>
+                                    Вы сможете отменить бронирование за 48 часов
+                                    до вашего заезжа.
+                                </p>
+                            </div>
+                        </li>
+                        <li class="faq-card">
+                            <span class="faq-card__emoji">🌧️</span>
+                            <div>
+                                <h3>Непогода</h3>
+                                <p>
+                                    Из-за непогоды выезды переносятся только
+                                    если не выезжает команда. Слабый дождик нам
+                                    не помеха, промокнут в любом случае все :)
+                                </p>
+                            </div>
+                        </li>
+                        <li class="faq-card">
+                            <span class="faq-card__emoji">🪵</span>
+                            <div>
+                                <h3>Умение<br />плавать</h3>
+                                <p>
+                                    Доска и жилет имеет высокую положительную
+                                    плавучесть. Уметь плавать не нужно, главное
+                                    не бояться воды. Но и с этим мы поможем.
+                                </p>
+                            </div>
+                        </li>
+                        <li class="faq-card">
+                            <span class="faq-card__emoji">🛟</span>
+                            <div>
+                                <h3>Безопасность</h3>
+                                <p>
+                                    Это экстремальный вид спорта и предполагают
+                                    наличие рисков получения травм, но мы делаем
+                                    все чтобы минимизировать эти риски.
+                                </p>
+                            </div>
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- GALLERY -->
+                <section class="gallery-section">
+                    <div class="gallery-carousel" aria-label="Wake.md gallery">
+                        <div class="gallery-track gallery-track--top">
+                            <div class="gallery-row">
+                                <img
+                                    src="assets/content/gallery-slider/gallery1.jpg"
+                                    alt=""
+                                    class="gallery-img gallery-img--square"
+                                />
+                                <img
+                                    src="assets/content/gallery-slider/gallery2.jpg"
+                                    alt=""
+                                    class="gallery-img gallery-img--wide"
+                                />
+                                <img
+                                    src="assets/content/gallery-slider/gallery4.jpg"
+                                    alt=""
+                                    class="gallery-img gallery-img--square"
+                                />
+                                <img
+                                    src="assets/content/gallery-slider/gallery1.jpg"
+                                    alt=""
+                                    class="gallery-img gallery-img--square"
+                                />
+                                <img
+                                    src="assets/content/gallery-slider/gallery2.jpg"
+                                    alt=""
+                                    class="gallery-img gallery-img--wide"
+                                />
+                                <img
+                                    src="assets/content/gallery-slider/gallery4.jpg"
+                                    alt=""
+                                    class="gallery-img gallery-img--square"
+                                />
+                            </div>
+                        </div>
+                        <div class="gallery-track gallery-track--bottom">
+                            <div class="gallery-row">
+                                <img
+                                    src="assets/content/gallery-slider/gallery5.jpg"
+                                    alt=""
+                                    class="gallery-img gallery-img--wide"
+                                />
+                                <img
+                                    src="assets/content/gallery-slider/gallery3.jpg"
+                                    alt=""
+                                    class="gallery-img gallery-img--wide"
+                                />
+                                <img
+                                    src="assets/content/gallery-slider/gallery4.jpg"
+                                    alt=""
+                                    class="gallery-img gallery-img--square"
+                                />
+                                <img
+                                    src="assets/content/gallery-slider/gallery5.jpg"
+                                    alt=""
+                                    class="gallery-img gallery-img--wide"
+                                />
+                                <img
+                                    src="assets/content/gallery-slider/gallery3.jpg"
+                                    alt=""
+                                    class="gallery-img gallery-img--wide"
+                                />
+                                <img
+                                    src="assets/content/gallery-slider/gallery4.jpg"
+                                    alt=""
+                                    class="gallery-img gallery-img--square"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- FOOTER -->
+                <footer class="footer">
+                    <div class="footer__row">
+                        <p>© 2026 Wake.md <span class="emoji">😎</span></p>
+                        <nav class="footer__links" aria-label="Legal">
+                            <a href="#">Политика конфиденциальности</a>
+                            <a href="#">Условия использования</a>
+                            <div
+                                class="footer__payments"
+                                aria-label="Способы оплаты"
+                            >
+                                <img
+                                    src="assets/design/payments/visa.webp"
+                                    alt="Visa"
+                                />
+                                <img
+                                    src="assets/design/payments/mastercard.webp"
+                                    alt="Mastercard"
+                                />
+                                <img
+                                    src="assets/design/payments/amex.webp"
+                                    alt="American Express"
+                                />
+                            </div>
+                        </nav>
+                    </div>
+                </footer>
+            </main>
+        </div>
+        <div class="booking-modal" data-booking-modal aria-hidden="true" hidden>
+            <div class="booking-modal__backdrop" data-booking-close></div>
+            <section
+                class="booking-modal__dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="booking-title"
+                tabindex="-1"
+            >
+                <header class="booking-modal__header">
+                    <div class="booking-modal__brand" aria-hidden="true">
+                        <img src="assets/design/brand/logo.webp" alt="" />
+                    </div>
+                    <h2 id="booking-title">
+                        Бронирование <span class="emoji">🗓️</span><br />катания
+                    </h2>
+                    <div class="booking-modal__actions">
+                        <a
+                            class="booking-icon-btn btn--ghost"
+                            href="tel:+37300000000"
+                            aria-label="Позвонить"
+                        >
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path
+                                    d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"
+                                />
+                            </svg>
+                        </a>
+                        <button
+                            class="booking-icon-btn btn--ghost"
+                            type="button"
+                            data-booking-close
+                            aria-label="Закрыть"
+                        >
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M18 6 6 18" />
+                                <path d="m6 6 12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </header>
+
+                <form class="booking-form">
+                    <div class="booking-modal__content">
+                        <aside class="booking-sidebar">
+                            <section
+                                class="booking-card booking-card--calendar"
+                                aria-label="Календарь"
+                            >
+                                <div class="booking-card__head">
+                                    <span data-booking-month-label
+                                        >Выберите дату</span
+                                    >
+                                    <span class="booking-card__nav">
+                                        <button
+                                            type="button"
+                                            data-booking-month-prev
+                                            aria-label="Предыдущий месяц"
+                                        >
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                aria-hidden="true"
+                                            >
+                                                <path d="m15 18-6-6 6-6" />
+                                            </svg>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            data-booking-month-next
+                                            aria-label="Следующий месяц"
+                                        >
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                aria-hidden="true"
+                                            >
+                                                <path d="m9 18 6-6-6-6" />
+                                            </svg>
+                                        </button>
+                                    </span>
+                                </div>
+                                <div class="booking-calendar">
+                                    <input
+                                        class="booking-date-input"
+                                        data-booking-datepicker
+                                        type="text"
+                                        aria-label="Дата катания"
+                                    />
+                                </div>
+                            </section>
+
+                            <section class="booking-card booking-price-card">
+                                <h3>Стоимость</h3>
+                                <div class="booking-price-row">
+                                    <strong>600 л</strong>
+                                    <span
+                                        >Стоимость первого сета в один день
+                                        катания для одного человека</span
+                                    >
+                                </div>
+                                <div class="booking-price-row">
+                                    <strong>400 л</strong>
+                                    <span>Стоимость последующих сетов</span>
+                                </div>
+                            </section>
+                        </aside>
+
+                        <div class="booking-main">
+                            <div class="booking-fields">
+                                <label
+                                    class="booking-field booking-field--wide"
+                                >
+                                    <span>Имя</span>
+                                    <input
+                                        name="name"
+                                        autocomplete="name"
+                                        placeholder="Имя"
+                                        required
+                                    />
+                                </label>
+                                <label class="booking-field">
+                                    <span>Email</span>
+                                    <input
+                                        name="email"
+                                        type="email"
+                                        autocomplete="email"
+                                        placeholder="Email"
+                                        required
+                                    />
+                                </label>
+                                <label class="booking-field booking-phone">
+                                    <span class="booking-phone__code"
+                                        >🇲🇩 +373</span
+                                    >
+                                    <input
+                                        name="phone"
+                                        type="tel"
+                                        autocomplete="tel"
+                                        placeholder="Phone"
+                                        required
+                                    />
+                                </label>
+                                <div
+                                    class="booking-people"
+                                    aria-label="Количество человек"
+                                >
+                                    <span>Кол-во человек</span>
+                                    <button
+                                        type="button"
+                                        data-booking-people-minus
+                                        aria-label="Уменьшить количество"
+                                    >
+                                        −
+                                    </button>
+                                    <output data-booking-people-output
+                                        >2</output
+                                    >
+                                    <button
+                                        type="button"
+                                        data-booking-people-plus
+                                        aria-label="Увеличить количество"
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                            </div>
+
+                            <section class="booking-card booking-time-card">
+                                <h3>Выберите время и количество сетов</h3>
+                                <p>
+                                    Минимальное бронирование для новичка - 2
+                                    сета на человека.
+                                    <button
+                                        class="booking-time-card__details"
+                                        type="button"
+                                        data-booking-info-open
+                                    >
+                                        Подробнее
+                                    </button>
+                                </p>
+                                <div
+                                    class="booking-times"
+                                    data-booking-times
+                                    aria-label="Время катания"
+                                >
+                                    <p class="booking-times__empty">
+                                        Выберите доступную дату
+                                    </p>
+                                </div>
+                                <p class="booking-time-card__note">
+                                    Длительность катания в одном сете составляет
+                                    10 минут.
+                                </p>
+                            </section>
+
+                            <section class="booking-card booking-terms">
+                                <label class="booking-check">
+                                    <input
+                                        type="checkbox"
+                                        checked
+                                        required
+                                        name="terms"
+                                    />
+                                    <span aria-hidden="true">
+                                        <svg
+                                            width="14"
+                                            height="14"
+                                            viewBox="0 0 14 14"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                d="M11.6693 3.5L5.2526 9.91667L2.33594 7"
+                                                stroke="black"
+                                                stroke-width="1.2"
+                                                stroke-linecap="square"
+                                            />
+                                        </svg>
+                                    </span>
+                                    <b>
+                                        Я соглашаюсь c
+                                        <a href="#">условиями использования</a>
+                                        и
+                                        <a href="#"
+                                            >политикой конфиденциальности</a
+                                        >
+                                    </b>
+                                </label>
+                                <div class="booking-terms__rules">
+                                    <ul>
+                                        <li>
+                                            Бронирование считается
+                                            подтвержденным только после оплаты
+                                            задатка в сумме, указанной ниже.
+                                        </li>
+                                        <li>
+                                            Задаток возвращается в полном объеме
+                                            при отмене бронирования не менее чем
+                                            за 72 часа до назначенного времени
+                                            катания.
+                                        </li>
+                                    </ul>
+                                    <ul>
+                                        <li>
+                                            Задаток возвращается в полном объеме
+                                            при отмене выезда организаторами в
+                                            назначенный день.
+                                        </li>
+                                        <li>
+                                            Изменить время бронирования можно не
+                                            позднее 24 часов до назначенного
+                                            времени катания, по согласованию
+                                            сторон.
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div
+                                    class="booking-payments"
+                                    aria-label="Способы оплаты"
+                                >
+                                    <img
+                                        src="assets/design/payments/visa.webp"
+                                        alt="Visa"
+                                    />
+                                    <img
+                                        src="assets/design/payments/mastercard.webp"
+                                        alt="Mastercard"
+                                    />
+                                    <img
+                                        src="assets/design/payments/amex.webp"
+                                        alt="American Express"
+                                    />
+                                </div>
+                            </section>
+                        </div>
+
+                        <footer class="booking-modal__footer">
+                            <strong>400 леев</strong>
+                            <button
+                                class="booking-modal__footer-action booking-modal__footer-action--close btn--ghost"
+                                type="button"
+                                data-booking-close
+                                aria-label="Закрыть"
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path d="M18 6 6 18" />
+                                    <path d="m6 6 12 12" />
+                                </svg>
+                            </button>
+                            <button class="btn btn--primary" type="submit">
+                                Оплатить
+                            </button>
+                            <a
+                                class="booking-modal__footer-action booking-modal__footer-action--phone btn--ghost"
+                                href="tel:+37300000000"
+                                aria-label="Позвонить"
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path
+                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"
+                                    />
+                                </svg>
+                            </a>
+                        </footer>
+                    </div>
+                </form>
+            </section>
+            <div
+                class="booking-info-popup"
+                data-booking-info-popup
+                aria-hidden="true"
+                hidden
+            >
+                <div
+                    class="booking-info-popup__backdrop"
+                    data-booking-info-close
+                ></div>
+                <section
+                    class="booking-info-popup__dialog"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="booking-info-title"
+                    aria-describedby="booking-info-description"
+                    tabindex="-1"
+                >
+                    <h2 id="booking-info-title">Впервые на вейкборде?</h2>
+                    <p class="booking-info-popup__lead">
+                        Для новичков у нас действует минимальное бронирование —
+                        2 сета.
+                    </p>
+                    <div
+                        class="booking-info-popup__body"
+                        id="booking-info-description"
+                    >
+                        <p>
+                            В первом сете тело только привыкает к новым
+                            движениям и нагрузке.
+                        </p>
+                        <p>
+                            После небольшого отдыха во втором сете прогресс
+                            происходит намного быстрее — именно тогда
+                            большинство уже начинает уверенно ехать и получать
+                            кайф от катания 🔥
+                        </p>
+                        <p>
+                            Мы хотим, чтобы ваше первое катание действительно
+                            получилось и оставило яркие эмоции, поэтому
+                            рекомендуем начинать сразу с 2 сетов.
+                        </p>
+                    </div>
+                    <button
+                        class="booking-info-popup__button btn btn--primary"
+                        type="button"
+                        data-booking-info-close
+                    >
+                        Ok
+                    </button>
+                </section>
+            </div>
+        </div>
+        <div
+            class="floating-cta cta-group"
+            data-cta-floating
+            aria-hidden="true"
+            inert
+        >
+            <button class="btn btn--primary" data-booking-open>
+                <span class="ico" aria-hidden="true">
+                    <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z"
+                            stroke="#111B2D"
+                            stroke-width="1.6"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                        <path
+                            d="M3 10H21"
+                            stroke="#111B2D"
+                            stroke-width="1.6"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                        <path
+                            d="M16 2V6"
+                            stroke="#111B2D"
+                            stroke-width="1.6"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                        <path
+                            d="M8 2V6"
+                            stroke="#111B2D"
+                            stroke-width="1.6"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                    </svg>
+                </span>
+                Забронировать
+            </button>
+
+            <button class="btn btn--ghost">
+                <span class="ico" aria-hidden="true">
+                    <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M21.9975 16.9201V19.9201C21.9986 20.1986 21.9416 20.4743 21.83 20.7294C21.7184 20.9846 21.5548 21.2137 21.3496 21.402C21.1443 21.5902 20.9021 21.7336 20.6382 21.8228C20.3744 21.912 20.0949 21.9452 19.8175 21.9201C16.7403 21.5857 13.7845 20.5342 11.1875 18.8501C8.77132 17.3148 6.72283 15.2663 5.18749 12.8501C3.49747 10.2413 2.44573 7.27109 2.11749 4.1801C2.0925 3.90356 2.12537 3.62486 2.21399 3.36172C2.30262 3.09859 2.44506 2.85679 2.63226 2.65172C2.81945 2.44665 3.0473 2.28281 3.30128 2.17062C3.55527 2.05843 3.82983 2.00036 4.10749 2.0001H7.10749C7.5928 1.99532 8.06328 2.16718 8.43125 2.48363C8.79922 2.80008 9.03957 3.23954 9.10749 3.7201C9.23411 4.68016 9.46894 5.62282 9.80749 6.5301C9.94204 6.88802 9.97115 7.27701 9.8914 7.65098C9.81164 8.02494 9.62635 8.36821 9.35749 8.6401L8.08749 9.9101C9.51105 12.4136 11.5839 14.4865 14.0875 15.9101L15.3575 14.6401C15.6294 14.3712 15.9726 14.1859 16.3466 14.1062C16.7206 14.0264 17.1096 14.0556 17.4675 14.1901C18.3748 14.5286 19.3174 14.7635 20.2775 14.8901C20.7633 14.9586 21.2069 15.2033 21.524 15.5776C21.8412 15.9519 22.0097 16.4297 21.9975 16.9201Z"
+                            stroke="#111B2D"
+                            stroke-width="1.6"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                    </svg>
+                </span>
+                Позвонить
+            </button>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+        <script>
+            (() => {
+                const desktopMinWidth = 768;
+                const desktopBaseWidth = 1440;
+                const pageScale = document.querySelector(".page-scale");
+                const page = document.querySelector(".page");
+
+                if (!pageScale || !page) return;
+
+                let frameRequest = null;
+
+                const updateDesktopScale = () => {
+                    if (frameRequest) {
+                        window.cancelAnimationFrame(frameRequest);
+                    }
+
+                    frameRequest = window.requestAnimationFrame(() => {
+                        frameRequest = null;
+
+                        if (window.innerWidth < desktopMinWidth) {
+                            document.documentElement.style.removeProperty(
+                                "--desktop-scale",
+                            );
+                            document.documentElement.style.removeProperty(
+                                "--activity-emoji-bottom-offset",
+                            );
+                            pageScale.style.removeProperty("height");
+                            return;
+                        }
+
+                        const scale = window.innerWidth / desktopBaseWidth;
+
+                        document.documentElement.style.setProperty(
+                            "--desktop-scale",
+                            scale,
+                        );
+                        document.documentElement.style.setProperty(
+                            "--activity-emoji-bottom-offset",
+                            `${20 / scale}px`,
+                        );
+                        pageScale.style.height = `${page.offsetHeight * scale}px`;
+                    });
+                };
+
+                window.addEventListener("load", updateDesktopScale);
+                window.addEventListener("resize", updateDesktopScale);
+                document.fonts?.ready.then(updateDesktopScale);
+                Array.from(document.images).forEach((image) => {
+                    if (image.complete) return;
+
+                    image.addEventListener("load", updateDesktopScale, {
+                        once: true,
+                    });
+                    image.addEventListener("error", updateDesktopScale, {
+                        once: true,
+                    });
+                });
+
+                updateDesktopScale();
+            })();
+
+            (() => {
+                const modal = document.querySelector("[data-booking-modal]");
+                const dialog = modal?.querySelector(".booking-modal__dialog");
+                const form = modal?.querySelector(".booking-form");
+                const dateInput = modal?.querySelector(
+                    "[data-booking-datepicker]",
+                );
+                const monthLabel = modal?.querySelector(
+                    "[data-booking-month-label]",
+                );
+                const monthPrev = modal?.querySelector(
+                    "[data-booking-month-prev]",
+                );
+                const monthNext = modal?.querySelector(
+                    "[data-booking-month-next]",
+                );
+                const timesElement = modal?.querySelector(
+                    "[data-booking-times]",
+                );
+                const peopleMinus = modal?.querySelector(
+                    "[data-booking-people-minus]",
+                );
+                const peoplePlus = modal?.querySelector(
+                    "[data-booking-people-plus]",
+                );
+                const peopleOutput = modal?.querySelector(
+                    "[data-booking-people-output]",
+                );
+                const openButtons = document.querySelectorAll(
+                    "[data-booking-open]",
+                );
+                const closeButtons = modal?.querySelectorAll(
+                    "[data-booking-close]",
+                );
+                const infoOpenButton = modal?.querySelector(
+                    "[data-booking-info-open]",
+                );
+                const infoPopup = modal?.querySelector(
+                    "[data-booking-info-popup]",
+                );
+                const infoDialog = infoPopup?.querySelector(
+                    ".booking-info-popup__dialog",
+                );
+                const infoCloseButtons = infoPopup?.querySelectorAll(
+                    "[data-booking-info-close]",
+                );
+                const submitButton = form?.querySelector("[type='submit']");
+
+                if (!modal || !dialog || !form || !openButtons.length) return;
+
+                let lastFocusedElement = null;
+                let lastFocusedInfoElement = null;
+                let datepicker = null;
+                let activeDatesRequest = 0;
+                let activeTimesRequest = 0;
+                let isBookingReady = false;
+                let lockedScrollY = 0;
+
+                const bookingState = {
+                    selectedDate: "",
+                    selectedTime: "",
+                    peopleCount: 2,
+                    availableDates: new Set(),
+                    availableTimes: [],
+                    isLoadingAvailability: false,
+                    availabilityError: "",
+                    isSubmitting: false,
+                };
+
+                const toIsoDate = (date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const day = String(date.getDate()).padStart(2, "0");
+
+                    return `${year}-${month}-${day}`;
+                };
+
+                const getMonthName = (date) =>
+                    new Intl.DateTimeFormat("ru-RU", {
+                        month: "long",
+                        year: "numeric",
+                    }).format(date);
+
+                const readJsonResponse = async (response) => {
+                    const data = await response.json().catch(() => null);
+
+                    if (!response.ok) {
+                        throw new Error(
+                            data?.error?.message ||
+                                "Сервис бронирования временно недоступен.",
+                        );
+                    }
+
+                    return data;
+                };
+
+                const fetchAvailableDates = async ({
+                    year,
+                    month,
+                    peopleCount,
+                }) => {
+                    const params = new URLSearchParams({
+                        year: String(year),
+                        month: String(month),
+                        peopleCount: String(peopleCount),
+                    });
+                    const data = await fetch(
+                        `/api/booking/dates?${params.toString()}`,
+                    ).then(readJsonResponse);
+
+                    return Array.isArray(data.dates) ? data.dates : [];
+                };
+
+                const fetchAvailableTimes = async ({ date, peopleCount }) => {
+                    const params = new URLSearchParams({
+                        date,
+                        peopleCount: String(peopleCount),
+                    });
+                    const data = await fetch(
+                        `/api/booking/times?${params.toString()}`,
+                    ).then(readJsonResponse);
+
+                    return Array.isArray(data.times) ? data.times : [];
+                };
+
+                const submitBooking = async (payload) => {
+                    const response = await fetch("/api/booking/create", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(payload),
+                    });
+
+                    return readJsonResponse(response);
+                };
+
+                const updateSubmitState = () => {
+                    if (!submitButton) return;
+
+                    submitButton.toggleAttribute(
+                        "disabled",
+                        bookingState.isSubmitting,
+                    );
+                    submitButton.textContent = bookingState.isSubmitting
+                        ? "Бронируем..."
+                        : "Оплатить";
+                };
+
+                const updatePeopleOutput = () => {
+                    if (peopleOutput) {
+                        peopleOutput.textContent = String(
+                            bookingState.peopleCount,
+                        );
+                    }
+
+                    peopleMinus?.toggleAttribute(
+                        "disabled",
+                        bookingState.peopleCount <= 1,
+                    );
+                    peoplePlus?.toggleAttribute(
+                        "disabled",
+                        bookingState.peopleCount >= 8,
+                    );
+                };
+
+                const renderTimes = () => {
+                    if (!timesElement) return;
+
+                    timesElement.innerHTML = "";
+
+                    if (bookingState.isLoadingAvailability) {
+                        const message = document.createElement("p");
+                        message.className = "booking-times__empty";
+                        message.textContent = "Загружаем доступное время";
+                        timesElement.append(message);
+                        return;
+                    }
+
+                    if (bookingState.availabilityError) {
+                        const message = document.createElement("p");
+                        message.className = "booking-times__empty";
+                        message.textContent = bookingState.availabilityError;
+                        timesElement.append(message);
+                        return;
+                    }
+
+                    if (!bookingState.selectedDate) {
+                        const message = document.createElement("p");
+                        message.className = "booking-times__empty";
+                        message.textContent = "Выберите доступную дату";
+                        timesElement.append(message);
+                        return;
+                    }
+
+                    if (!bookingState.availableTimes.length) {
+                        const message = document.createElement("p");
+                        message.className = "booking-times__empty";
+                        message.textContent = "Нет доступного времени";
+                        timesElement.append(message);
+                        return;
+                    }
+
+                    bookingState.availableTimes.forEach(
+                        ({ time, available }) => {
+                            const button = document.createElement("button");
+                            button.type = "button";
+                            button.textContent = time;
+                            button.disabled = !available;
+                            button.classList.toggle(
+                                "is-selected",
+                                bookingState.selectedTime === time,
+                            );
+
+                            button.addEventListener("click", () => {
+                                bookingState.selectedTime = time;
+                                renderTimes();
+                            });
+
+                            timesElement.append(button);
+                        },
+                    );
+                };
+
+                const loadTimesForSelectedDate = async () => {
+                    if (!bookingState.selectedDate) {
+                        bookingState.availableTimes = [];
+                        bookingState.selectedTime = "";
+                        renderTimes();
+                        return;
+                    }
+
+                    const requestId = ++activeTimesRequest;
+                    bookingState.isLoadingAvailability = true;
+                    bookingState.availabilityError = "";
+                    renderTimes();
+
+                    let times = [];
+
+                    try {
+                        times = await fetchAvailableTimes({
+                            date: bookingState.selectedDate,
+                            peopleCount: bookingState.peopleCount,
+                        });
+                    } catch (error) {
+                        if (requestId !== activeTimesRequest) return;
+
+                        bookingState.availableTimes = [];
+                        bookingState.selectedTime = "";
+                        bookingState.isLoadingAvailability = false;
+                        bookingState.availabilityError = error.message;
+                        renderTimes();
+                        return;
+                    }
+
+                    if (requestId !== activeTimesRequest) return;
+
+                    bookingState.availableTimes = times;
+                    bookingState.isLoadingAvailability = false;
+
+                    if (
+                        !times.some(
+                            ({ time, available }) =>
+                                available && time === bookingState.selectedTime,
+                        )
+                    ) {
+                        bookingState.selectedTime = "";
+                    }
+
+                    renderTimes();
+                };
+
+                const applyDateAvailability = () => {
+                    if (!datepicker) return;
+
+                    datepicker.set("enable", [
+                        (date) =>
+                            bookingState.availableDates.has(toIsoDate(date)),
+                    ]);
+
+                    const firstAvailableDate = Array.from(
+                        bookingState.availableDates,
+                    )[0];
+
+                    if (
+                        bookingState.selectedDate &&
+                        !bookingState.availableDates.has(
+                            bookingState.selectedDate,
+                        )
+                    ) {
+                        bookingState.selectedDate = "";
+                        bookingState.selectedTime = "";
+                    }
+
+                    if (!bookingState.selectedDate && firstAvailableDate) {
+                        bookingState.selectedDate = firstAvailableDate;
+                        datepicker.setDate(firstAvailableDate, false);
+                    }
+
+                    if (!bookingState.selectedDate) {
+                        datepicker.clear(false);
+                    }
+
+                    loadTimesForSelectedDate();
+                };
+
+                const loadDatesForVisibleMonth = async () => {
+                    if (!datepicker) return;
+
+                    const requestId = ++activeDatesRequest;
+                    const visibleDate = new Date(
+                        datepicker.currentYear,
+                        datepicker.currentMonth,
+                        1,
+                    );
+
+                    if (monthLabel) {
+                        monthLabel.textContent = getMonthName(visibleDate);
+                    }
+
+                    let availableDates = [];
+
+                    try {
+                        bookingState.availabilityError = "";
+                        availableDates = await fetchAvailableDates({
+                            year: datepicker.currentYear,
+                            month: datepicker.currentMonth + 1,
+                            peopleCount: bookingState.peopleCount,
+                        });
+                    } catch (error) {
+                        if (requestId !== activeDatesRequest) return;
+
+                        bookingState.availableDates = new Set();
+                        bookingState.availableTimes = [];
+                        bookingState.selectedDate = "";
+                        bookingState.selectedTime = "";
+                        bookingState.availabilityError = error.message;
+                        applyDateAvailability();
+                        renderTimes();
+                        return;
+                    }
+
+                    if (requestId !== activeDatesRequest) return;
+
+                    bookingState.availableDates = new Set(availableDates);
+                    applyDateAvailability();
+                };
+
+                const initBookingDatepicker = async () => {
+                    if (datepicker || !dateInput || !window.flatpickr) return;
+
+                    datepicker = window.flatpickr(dateInput, {
+                        inline: true,
+                        static: true,
+                        minDate: "today",
+                        dateFormat: "Y-m-d",
+                        locale: window.flatpickr.l10ns.ru,
+                        disableMobile: true,
+                        prevArrow: "",
+                        nextArrow: "",
+                        onReady: loadDatesForVisibleMonth,
+                        onMonthChange: loadDatesForVisibleMonth,
+                        onYearChange: loadDatesForVisibleMonth,
+                        onChange: ([date]) => {
+                            bookingState.selectedDate = date
+                                ? toIsoDate(date)
+                                : "";
+                            bookingState.selectedTime = "";
+                            loadTimesForSelectedDate();
+                        },
+                    });
+
+                    monthPrev?.addEventListener("click", () => {
+                        datepicker.changeMonth(-1);
+                    });
+                    monthNext?.addEventListener("click", () => {
+                        datepicker.changeMonth(1);
+                    });
+
+                    await loadDatesForVisibleMonth();
+                    isBookingReady = true;
+                };
+
+                const refreshAvailabilityForPeople = async () => {
+                    updatePeopleOutput();
+                    await loadDatesForVisibleMonth();
+
+                    if (bookingState.selectedDate) {
+                        await loadTimesForSelectedDate();
+                    }
+                };
+
+                const setPeopleCount = (nextCount) => {
+                    bookingState.peopleCount = Math.min(
+                        Math.max(nextCount, 1),
+                        8,
+                    );
+                    refreshAvailabilityForPeople();
+                };
+
+                const isInfoPopupOpen = () =>
+                    Boolean(infoPopup && !infoPopup.hidden);
+
+                const openInfoPopup = (event) => {
+                    event?.preventDefault();
+
+                    if (!infoPopup || !infoDialog) return;
+
+                    lastFocusedInfoElement = document.activeElement;
+                    infoPopup.hidden = false;
+                    infoPopup.setAttribute("aria-hidden", "false");
+                    window.requestAnimationFrame(() => infoDialog.focus());
+                };
+
+                const closeInfoPopup = ({ restoreFocus = true } = {}) => {
+                    if (!infoPopup || infoPopup.hidden) return;
+
+                    infoPopup.setAttribute("aria-hidden", "true");
+                    infoPopup.hidden = true;
+
+                    if (
+                        restoreFocus &&
+                        lastFocusedInfoElement instanceof HTMLElement
+                    ) {
+                        lastFocusedInfoElement.focus();
+                    }
+
+                    lastFocusedInfoElement = null;
+                };
+
+                const openModal = () => {
+                    lastFocusedElement = document.activeElement;
+                    lockedScrollY = window.scrollY;
+                    modal.hidden = false;
+                    modal.setAttribute("aria-hidden", "false");
+                    document.body.style.top = `-${lockedScrollY}px`;
+                    document.documentElement.classList.add(
+                        "has-booking-modal",
+                    );
+                    document.body.classList.add("has-booking-modal");
+                    initBookingDatepicker();
+                    window.requestAnimationFrame(() => dialog.focus());
+                };
+
+                const closeModal = () => {
+                    closeInfoPopup({ restoreFocus: false });
+                    modal.setAttribute("aria-hidden", "true");
+                    modal.hidden = true;
+                    document.documentElement.classList.remove(
+                        "has-booking-modal",
+                    );
+                    document.body.classList.remove("has-booking-modal");
+                    document.body.style.top = "";
+                    window.scrollTo(0, lockedScrollY);
+
+                    if (lastFocusedElement instanceof HTMLElement) {
+                        lastFocusedElement.focus();
+                    }
+                };
+
+                openButtons.forEach((button) => {
+                    button.addEventListener("click", openModal);
+                });
+
+                closeButtons?.forEach((button) => {
+                    button.addEventListener("click", closeModal);
+                });
+
+                infoOpenButton?.addEventListener("click", openInfoPopup);
+
+                infoCloseButtons?.forEach((button) => {
+                    button.addEventListener("click", () => closeInfoPopup());
+                });
+
+                peopleMinus?.addEventListener("click", () => {
+                    setPeopleCount(bookingState.peopleCount - 1);
+                });
+
+                peoplePlus?.addEventListener("click", () => {
+                    setPeopleCount(bookingState.peopleCount + 1);
+                });
+
+                document.addEventListener("keydown", (event) => {
+                    if (event.key === "Escape" && !modal.hidden) {
+                        if (isInfoPopupOpen()) {
+                            event.preventDefault();
+                            closeInfoPopup();
+                            return;
+                        }
+
+                        closeModal();
+                    }
+                });
+
+                form.addEventListener("submit", async (event) => {
+                    event.preventDefault();
+
+                    if (!form.reportValidity()) return;
+
+                    if (!bookingState.selectedDate) {
+                        window.alert("Выберите дату катания.");
+                        return;
+                    }
+
+                    if (!bookingState.selectedTime) {
+                        window.alert("Выберите время катания.");
+                        return;
+                    }
+
+                    if (!isBookingReady) return;
+
+                    const formData = new FormData(form);
+                    const payload = {
+                        name: String(formData.get("name") || "").trim(),
+                        email: String(formData.get("email") || "").trim(),
+                        phone: String(formData.get("phone") || "").trim(),
+                        peopleCount: bookingState.peopleCount,
+                        date: bookingState.selectedDate,
+                        time: bookingState.selectedTime,
+                        acceptedTerms: formData.get("terms") === "on",
+                    };
+
+                    bookingState.isSubmitting = true;
+                    updateSubmitState();
+
+                    try {
+                        const result = await submitBooking(payload);
+                        const code = result?.bookings?.[0]?.code;
+
+                        window.alert(
+                            code
+                                ? `Бронирование создано. Код: ${code}`
+                                : "Бронирование создано.",
+                        );
+                        closeModal();
+                    } catch (error) {
+                        window.alert(error.message);
+                        await loadTimesForSelectedDate();
+                    } finally {
+                        bookingState.isSubmitting = false;
+                        updateSubmitState();
+                    }
+                });
+
+                updatePeopleOutput();
+                updateSubmitState();
+                renderTimes();
+            })();
+
+            (() => {
+                const ctaSource = document.querySelector("[data-cta-source]");
+                const floatingCta = document.querySelector(
+                    "[data-cta-floating]",
+                );
+
+                if (!ctaSource || !floatingCta) return;
+
+                const setFloatingCtaVisible = (isVisible) => {
+                    floatingCta.classList.toggle("is-visible", isVisible);
+                    floatingCta.toggleAttribute("inert", !isVisible);
+                    floatingCta.setAttribute("aria-hidden", String(!isVisible));
+                };
+
+                const updateFloatingCta = () => {
+                    const rect = ctaSource.getBoundingClientRect();
+                    const sourceIsVisible =
+                        rect.bottom > 0 &&
+                        rect.right > 0 &&
+                        rect.top < window.innerHeight &&
+                        rect.left < window.innerWidth;
+
+                    setFloatingCtaVisible(!sourceIsVisible);
+                };
+
+                if ("IntersectionObserver" in window) {
+                    const observer = new IntersectionObserver(
+                        ([entry]) => {
+                            setFloatingCtaVisible(!entry.isIntersecting);
+                        },
+                        { threshold: 0 },
+                    );
+
+                    observer.observe(ctaSource);
+                    return;
+                }
+
+                window.addEventListener("scroll", updateFloatingCta, {
+                    passive: true,
+                });
+                window.addEventListener("resize", updateFloatingCta);
+                updateFloatingCta();
+            })();
+
+            (() => {
+                const telegramCard = document.querySelector(".telegram-card");
+
+                if (!telegramCard) return;
+
+                const minScrollY = 224;
+                let hasScrolledEnough = window.scrollY >= minScrollY;
+                let cardIsVisible = false;
+                let observer = null;
+
+                const cardIntersectsViewport = () => {
+                    const rect = telegramCard.getBoundingClientRect();
+
+                    return (
+                        rect.bottom > 0 &&
+                        rect.right > 0 &&
+                        rect.top < window.innerHeight &&
+                        rect.left < window.innerWidth
+                    );
+                };
+
+                const cleanup = () => {
+                    window.removeEventListener("scroll", updateBadgeAlert);
+                    window.removeEventListener("resize", updateBadgeAlert);
+                    observer?.disconnect();
+                };
+
+                const showBadgeAlert = () => {
+                    telegramCard.classList.add("has-badge-alert");
+                    cleanup();
+                };
+
+                const updateBadgeAlert = () => {
+                    hasScrolledEnough = window.scrollY >= minScrollY;
+
+                    if (!observer) {
+                        cardIsVisible = cardIntersectsViewport();
+                    }
+
+                    if (hasScrolledEnough && cardIsVisible) {
+                        showBadgeAlert();
+                    }
+                };
+
+                if ("IntersectionObserver" in window) {
+                    observer = new IntersectionObserver(
+                        ([entry]) => {
+                            cardIsVisible = entry.isIntersecting;
+                            updateBadgeAlert();
+                        },
+                        { threshold: 0 },
+                    );
+
+                    observer.observe(telegramCard);
+                } else {
+                    window.addEventListener("resize", updateBadgeAlert);
+                }
+
+                window.addEventListener("scroll", updateBadgeAlert, {
+                    passive: true,
+                });
+                updateBadgeAlert();
+            })();
+
+            if (window.Swiper) {
+                const stepEmotions = [
+                    "😌",
+                    "🙂",
+                    "😬",
+                    "😐",
+                    "😳",
+                    "😏",
+                    "😃",
+                    "🤩",
+                ];
+                const stepsIndicator =
+                    document.querySelector(".scroll-indicator");
+                const stepsIndicatorBar = document.querySelector(
+                    ".scroll-indicator__bar",
+                );
+                const stepsIndicatorHandle = document.querySelector(
+                    ".scroll-indicator__handle",
+                );
+                const stepsElement = document.querySelector(".steps");
+
+                const getStepsSlidesOffsetAfter = () => {
+                    if (!stepsElement) return 0;
+
+                    const firstSlide =
+                        stepsElement.querySelector(".swiper-slide");
+                    if (!firstSlide) return 0;
+
+                    return Math.max(
+                        stepsElement.clientWidth - firstSlide.clientWidth,
+                        0,
+                    );
+                };
+
+                const updateStepsIndicator = (swiper) => {
+                    if (!stepsIndicator || !stepsIndicatorHandle) return;
+
+                    const maxIndex = Math.max(swiper.slides.length - 1, 1);
+                    const progress = swiper.realIndex / maxIndex;
+
+                    stepsIndicator.style.setProperty(
+                        "--steps-progress",
+                        progress,
+                    );
+                    stepsIndicatorHandle.textContent =
+                        stepEmotions[swiper.realIndex] || stepEmotions[0];
+                    stepsIndicator.setAttribute(
+                        "aria-label",
+                        `Learning step ${swiper.realIndex + 1} of ${swiper.slides.length}`,
+                    );
+                };
+
+                const videoCarousel = new Swiper(".video-carousel", {
+                    slidesPerView: "auto",
+                    spaceBetween: 8,
+                    centeredSlides: false,
+                    grabCursor: true,
+                    watchSlidesProgress: true,
+                    keyboard: {
+                        enabled: true,
+                    },
+                    navigation: false,
+                    pagination: {
+                        el: ".video-carousel__pagination",
+                        clickable: true,
+                    },
+                    breakpoints: {
+                        768: {
+                            spaceBetween: 8,
+                        },
+                        1200: {
+                            spaceBetween: 8,
+                        },
+                    },
+                    on: {
+                        slideChange() {
+                            document
+                                .querySelectorAll(".video-carousel video")
+                                .forEach((video) => {
+                                    video.pause();
+                                });
+                        },
+                    },
+                });
+
+                const stepsCarousel = new Swiper(".steps", {
+                    slidesPerView: "auto",
+                    spaceBetween: 20,
+                    slidesOffsetAfter: getStepsSlidesOffsetAfter(),
+                    centeredSlides: true,
+                    grabCursor: true,
+                    keyboard: {
+                        enabled: true,
+                    },
+                    breakpoints: {
+                        0: {
+                            spaceBetween: 8,
+                        },
+                        768: {
+                            spaceBetween: 16,
+                        },
+                        1200: {
+                            spaceBetween: 20,
+                        },
+                    },
+                    on: {
+                        init(swiper) {
+                            updateStepsIndicator(swiper);
+                        },
+                        slideChange(swiper) {
+                            updateStepsIndicator(swiper);
+                        },
+                    },
+                });
+
+                window.addEventListener("resize", () => {
+                    stepsCarousel.params.slidesOffsetAfter =
+                        getStepsSlidesOffsetAfter();
+                    stepsCarousel.update();
+                    updateStepsIndicator(stepsCarousel);
+                });
+
+                if (stepsIndicator && stepsIndicatorBar) {
+                    let isDraggingStepsIndicator = false;
+
+                    const getStepIndexFromPointer = (event) => {
+                        const rect = stepsIndicatorBar.getBoundingClientRect();
+                        const progress = Math.min(
+                            Math.max(
+                                (event.clientX - rect.left) / rect.width,
+                                0,
+                            ),
+                            1,
+                        );
+
+                        return Math.round(
+                            progress * (stepsCarousel.slides.length - 1),
+                        );
+                    };
+
+                    const goToStepFromPointer = (event) => {
+                        const targetIndex = getStepIndexFromPointer(event);
+
+                        stepsCarousel.slideTo(targetIndex);
+                    };
+
+                    stepsIndicator.addEventListener("pointerdown", (event) => {
+                        isDraggingStepsIndicator = true;
+                        stepsIndicator.classList.add("is-dragging");
+                        stepsIndicator.setPointerCapture(event.pointerId);
+                        goToStepFromPointer(event);
+                    });
+
+                    stepsIndicator.addEventListener("pointermove", (event) => {
+                        if (!isDraggingStepsIndicator) return;
+
+                        goToStepFromPointer(event);
+                    });
+
+                    stepsIndicator.addEventListener("pointerup", (event) => {
+                        if (!isDraggingStepsIndicator) return;
+
+                        isDraggingStepsIndicator = false;
+                        stepsIndicator.classList.remove("is-dragging");
+                        goToStepFromPointer(event);
+                    });
+
+                    stepsIndicator.addEventListener("pointercancel", () => {
+                        isDraggingStepsIndicator = false;
+                        stepsIndicator.classList.remove("is-dragging");
+                    });
+                }
+            }
+
+            (() => {
+                const gallery = document.querySelector(".gallery-carousel");
+                const galleryTracks = [
+                    ...document.querySelectorAll(".gallery-track"),
+                ];
+
+                if (!gallery || !galleryTracks.length) return;
+
+                const offsets = new WeakMap();
+                let activeTrack = null;
+                let activeRow = null;
+                let startX = 0;
+                let startOffset = 0;
+
+                const getLoopWidth = (row) => {
+                    const gap = parseFloat(
+                        getComputedStyle(row).columnGap || "0",
+                    );
+
+                    return row.scrollWidth / 2 + gap / 2;
+                };
+
+                const normalizeOffset = (row, offset) => {
+                    const loopWidth = getLoopWidth(row);
+
+                    if (!loopWidth) return offset;
+
+                    const halfLoopWidth = loopWidth / 2;
+
+                    return (
+                        ((((offset + halfLoopWidth) % loopWidth) + loopWidth) %
+                            loopWidth) -
+                        halfLoopWidth
+                    );
+                };
+
+                const setRowOffset = (row, offset) => {
+                    const normalizedOffset = normalizeOffset(row, offset);
+
+                    offsets.set(row, normalizedOffset);
+                    row.style.setProperty(
+                        "--gallery-drag-offset",
+                        `${normalizedOffset}px`,
+                    );
+                };
+
+                galleryTracks.forEach((track) => {
+                    const row = track.querySelector(".gallery-row");
+
+                    if (!row) return;
+
+                    offsets.set(row, 0);
+                    row.style.setProperty("--gallery-drag-offset", "0px");
+
+                    track.addEventListener("dragstart", (event) => {
+                        event.preventDefault();
+                    });
+
+                    track.addEventListener("pointerdown", (event) => {
+                        if (
+                            event.pointerType === "mouse" &&
+                            event.button !== 0
+                        ) {
+                            return;
+                        }
+
+                        activeTrack = track;
+                        activeRow = row;
+                        startX = event.clientX;
+                        startOffset = offsets.get(row) || 0;
+                        track.classList.add("is-dragging");
+                        track.setPointerCapture(event.pointerId);
+                    });
+
+                    track.addEventListener("pointermove", (event) => {
+                        if (activeTrack !== track || !activeRow) return;
+
+                        const deltaX = event.clientX - startX;
+
+                        setRowOffset(activeRow, startOffset + deltaX);
+                    });
+
+                    const stopTrackDrag = (event) => {
+                        if (activeTrack !== track) return;
+
+                        track.classList.remove("is-dragging");
+
+                        if (track.hasPointerCapture(event.pointerId)) {
+                            track.releasePointerCapture(event.pointerId);
+                        }
+
+                        activeTrack = null;
+                        activeRow = null;
+                    };
+
+                    track.addEventListener("pointerup", stopTrackDrag);
+                    track.addEventListener("pointercancel", stopTrackDrag);
+                });
+            })();
+
+            document.querySelectorAll(".big-video").forEach((section) => {
+                const video = section.querySelector("video");
+                const button = section.querySelector(".play-big");
+
+                if (!video || !button) return;
+
+                const syncPlayButton = () => {
+                    button.hidden = !video.paused;
+                };
+
+                button.addEventListener("click", () => {
+                    video.play().catch(() => {});
+                });
+                video.addEventListener("play", syncPlayButton);
+                video.addEventListener("pause", syncPlayButton);
+                video.addEventListener("ended", syncPlayButton);
+            });
+        </script>
+    </body>
+</html>
