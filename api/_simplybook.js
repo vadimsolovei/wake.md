@@ -3,6 +3,8 @@ const API_URL = "https://user-api.simplybook.me";
 
 let cachedToken = "";
 let cachedTokenConfigKey = "";
+let cachedTokenPromise = null;
+let cachedTokenPromiseConfigKey = "";
 
 class BookingError extends Error {
     constructor(message, status = 500, code = "BOOKING_ERROR") {
@@ -38,7 +40,6 @@ const getConfig = (env = process.env) => {
     if (!Number.isInteger(config.providerId) || config.providerId <= 0) {
         missing.push("SIMPLYBOOK_PROVIDER_ID");
     }
-
     if (missing.length) {
         throw new BookingError(
             `Missing SimplyBook configuration: ${missing.join(", ")}`,
@@ -121,25 +122,41 @@ const getToken = async ({ config, fetchImpl = fetch, forceRefresh = false }) => 
         return cachedToken;
     }
 
-    const token = await rpcRequest({
+    if (
+        !forceRefresh &&
+        cachedTokenPromise &&
+        cachedTokenPromiseConfigKey === configKey
+    ) {
+        return cachedTokenPromise;
+    }
+
+    cachedTokenPromiseConfigKey = configKey;
+    cachedTokenPromise = rpcRequest({
         url: LOGIN_URL,
         method: "getToken",
         params: [config.companyLogin, config.apiKey],
         fetchImpl,
-    });
+    })
+        .then((token) => {
+            if (!token || typeof token !== "string") {
+                throw new BookingError(
+                    "SimplyBook authentication did not return a token.",
+                    502,
+                    "AUTH_RESPONSE_ERROR",
+                );
+            }
 
-    if (!token || typeof token !== "string") {
-        throw new BookingError(
-            "SimplyBook authentication did not return a token.",
-            502,
-            "AUTH_RESPONSE_ERROR",
-        );
-    }
+            cachedToken = token;
+            cachedTokenConfigKey = configKey;
 
-    cachedToken = token;
-    cachedTokenConfigKey = configKey;
+            return cachedToken;
+        })
+        .finally(() => {
+            cachedTokenPromise = null;
+            cachedTokenPromiseConfigKey = "";
+        });
 
-    return cachedToken;
+    return cachedTokenPromise;
 };
 
 const callSimplyBook = async ({
@@ -178,6 +195,8 @@ const callSimplyBook = async ({
 
         cachedToken = "";
         cachedTokenConfigKey = "";
+        cachedTokenPromise = null;
+        cachedTokenPromiseConfigKey = "";
 
         return doRequest(true);
     }
@@ -265,6 +284,49 @@ const getMonthRange = ({ year, month }) => {
     };
 };
 
+const formatDateInTimezone = (date, timeZone) => {
+    const parts = new Intl.DateTimeFormat("en", {
+        timeZone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+    }).formatToParts(date);
+    const values = Object.fromEntries(
+        parts
+            .filter((part) => part.type !== "literal")
+            .map((part) => [part.type, part.value]),
+    );
+
+    return `${values.year}-${values.month}-${values.day}`;
+};
+
+const maxIsoDate = (firstDate, secondDate) =>
+    firstDate > secondDate ? firstDate : secondDate;
+
+const getAvailabilityMonthRange = ({
+    year,
+    month,
+    timezone = "Europe/Chisinau",
+    now = new Date(),
+}) => {
+    const today = formatDateInTimezone(now, timezone);
+    const [todayYear, todayMonth] = today.split("-").map(Number);
+    const numericYear = year === undefined ? todayYear : Number(year);
+    const numericMonth = month === undefined ? todayMonth : Number(month);
+
+    const range = getMonthRange({
+        year: numericYear,
+        month: numericMonth,
+    });
+
+    if (range.lastDay < today) return null;
+
+    return {
+        firstDay: maxIsoDate(range.firstDay, today),
+        lastDay: range.lastDay,
+    };
+};
+
 const normalizeSlotMatrixDates = (matrix) => {
     if (!matrix || typeof matrix !== "object") return [];
 
@@ -303,12 +365,15 @@ const handleError = (res, error) => {
 const resetTokenCache = () => {
     cachedToken = "";
     cachedTokenConfigKey = "";
+    cachedTokenPromise = null;
+    cachedTokenPromiseConfigKey = "";
 };
 
 module.exports = {
     BookingError,
     callSimplyBook,
     getConfig,
+    getAvailabilityMonthRange,
     getMonthRange,
     handleError,
     isValidDate,

@@ -1165,6 +1165,18 @@
                                         aria-label="Дата катания"
                                     />
                                 </div>
+                                <div
+                                    class="booking-loader booking-loader--calendar"
+                                    data-booking-dates-loader
+                                    aria-live="polite"
+                                    hidden
+                                >
+                                    <span
+                                        class="booking-loader__spinner"
+                                        aria-hidden="true"
+                                    ></span>
+                                    <span>Загружаем доступные даты</span>
+                                </div>
                             </section>
 
                             <section class="booking-card booking-price-card">
@@ -1372,8 +1384,15 @@
                                     <path d="m6 6 12 12" />
                                 </svg>
                             </button>
-                            <button class="btn btn--primary" type="submit">
-                                Оплатить
+                            <button
+                                class="btn btn--primary booking-submit"
+                                type="submit"
+                            >
+                                <span
+                                    class="booking-submit__spinner"
+                                    aria-hidden="true"
+                                ></span>
+                                <span data-booking-submit-label>Оплатить</span>
                             </button>
                             <a
                                 class="booking-modal__footer-action booking-modal__footer-action--phone btn--ghost"
@@ -1602,6 +1621,9 @@
                 const timesElement = modal?.querySelector(
                     "[data-booking-times]",
                 );
+                const datesLoader = modal?.querySelector(
+                    "[data-booking-dates-loader]",
+                );
                 const peopleMinus = modal?.querySelector(
                     "[data-booking-people-minus]",
                 );
@@ -1630,6 +1652,9 @@
                     "[data-booking-info-close]",
                 );
                 const submitButton = form?.querySelector("[type='submit']");
+                const submitLabel = submitButton?.querySelector(
+                    "[data-booking-submit-label]",
+                );
 
                 if (!modal || !dialog || !form || !openButtons.length) return;
 
@@ -1639,6 +1664,7 @@
                 let activeDatesRequest = 0;
                 let activeTimesRequest = 0;
                 let isBookingReady = false;
+                const availableDatesRequests = new Map();
                 let lockedScrollY = 0;
 
                 const bookingState = {
@@ -1647,7 +1673,8 @@
                     peopleCount: 2,
                     availableDates: new Set(),
                     availableTimes: [],
-                    isLoadingAvailability: false,
+                    isLoadingDates: false,
+                    isLoadingTimes: false,
                     availabilityError: "",
                     isSubmitting: false,
                 };
@@ -1666,6 +1693,70 @@
                         year: "numeric",
                     }).format(date);
 
+                const getCurrentMonthIndex = () => {
+                    const today = new Date();
+
+                    return today.getFullYear() * 12 + today.getMonth();
+                };
+
+                const getVisibleMonthIndex = () => {
+                    if (!datepicker) return getCurrentMonthIndex();
+
+                    return datepicker.currentYear * 12 + datepicker.currentMonth;
+                };
+
+                const updateMonthControls = () => {
+                    monthPrev?.toggleAttribute(
+                        "disabled",
+                        bookingState.isLoadingDates ||
+                            getVisibleMonthIndex() <= getCurrentMonthIndex(),
+                    );
+                    monthNext?.toggleAttribute(
+                        "disabled",
+                        bookingState.isLoadingDates,
+                    );
+                };
+
+                const updateDatesLoader = () => {
+                    if (!datesLoader) return;
+
+                    datesLoader.hidden = !bookingState.isLoadingDates;
+                };
+
+                const isAvailableDate = (date) =>
+                    bookingState.availableDates.has(toIsoDate(date));
+
+                const clearDatepickerSelection = () => {
+                    if (!datepicker) return;
+
+                    const visibleDate = new Date(
+                        datepicker.currentYear,
+                        datepicker.currentMonth,
+                        1,
+                    );
+
+                    datepicker.clear(false);
+                    datepicker.jumpToDate(visibleDate, false);
+                    updateMonthControls();
+                };
+
+                const updateCalendarDayAvailability = (
+                    _selectedDates,
+                    _dateString,
+                    instance,
+                    dayElement,
+                ) => {
+                    const date = dayElement.dateObj;
+                    const isVisibleMonth =
+                        date.getFullYear() === instance.currentYear &&
+                        date.getMonth() === instance.currentMonth;
+
+                    if (isVisibleMonth && !isAvailableDate(date)) {
+                        dayElement.classList.add("flatpickr-disabled");
+                        dayElement.setAttribute("aria-disabled", "true");
+                    }
+                };
+
                 const readJsonResponse = async (response) => {
                     const data = await response.json().catch(() => null);
 
@@ -1679,27 +1770,31 @@
                     return data;
                 };
 
-                const fetchAvailableDates = async ({
-                    year,
-                    month,
-                    peopleCount,
-                }) => {
-                    const params = new URLSearchParams({
-                        year: String(year),
-                        month: String(month),
-                        peopleCount: String(peopleCount),
-                    });
-                    const data = await fetch(
-                        `/api/booking/dates?${params.toString()}`,
-                    ).then(readJsonResponse);
+                const fetchAvailableDates = async ({ year, month }) => {
+                    const cacheKey = `${year}-${month}`;
+
+                    if (!availableDatesRequests.has(cacheKey)) {
+                        const params = new URLSearchParams({
+                            year: String(year),
+                            month: String(month),
+                        });
+
+                        availableDatesRequests.set(
+                            cacheKey,
+                            fetch(
+                                `/api/booking/dates?${params.toString()}`,
+                            ).then(readJsonResponse),
+                        );
+                    }
+
+                    const data = await availableDatesRequests.get(cacheKey);
 
                     return Array.isArray(data.dates) ? data.dates : [];
                 };
 
-                const fetchAvailableTimes = async ({ date, peopleCount }) => {
+                const fetchAvailableTimes = async ({ date }) => {
                     const params = new URLSearchParams({
                         date,
-                        peopleCount: String(peopleCount),
                     });
                     const data = await fetch(
                         `/api/booking/times?${params.toString()}`,
@@ -1727,9 +1822,20 @@
                         "disabled",
                         bookingState.isSubmitting,
                     );
-                    submitButton.textContent = bookingState.isSubmitting
-                        ? "Бронируем..."
-                        : "Оплатить";
+                    submitButton.classList.toggle(
+                        "is-loading",
+                        bookingState.isSubmitting,
+                    );
+                    submitButton.setAttribute(
+                        "aria-busy",
+                        String(bookingState.isSubmitting),
+                    );
+
+                    if (submitLabel) {
+                        submitLabel.textContent = bookingState.isSubmitting
+                            ? "Бронируем..."
+                            : "Оплатить";
+                    }
                 };
 
                 const updatePeopleOutput = () => {
@@ -1754,11 +1860,19 @@
 
                     timesElement.innerHTML = "";
 
-                    if (bookingState.isLoadingAvailability) {
-                        const message = document.createElement("p");
-                        message.className = "booking-times__empty";
-                        message.textContent = "Загружаем доступное время";
-                        timesElement.append(message);
+                    if (bookingState.isLoadingTimes) {
+                        const loader = document.createElement("p");
+                        const spinner = document.createElement("span");
+                        const label = document.createElement("span");
+
+                        loader.className =
+                            "booking-times__empty booking-times__loader";
+                        loader.setAttribute("aria-live", "polite");
+                        spinner.className = "booking-loader__spinner";
+                        spinner.setAttribute("aria-hidden", "true");
+                        label.textContent = "Загружаем доступное время";
+                        loader.append(spinner, label);
+                        timesElement.append(loader);
                         return;
                     }
 
@@ -1809,14 +1923,16 @@
 
                 const loadTimesForSelectedDate = async () => {
                     if (!bookingState.selectedDate) {
+                        activeTimesRequest += 1;
                         bookingState.availableTimes = [];
                         bookingState.selectedTime = "";
+                        bookingState.isLoadingTimes = false;
                         renderTimes();
                         return;
                     }
 
                     const requestId = ++activeTimesRequest;
-                    bookingState.isLoadingAvailability = true;
+                    bookingState.isLoadingTimes = true;
                     bookingState.availabilityError = "";
                     renderTimes();
 
@@ -1825,14 +1941,13 @@
                     try {
                         times = await fetchAvailableTimes({
                             date: bookingState.selectedDate,
-                            peopleCount: bookingState.peopleCount,
                         });
                     } catch (error) {
                         if (requestId !== activeTimesRequest) return;
 
                         bookingState.availableTimes = [];
                         bookingState.selectedTime = "";
-                        bookingState.isLoadingAvailability = false;
+                        bookingState.isLoadingTimes = false;
                         bookingState.availabilityError = error.message;
                         renderTimes();
                         return;
@@ -1841,7 +1956,7 @@
                     if (requestId !== activeTimesRequest) return;
 
                     bookingState.availableTimes = times;
-                    bookingState.isLoadingAvailability = false;
+                    bookingState.isLoadingTimes = false;
 
                     if (
                         !times.some(
@@ -1858,10 +1973,7 @@
                 const applyDateAvailability = () => {
                     if (!datepicker) return;
 
-                    datepicker.set("enable", [
-                        (date) =>
-                            bookingState.availableDates.has(toIsoDate(date)),
-                    ]);
+                    datepicker.redraw();
 
                     const firstAvailableDate = Array.from(
                         bookingState.availableDates,
@@ -1883,7 +1995,7 @@
                     }
 
                     if (!bookingState.selectedDate) {
-                        datepicker.clear(false);
+                        clearDatepickerSelection();
                     }
 
                     loadTimesForSelectedDate();
@@ -1902,6 +2014,9 @@
                     if (monthLabel) {
                         monthLabel.textContent = getMonthName(visibleDate);
                     }
+                    bookingState.isLoadingDates = true;
+                    updateDatesLoader();
+                    updateMonthControls();
 
                     let availableDates = [];
 
@@ -1910,7 +2025,6 @@
                         availableDates = await fetchAvailableDates({
                             year: datepicker.currentYear,
                             month: datepicker.currentMonth + 1,
-                            peopleCount: bookingState.peopleCount,
                         });
                     } catch (error) {
                         if (requestId !== activeDatesRequest) return;
@@ -1919,7 +2033,10 @@
                         bookingState.availableTimes = [];
                         bookingState.selectedDate = "";
                         bookingState.selectedTime = "";
+                        bookingState.isLoadingDates = false;
                         bookingState.availabilityError = error.message;
+                        updateDatesLoader();
+                        updateMonthControls();
                         applyDateAvailability();
                         renderTimes();
                         return;
@@ -1928,6 +2045,9 @@
                     if (requestId !== activeDatesRequest) return;
 
                     bookingState.availableDates = new Set(availableDates);
+                    bookingState.isLoadingDates = false;
+                    updateDatesLoader();
+                    updateMonthControls();
                     applyDateAvailability();
                 };
 
@@ -1937,16 +2057,22 @@
                     datepicker = window.flatpickr(dateInput, {
                         inline: true,
                         static: true,
-                        minDate: "today",
                         dateFormat: "Y-m-d",
                         locale: window.flatpickr.l10ns.ru,
                         disableMobile: true,
+                        minDate: "today",
                         prevArrow: "",
                         nextArrow: "",
                         onReady: loadDatesForVisibleMonth,
+                        onDayCreate: updateCalendarDayAvailability,
                         onMonthChange: loadDatesForVisibleMonth,
                         onYearChange: loadDatesForVisibleMonth,
                         onChange: ([date]) => {
+                            if (date && !isAvailableDate(date)) {
+                                clearDatepickerSelection();
+                                return;
+                            }
+
                             bookingState.selectedDate = date
                                 ? toIsoDate(date)
                                 : "";
@@ -1956,6 +2082,11 @@
                     });
 
                     monthPrev?.addEventListener("click", () => {
+                        if (getVisibleMonthIndex() <= getCurrentMonthIndex()) {
+                            updateMonthControls();
+                            return;
+                        }
+
                         datepicker.changeMonth(-1);
                     });
                     monthNext?.addEventListener("click", () => {
@@ -1968,7 +2099,6 @@
 
                 const refreshAvailabilityForPeople = async () => {
                     updatePeopleOutput();
-                    await loadDatesForVisibleMonth();
 
                     if (bookingState.selectedDate) {
                         await loadTimesForSelectedDate();

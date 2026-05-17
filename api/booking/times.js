@@ -5,7 +5,6 @@ const {
     handleError,
     isValidDate,
     json,
-    normalizePeopleCount,
     normalizeSlotMatrixTimes,
 } = require("../_simplybook");
 
@@ -24,7 +23,6 @@ module.exports = async function handler(req, res) {
 
     try {
         const date = String(req.query.date || "");
-        const peopleCount = normalizePeopleCount(req.query.peopleCount);
 
         if (!isValidDate(date)) {
             throw new BookingError(
@@ -42,7 +40,6 @@ module.exports = async function handler(req, res) {
                 date,
                 config.serviceId,
                 config.providerId,
-                peopleCount,
             ],
             config,
         });

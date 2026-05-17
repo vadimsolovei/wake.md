@@ -1,12 +1,16 @@
 const {
     callSimplyBook,
     getConfig,
-    getMonthRange,
+    getAvailabilityMonthRange,
     handleError,
     json,
-    normalizePeopleCount,
     normalizeSlotMatrixDates,
 } = require("../_simplybook");
+
+const AVAILABILITY_PEOPLE_COUNT = 1;
+const DATES_CACHE_TTL_MS = 60 * 1000;
+
+const datesCache = new Map();
 
 module.exports = async function handler(req, res) {
     if (req.method !== "GET") {
@@ -22,12 +26,34 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        const peopleCount = normalizePeopleCount(req.query.peopleCount);
-        const { firstDay, lastDay } = getMonthRange({
+        const config = getConfig();
+        const range = getAvailabilityMonthRange({
             year: req.query.year,
             month: req.query.month,
+            timezone: config.timezone,
         });
-        const config = getConfig();
+
+        if (!range) {
+            json(res, 200, { dates: [] });
+            return;
+        }
+
+        const { firstDay, lastDay } = range;
+        const cacheKey = [
+            config.companyLogin,
+            config.serviceId,
+            config.providerId,
+            config.timezone,
+            firstDay,
+            lastDay,
+        ].join(":");
+        const cached = datesCache.get(cacheKey);
+
+        if (cached && cached.until > Date.now()) {
+            json(res, 200, { dates: cached.dates });
+            return;
+        }
+
         const matrix = await callSimplyBook({
             method: "getStartTimeMatrix",
             params: [
@@ -35,13 +61,19 @@ module.exports = async function handler(req, res) {
                 lastDay,
                 config.serviceId,
                 config.providerId,
-                peopleCount,
+                AVAILABILITY_PEOPLE_COUNT,
             ],
             config,
         });
+        const dates = normalizeSlotMatrixDates(matrix);
+
+        datesCache.set(cacheKey, {
+            until: Date.now() + DATES_CACHE_TTL_MS,
+            dates,
+        });
 
         json(res, 200, {
-            dates: normalizeSlotMatrixDates(matrix),
+            dates,
         });
     } catch (error) {
         handleError(res, error);
