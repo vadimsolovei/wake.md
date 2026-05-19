@@ -2,9 +2,12 @@ const {
     BookingError,
     callSimplyBook,
     getConfig,
+    getDateParts,
     handleError,
     isValidDate,
     json,
+    normalizeServiceDuration,
+    normalizeTimeframe,
     normalizeSlotMatrixTimes,
 } = require("../_simplybook");
 
@@ -33,6 +36,7 @@ module.exports = async function handler(req, res) {
         }
 
         const config = getConfig();
+        const { year, month } = getDateParts(date);
         const matrix = await callSimplyBook({
             method: "getStartTimeMatrix",
             params: [
@@ -43,9 +47,44 @@ module.exports = async function handler(req, res) {
             ],
             config,
         });
+        const workCalendar = await callSimplyBook({
+            method: "getWorkCalendar",
+            params: [year, month, config.providerId],
+            config,
+        });
+        const reservedIntervals = await callSimplyBook({
+            method: "getReservedTimeIntervals",
+            params: [
+                date,
+                date,
+                config.serviceId,
+                config.providerId,
+            ],
+            config,
+        });
+        const events = await callSimplyBook({
+            method: "getEventList",
+            params: [],
+            config,
+        });
+        const timeframe = normalizeTimeframe(
+            await callSimplyBook({
+                method: "getTimeframe",
+                params: [],
+                config,
+            }),
+        );
 
         json(res, 200, {
-            times: normalizeSlotMatrixTimes(matrix, date),
+            times: normalizeSlotMatrixTimes(matrix, date, {
+                workCalendar,
+                reservedIntervals,
+                serviceDuration: normalizeServiceDuration(
+                    events,
+                    config.serviceId,
+                ),
+                timeframe,
+            }),
         });
     } catch (error) {
         handleError(res, error);

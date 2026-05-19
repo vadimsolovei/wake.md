@@ -729,7 +729,8 @@ a {
     color: var(--white);
 }
 .section__head--white .section__lead {
-    opacity: 0.6;
+    color: var(--white);
+    opacity: 1;
 }
 
 .section__title {
@@ -1135,8 +1136,8 @@ a {
 }
 .map__pin {
     position: absolute;
-    left: 50%;
-    top: 50%;
+    left: 67%;
+    top: 44%;
     width: 42px;
     height: 42px;
     transform: translate(-50%, -20%);
@@ -1503,11 +1504,9 @@ body.has-booking-modal {
 }
 
 .booking-modal__header {
-    display: grid;
-    grid-template-columns: 160px 1fr 160px;
-    align-items: start;
-    gap: 20px;
-    padding: 40px 40px 20px;
+    display: flex;
+    justify-content: center;
+    padding: 40px;
 }
 
 .booking-modal__brand {
@@ -1530,6 +1529,10 @@ body.has-booking-modal {
     line-height: 72px;
     text-align: center;
     color: var(--ink);
+}
+
+.booking-title__first-line {
+    white-space: nowrap;
 }
 
 .booking-modal__actions {
@@ -1571,7 +1574,7 @@ body.has-booking-modal {
 
 .booking-modal__content {
     display: grid;
-    grid-template-columns: 400px 800px;
+    grid-template-columns: 400px 600px;
     justify-content: center;
     align-items: start;
     gap: 20px;
@@ -1793,7 +1796,7 @@ body.has-booking-modal {
 
 .booking-price-card {
     background: rgba(255, 255, 255, 0.34);
-    min-height: 236px;
+    min-height: 304px;
 }
 
 .booking-price-card h3,
@@ -1824,6 +1827,15 @@ body.has-booking-modal {
     color: rgba(27, 26, 86, 0.6);
     font-size: 16px;
     line-height: 20px;
+}
+
+.booking-price-row--total {
+    border-top: 1px solid rgba(15, 27, 46, 0.12);
+    padding-top: 20px;
+}
+
+.booking-price-row--total[hidden] {
+    display: none;
 }
 
 .booking-fields {
@@ -1984,7 +1996,7 @@ body.has-booking-modal {
 }
 
 .booking-times button {
-    height: 52px;
+    padding: 16px 42px;
     border: 1px solid #cee1f4;
     border-radius: 999px;
     background: transparent;
@@ -2139,6 +2151,7 @@ body.has-booking-modal {
     grid-column: 1 / -1;
     border-radius: 40px;
     background: var(--white);
+    box-shadow: 0 20px 50px rgba(15, 27, 46, 0.12);
     padding: 32px 40px;
     display: flex;
     align-items: center;
@@ -2157,6 +2170,22 @@ body.has-booking-modal {
 
 .booking-submit {
     min-width: 154px;
+}
+
+.booking-submit-placeholder {
+    display: none;
+    margin-left: auto;
+    font-family: "Montserrat Alternates", sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 20px;
+    color: var(--night-soft);
+    text-align: center;
+}
+
+.booking-submit[hidden],
+.booking-submit-placeholder[hidden] {
+    display: none;
 }
 
 .booking-submit__spinner {
@@ -2201,23 +2230,26 @@ body.has-booking-modal {
         height: 100vh;
         height: 100dvh;
         max-height: none;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
+        overflow: auto;
         border-radius: 0;
     }
 
-    .booking-form {
-        flex: 1 1 auto;
-        min-height: 0;
+    .booking-modal__brand {
+        position: fixed;
+        top: 40px;
+        left: max(30px, calc((100vw - 1440px) / 2 + 30px));
+        z-index: 4;
+    }
+
+    .booking-modal__actions {
+        position: fixed;
+        top: 40px;
+        right: max(40px, calc((100vw - 1440px) / 2 + 40px));
+        z-index: 4;
     }
 
     .booking-modal__content {
-        flex: 1 1 auto;
-        min-height: 0;
-        overflow: auto;
-        overscroll-behavior: contain;
-        -webkit-overflow-scrolling: touch;
+        overflow: visible;
         padding-bottom: 152px;
     }
 
@@ -2627,7 +2659,7 @@ body.has-booking-modal {
     }
 
     .contact {
-        height: 640px;
+        height: 700px;
         margin: 0 8px;
         padding: 40px 0 0;
         border-radius: 80px;
@@ -2668,6 +2700,7 @@ body.has-booking-modal {
 
     .map__buttons {
         flex-wrap: wrap;
+        flex-direction: column;
         gap: 4px;
     }
 
@@ -2812,16 +2845,15 @@ body.has-booking-modal {
     }
 
     .booking-modal__header {
-        grid-template-columns: minmax(0, 1fr);
-        justify-items: center;
         gap: 14px;
         padding: 36px 16px 28px;
+        flex-direction: column;
         align-items: center;
     }
 
     .booking-modal__brand {
-        width: 118px;
-        height: 118px;
+        width: 80px;
+        height: 80px;
         margin-left: 0;
     }
 
@@ -2830,7 +2862,7 @@ body.has-booking-modal {
         min-width: 0;
         max-width: 100%;
         margin: 0;
-        font-size: clamp(40px, 9.6vw, 68px);
+        font-size: clamp(28px, 8.8vw, 68px);
         line-height: 1;
         text-align: center;
     }
@@ -2852,7 +2884,7 @@ body.has-booking-modal {
         display: flex;
         flex-direction: column;
         gap: 12px;
-        padding: 0 8px 16px;
+        padding: 0 8px calc(188px + env(safe-area-inset-bottom));
     }
 
     .booking-sidebar,
@@ -2988,13 +3020,11 @@ body.has-booking-modal {
     }
 
     .booking-times {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
         margin-top: 20px;
     }
 
     .booking-times button {
-        height: 48px;
-        font-size: 14px;
+        padding: 16px 19px;
     }
 
     .booking-terms__rules {
@@ -3010,8 +3040,14 @@ body.has-booking-modal {
     }
 
     .booking-modal__footer {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 5;
+        width: auto;
         border-radius: 28px;
-        padding: 16px;
+        padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
         display: grid;
         grid-template-columns: 74px minmax(0, 1fr) 74px;
         grid-template-areas:
@@ -3031,8 +3067,16 @@ body.has-booking-modal {
     .booking-modal__footer .btn {
         grid-area: submit;
         width: 100%;
+        min-width: auto;
         height: auto;
         padding: 26px 50px;
+    }
+
+    .booking-submit-placeholder {
+        display: block;
+        grid-area: submit;
+        margin-left: 0;
+        justify-self: center;
     }
 
     .booking-modal__footer-action {

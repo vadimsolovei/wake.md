@@ -38,7 +38,17 @@ const validatePayload = (body) => {
     const email = String(body.email || "").trim();
     const phone = String(body.phone || "").trim();
     const date = String(body.date || "").trim();
-    const time = toSimplyBookTime(body.time);
+    const rawTimes = Array.isArray(body.times) ? body.times : [body.time];
+    if (!rawTimes.length) {
+        throw new BookingError(
+            "Выберите корректное время катания.",
+            400,
+            "INVALID_TIME",
+        );
+    }
+    const times = Array.from(
+        new Set(rawTimes.map((time) => toSimplyBookTime(time))),
+    );
     const peopleCount = normalizePeopleCount(body.peopleCount);
 
     if (!name) {
@@ -80,9 +90,19 @@ const validatePayload = (body) => {
             phone,
         },
         date,
-        time,
+        times,
         peopleCount,
     };
+};
+
+const buildAdditionalFields = ({ peopleCount }, config) => {
+    const additionalFields = {};
+
+    if (config.peopleFieldName) {
+        additionalFields[config.peopleFieldName] = peopleCount;
+    }
+
+    return additionalFields;
 };
 
 const normalizeBookingResult = (result) => {
@@ -123,19 +143,38 @@ module.exports = async function handler(req, res) {
     try {
         const payload = validatePayload(await readBody(req));
         const config = getConfig();
-        const result = await callSimplyBook({
-            method: "book",
-            params: [
-                config.serviceId,
-                config.providerId,
-                payload.date,
-                payload.time,
-                payload.clientData,
-                {},
-                payload.peopleCount,
-            ],
-            config,
-        });
+        const additionalFields = buildAdditionalFields(payload, config);
+        const results = [];
+
+        for (const time of payload.times) {
+            results.push(
+                await callSimplyBook({
+                    method: "book",
+                    params: [
+                        config.serviceId,
+                        config.providerId,
+                        payload.date,
+                        time,
+                        payload.clientData,
+                        additionalFields,
+                        1,
+                    ],
+                    config,
+                }),
+            );
+        }
+
+        const result =
+            results.length === 1
+                ? results[0]
+                : {
+                      bookings: results.flatMap(
+                          (bookingResult) => bookingResult?.bookings || [],
+                      ),
+                      require_confirm: results.some((bookingResult) =>
+                          Boolean(bookingResult?.require_confirm),
+                      ),
+                  };
 
         json(res, 200, normalizeBookingResult(result));
     } catch (error) {

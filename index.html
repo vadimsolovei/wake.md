@@ -1077,7 +1077,11 @@
                         <img src="assets/design/brand/logo.webp" alt="" />
                     </div>
                     <h2 id="booking-title">
-                        Бронирование <span class="emoji">🗓️</span><br />катания
+                        <span class="booking-title__first-line"
+                            >Бронирование&nbsp;<span class="emoji"
+                                >🗓️</span
+                            ></span
+                        ><br />катания
                     </h2>
                     <div class="booking-modal__actions">
                         <a
@@ -1192,29 +1196,29 @@
                                     <strong>400 л</strong>
                                     <span>Стоимость последующих сетов</span>
                                 </div>
+                                <div
+                                    class="booking-price-row booking-price-row--total"
+                                    data-booking-price-sidebar-row
+                                    hidden
+                                >
+                                    <strong data-booking-price-sidebar
+                                        >0 л</strong
+                                    >
+                                    <span data-booking-price-details
+                                        >Выберите время для расчета</span
+                                    >
+                                </div>
                             </section>
                         </aside>
 
                         <div class="booking-main">
                             <div class="booking-fields">
-                                <label
-                                    class="booking-field booking-field--wide"
-                                >
+                                <label class="booking-field">
                                     <span>Имя</span>
                                     <input
                                         name="name"
                                         autocomplete="name"
                                         placeholder="Имя"
-                                        required
-                                    />
-                                </label>
-                                <label class="booking-field">
-                                    <span>Email</span>
-                                    <input
-                                        name="email"
-                                        type="email"
-                                        autocomplete="email"
-                                        placeholder="Email"
                                         required
                                     />
                                 </label>
@@ -1227,6 +1231,18 @@
                                         type="tel"
                                         autocomplete="tel"
                                         placeholder="Phone"
+                                        required
+                                    />
+                                </label>
+                                <label
+                                    class="booking-field booking-field--wide"
+                                >
+                                    <span>Email</span>
+                                    <input
+                                        name="email"
+                                        type="email"
+                                        autocomplete="email"
+                                        placeholder="Email"
                                         required
                                     />
                                 </label>
@@ -1243,7 +1259,7 @@
                                         −
                                     </button>
                                     <output data-booking-people-output
-                                        >2</output
+                                        >1</output
                                     >
                                     <button
                                         type="button"
@@ -1287,7 +1303,6 @@
                                 <label class="booking-check">
                                     <input
                                         type="checkbox"
-                                        checked
                                         required
                                         name="terms"
                                     />
@@ -1365,7 +1380,7 @@
                         </div>
 
                         <footer class="booking-modal__footer">
-                            <strong>400 леев</strong>
+                            <strong data-booking-price-total>0 леев</strong>
                             <button
                                 class="booking-modal__footer-action booking-modal__footer-action--close btn--ghost"
                                 type="button"
@@ -1387,6 +1402,7 @@
                             <button
                                 class="btn btn--primary booking-submit"
                                 type="submit"
+                                hidden
                             >
                                 <span
                                     class="booking-submit__spinner"
@@ -1394,6 +1410,12 @@
                                 ></span>
                                 <span data-booking-submit-label>Оплатить</span>
                             </button>
+                            <span
+                                class="booking-submit-placeholder"
+                                data-booking-submit-placeholder
+                                aria-live="polite"
+                                >Выберите<br />дату и время</span
+                            >
                             <a
                                 class="booking-modal__footer-action booking-modal__footer-action--phone btn--ghost"
                                 href="tel:+37300000000"
@@ -1652,9 +1674,30 @@
                     "[data-booking-info-close]",
                 );
                 const submitButton = form?.querySelector("[type='submit']");
+                const termsCheckbox = form?.querySelector(
+                    "input[name='terms']",
+                );
                 const submitLabel = submitButton?.querySelector(
                     "[data-booking-submit-label]",
                 );
+                const submitPlaceholder = form?.querySelector(
+                    "[data-booking-submit-placeholder]",
+                );
+                const priceTotal = modal?.querySelector(
+                    "[data-booking-price-total]",
+                );
+                const priceSidebarRow = modal?.querySelector(
+                    "[data-booking-price-sidebar-row]",
+                );
+                const priceSidebar = modal?.querySelector(
+                    "[data-booking-price-sidebar]",
+                );
+                const priceDetails = modal?.querySelector(
+                    "[data-booking-price-details]",
+                );
+
+                const FIRST_SET_PRICE = 600;
+                const NEXT_SET_PRICE = 400;
 
                 if (!modal || !dialog || !form || !openButtons.length) return;
 
@@ -1669,8 +1712,8 @@
 
                 const bookingState = {
                     selectedDate: "",
-                    selectedTime: "",
-                    peopleCount: 2,
+                    selectedTimes: [],
+                    peopleCount: 1,
                     availableDates: new Set(),
                     availableTimes: [],
                     isLoadingDates: false,
@@ -1702,7 +1745,9 @@
                 const getVisibleMonthIndex = () => {
                     if (!datepicker) return getCurrentMonthIndex();
 
-                    return datepicker.currentYear * 12 + datepicker.currentMonth;
+                    return (
+                        datepicker.currentYear * 12 + datepicker.currentMonth
+                    );
                 };
 
                 const updateMonthControls = () => {
@@ -1815,12 +1860,68 @@
                     return readJsonResponse(response);
                 };
 
+                const formatPrice = (amount, unit = "леев") =>
+                    `${new Intl.NumberFormat("ru-RU").format(amount)} ${unit}`;
+
+                const calculateBookingPrice = () => {
+                    const setCount = bookingState.selectedTimes.length;
+
+                    if (!setCount) return 0;
+
+                    return (
+                        bookingState.peopleCount *
+                        (FIRST_SET_PRICE +
+                            Math.max(setCount - 1, 0) * NEXT_SET_PRICE)
+                    );
+                };
+
+                const isMobileBookingLayout = () =>
+                    window.matchMedia("(max-width: 767px)").matches;
+
+                const updatePriceSummary = () => {
+                    const setCount = bookingState.selectedTimes.length;
+                    const total = calculateBookingPrice();
+                    const hasSelectedTime = setCount > 0;
+                    const shouldHidePrice =
+                        isMobileBookingLayout() && !hasSelectedTime;
+
+                    if (priceTotal) {
+                        priceTotal.hidden = shouldHidePrice;
+                        priceTotal.textContent = formatPrice(total);
+                    }
+
+                    if (priceSidebarRow) {
+                        priceSidebarRow.hidden = shouldHidePrice;
+                    }
+
+                    if (priceSidebar) {
+                        priceSidebar.textContent = formatPrice(total, "л");
+                    }
+
+                    if (priceDetails) {
+                        priceDetails.textContent = setCount
+                            ? `${bookingState.peopleCount} чел. x ${setCount} сет(ов)`
+                            : "Выберите время для расчета";
+                    }
+                };
+
                 const updateSubmitState = () => {
                     if (!submitButton) return;
 
+                    const hasSelectedTime = bookingState.selectedTimes.length > 0;
+                    const shouldShowPlaceholder =
+                        isMobileBookingLayout() && !hasSelectedTime;
+
+                    submitButton.hidden = shouldShowPlaceholder;
+                    if (submitPlaceholder) {
+                        submitPlaceholder.hidden = !shouldShowPlaceholder;
+                    }
+
                     submitButton.toggleAttribute(
                         "disabled",
-                        bookingState.isSubmitting,
+                        bookingState.isSubmitting ||
+                            !termsCheckbox?.checked ||
+                            shouldShowPlaceholder,
                     );
                     submitButton.classList.toggle(
                         "is-loading",
@@ -1858,6 +1959,8 @@
                 const renderTimes = () => {
                     if (!timesElement) return;
 
+                    updatePriceSummary();
+                    updateSubmitState();
                     timesElement.innerHTML = "";
 
                     if (bookingState.isLoadingTimes) {
@@ -1906,13 +2009,30 @@
                             button.type = "button";
                             button.textContent = time;
                             button.disabled = !available;
+                            button.setAttribute(
+                                "aria-pressed",
+                                String(
+                                    bookingState.selectedTimes.includes(time),
+                                ),
+                            );
                             button.classList.toggle(
                                 "is-selected",
-                                bookingState.selectedTime === time,
+                                bookingState.selectedTimes.includes(time),
                             );
 
                             button.addEventListener("click", () => {
-                                bookingState.selectedTime = time;
+                                if (bookingState.selectedTimes.includes(time)) {
+                                    bookingState.selectedTimes =
+                                        bookingState.selectedTimes.filter(
+                                            (selectedTime) =>
+                                                selectedTime !== time,
+                                        );
+                                } else {
+                                    bookingState.selectedTimes = [
+                                        ...bookingState.selectedTimes,
+                                        time,
+                                    ];
+                                }
                                 renderTimes();
                             });
 
@@ -1925,7 +2045,7 @@
                     if (!bookingState.selectedDate) {
                         activeTimesRequest += 1;
                         bookingState.availableTimes = [];
-                        bookingState.selectedTime = "";
+                        bookingState.selectedTimes = [];
                         bookingState.isLoadingTimes = false;
                         renderTimes();
                         return;
@@ -1946,7 +2066,7 @@
                         if (requestId !== activeTimesRequest) return;
 
                         bookingState.availableTimes = [];
-                        bookingState.selectedTime = "";
+                        bookingState.selectedTimes = [];
                         bookingState.isLoadingTimes = false;
                         bookingState.availabilityError = error.message;
                         renderTimes();
@@ -1958,14 +2078,15 @@
                     bookingState.availableTimes = times;
                     bookingState.isLoadingTimes = false;
 
-                    if (
-                        !times.some(
-                            ({ time, available }) =>
-                                available && time === bookingState.selectedTime,
-                        )
-                    ) {
-                        bookingState.selectedTime = "";
-                    }
+                    const availableSelectedTimes = new Set(
+                        times
+                            .filter(({ available }) => available)
+                            .map(({ time }) => time),
+                    );
+                    bookingState.selectedTimes =
+                        bookingState.selectedTimes.filter((time) =>
+                            availableSelectedTimes.has(time),
+                        );
 
                     renderTimes();
                 };
@@ -1986,7 +2107,7 @@
                         )
                     ) {
                         bookingState.selectedDate = "";
-                        bookingState.selectedTime = "";
+                        bookingState.selectedTimes = [];
                     }
 
                     if (!bookingState.selectedDate && firstAvailableDate) {
@@ -2032,7 +2153,7 @@
                         bookingState.availableDates = new Set();
                         bookingState.availableTimes = [];
                         bookingState.selectedDate = "";
-                        bookingState.selectedTime = "";
+                        bookingState.selectedTimes = [];
                         bookingState.isLoadingDates = false;
                         bookingState.availabilityError = error.message;
                         updateDatesLoader();
@@ -2076,7 +2197,7 @@
                             bookingState.selectedDate = date
                                 ? toIsoDate(date)
                                 : "";
-                            bookingState.selectedTime = "";
+                            bookingState.selectedTimes = [];
                             loadTimesForSelectedDate();
                         },
                     });
@@ -2097,12 +2218,9 @@
                     isBookingReady = true;
                 };
 
-                const refreshAvailabilityForPeople = async () => {
+                const refreshAvailabilityForPeople = () => {
                     updatePeopleOutput();
-
-                    if (bookingState.selectedDate) {
-                        await loadTimesForSelectedDate();
-                    }
+                    updatePriceSummary();
                 };
 
                 const setPeopleCount = (nextCount) => {
@@ -2149,9 +2267,7 @@
                     modal.hidden = false;
                     modal.setAttribute("aria-hidden", "false");
                     document.body.style.top = `-${lockedScrollY}px`;
-                    document.documentElement.classList.add(
-                        "has-booking-modal",
-                    );
+                    document.documentElement.classList.add("has-booking-modal");
                     document.body.classList.add("has-booking-modal");
                     initBookingDatepicker();
                     window.requestAnimationFrame(() => dialog.focus());
@@ -2195,6 +2311,12 @@
                     setPeopleCount(bookingState.peopleCount + 1);
                 });
 
+                termsCheckbox?.addEventListener("change", updateSubmitState);
+                window.addEventListener("resize", () => {
+                    updatePriceSummary();
+                    updateSubmitState();
+                });
+
                 document.addEventListener("keydown", (event) => {
                     if (event.key === "Escape" && !modal.hidden) {
                         if (isInfoPopupOpen()) {
@@ -2217,7 +2339,7 @@
                         return;
                     }
 
-                    if (!bookingState.selectedTime) {
+                    if (!bookingState.selectedTimes.length) {
                         window.alert("Выберите время катания.");
                         return;
                     }
@@ -2231,7 +2353,7 @@
                         phone: String(formData.get("phone") || "").trim(),
                         peopleCount: bookingState.peopleCount,
                         date: bookingState.selectedDate,
-                        time: bookingState.selectedTime,
+                        times: bookingState.selectedTimes,
                         acceptedTerms: formData.get("terms") === "on",
                     };
 
@@ -2240,11 +2362,15 @@
 
                     try {
                         const result = await submitBooking(payload);
-                        const code = result?.bookings?.[0]?.code;
+                        const codes = Array.isArray(result?.bookings)
+                            ? result.bookings
+                                  .map((booking) => booking.code)
+                                  .filter(Boolean)
+                            : [];
 
                         window.alert(
-                            code
-                                ? `Бронирование создано. Код: ${code}`
+                            codes.length
+                                ? `Бронирование создано. Код: ${codes.join(", ")}`
                                 : "Бронирование создано.",
                         );
                         closeModal();
@@ -2258,6 +2384,7 @@
                 });
 
                 updatePeopleOutput();
+                updatePriceSummary();
                 updateSubmitState();
                 renderTimes();
             })();
