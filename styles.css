@@ -1587,8 +1587,8 @@ body.has-app-alert {
     margin: -2px 0 0;
     font-family: "Montserrat Alternates", sans-serif;
     font-weight: 500;
-    font-size: 72px;
-    line-height: 72px;
+    font-size: 56px;
+    line-height: 56px;
     text-align: center;
     color: var(--ink);
 }
@@ -1606,6 +1606,7 @@ body.has-app-alert {
 .booking-icon-btn {
     width: 72px;
     height: 72px;
+    border: 1px solid #cee1f4;
     border-radius: 999px;
     display: inline-flex;
     align-items: center;
@@ -1636,7 +1637,7 @@ body.has-app-alert {
 
 .booking-modal__content {
     display: grid;
-    grid-template-columns: 400px 600px;
+    grid-template-columns: minmax(0, 400px) minmax(0, 600px);
     justify-content: center;
     align-items: start;
     gap: 20px;
@@ -1902,7 +1903,7 @@ body.has-app-alert {
 
 .booking-fields {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 20px;
 }
 
@@ -1979,6 +1980,7 @@ body.has-app-alert {
 }
 
 .booking-people button {
+    flex: 0 0 62px;
     width: 62px;
     height: 62px;
     border: 1px solid #cee1f4;
@@ -2009,7 +2011,8 @@ body.has-app-alert {
 }
 
 .booking-people output {
-    min-width: 192px;
+    flex: 0 1 192px;
+    min-width: 62px;
     height: 62px;
     border: 1px solid #cee1f4;
     border-radius: 999px;
@@ -2058,7 +2061,8 @@ body.has-app-alert {
 }
 
 .booking-times button {
-    padding: 16px 42px;
+    padding-top: 16px;
+    padding-bottom: 16px;
     border: 1px solid #cee1f4;
     border-radius: 999px;
     background: transparent;
@@ -3080,20 +3084,17 @@ body.has-app-alert {
     }
 
     .booking-people button {
+        flex-basis: 48px;
         width: 48px;
     }
 
     .booking-people output {
-        flex: 1 1 auto;
-        min-width: 120px;
+        flex: 1 1 192px;
+        min-width: 48px;
     }
 
     .booking-times {
         margin-top: 20px;
-    }
-
-    .booking-times button {
-        padding: 16px 19px;
     }
 
     .booking-terms__rules {

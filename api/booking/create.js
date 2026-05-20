@@ -79,9 +79,9 @@ const validatePayload = (body) => {
         );
     }
 
-    if (phone.replace(/\D/g, "").length < 6) {
+    if (!/^\d{8}$/.test(phone)) {
         throw new BookingError(
-            "Введите корректный номер телефона.",
+            "Введите номер телефона из 8 цифр.",
             400,
             "INVALID_PHONE",
         );

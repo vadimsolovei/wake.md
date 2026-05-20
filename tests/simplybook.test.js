@@ -62,6 +62,25 @@ test("booking contact fields are marked as required", () => {
     }
 });
 
+test("booking phone field accepts exactly 8 digits", () => {
+    const html = fs.readFileSync("index.html", "utf8");
+    const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
+    const input = html.match(
+        /<input[\s\S]*?name="phone"[\s\S]*?>/,
+    )?.[0];
+
+    assert.ok(input);
+    assert.match(input, /type="tel"/);
+    assert.match(input, /inputmode="numeric"/);
+    assert.match(input, /pattern="\[0-9\]\{8\}"/);
+    assert.match(input, /minlength="8"/);
+    assert.match(input, /maxlength="8"/);
+    assert.match(
+        bookingScript,
+        /phoneInput\.value = phoneInput\.value\.replace\(\/\\D\/g, ""\)\.slice\(0, 8\);/,
+    );
+});
+
 test("booking price counts first sets per selected slot before repeat sets", () => {
     const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
     const calculateBookingPrice = bookingScript.match(
@@ -752,7 +771,7 @@ test("create endpoint books each selected time", async () => {
         body: {
             name: "Wake Guest",
             email: "guest@example.com",
-            phone: "+373 123456",
+            phone: "12345678",
             peopleCount: 2,
             date: "2026-06-10",
             times: ["09:00", "10:30"],
@@ -797,7 +816,7 @@ test("create endpoint books each selected time", async () => {
                 {
                     name: "Wake Guest",
                     email: "guest@example.com",
-                    phone: "+373 123456",
+                    phone: "12345678",
                 },
                 { people_field_hash: 2 },
                 1,
@@ -810,7 +829,7 @@ test("create endpoint books each selected time", async () => {
                 {
                     name: "Wake Guest",
                     email: "guest@example.com",
-                    phone: "+373 123456",
+                    phone: "12345678",
                 },
                 { people_field_hash: 2 },
                 1,
@@ -877,7 +896,7 @@ test("create endpoint books one selected time for one person", async () => {
         body: {
             name: "Wake Guest",
             email: "guest@example.com",
-            phone: "+373 123456",
+            phone: "12345678",
             peopleCount: 1,
             date: "2026-06-10",
             times: ["09:00"],
@@ -920,7 +939,7 @@ test("create endpoint books one selected time for one person", async () => {
         {
             name: "Wake Guest",
             email: "guest@example.com",
-            phone: "+373 123456",
+            phone: "12345678",
         },
         { people_field_hash: 1 },
         1,
@@ -929,6 +948,60 @@ test("create endpoint books one selected time for one person", async () => {
         JSON.parse(res.body).bookings.map((booking) => booking.code),
         ["code-09:00:00"],
     );
+});
+
+test("create endpoint requires phone to be exactly 8 digits", async () => {
+    resetTokenCache();
+
+    const previousFetch = global.fetch;
+    const cases = [
+        { label: "too short", phone: "1234567" },
+        { label: "too long", phone: "123456789" },
+        { label: "non-digits", phone: "1234-678" },
+    ];
+
+    global.fetch = async () => {
+        throw new Error("Booking validation should stop before SimplyBook.");
+    };
+
+    try {
+        for (const testCase of cases) {
+            const req = {
+                method: "POST",
+                body: {
+                    name: "Wake Guest",
+                    email: "guest@example.com",
+                    phone: testCase.phone,
+                    peopleCount: 1,
+                    date: "2026-06-10",
+                    times: ["09:00"],
+                    acceptedTerms: true,
+                },
+            };
+            const res = {
+                headers: {},
+                setHeader(key, value) {
+                    this.headers[key] = value;
+                },
+                end(body) {
+                    this.body = body;
+                },
+            };
+
+            await createHandler(req, res);
+
+            const body = JSON.parse(res.body);
+            assert.equal(res.statusCode, 400, testCase.label);
+            assert.equal(body.error.code, "INVALID_PHONE", testCase.label);
+            assert.equal(
+                body.error.message,
+                "Введите номер телефона из 8 цифр.",
+                testCase.label,
+            );
+        }
+    } finally {
+        global.fetch = previousFetch;
+    }
 });
 
 test("create endpoint requires name, email, and phone", async () => {
@@ -967,7 +1040,7 @@ test("create endpoint requires name, email, and phone", async () => {
                 body: {
                     name: "Wake Guest",
                     email: "guest@example.com",
-                    phone: "+373 123456",
+                    phone: "12345678",
                     peopleCount: 1,
                     date: "2026-06-10",
                     times: ["09:00"],
@@ -1019,7 +1092,7 @@ test("create endpoint requires one unique selected time per person", async () =>
                 body: {
                     name: "Wake Guest",
                     email: "guest@example.com",
-                    phone: "+373 123456",
+                    phone: "12345678",
                     peopleCount: 2,
                     date: "2026-06-10",
                     times: testCase.times,

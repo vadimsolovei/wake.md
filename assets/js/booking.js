@@ -51,6 +51,7 @@
     const termsCheckbox = form?.querySelector(
         "input[name='terms']",
     );
+    const phoneInput = form?.querySelector("input[name='phone']");
     const submitLabel = submitButton?.querySelector(
         "[data-booking-submit-label]",
     );
@@ -722,6 +723,9 @@
     });
 
     termsCheckbox?.addEventListener("change", updateSubmitState);
+    phoneInput?.addEventListener("input", () => {
+        phoneInput.value = phoneInput.value.replace(/\D/g, "").slice(0, 8);
+    });
     window.addEventListener("resize", () => {
         updatePriceSummary();
         updateSubmitState();
