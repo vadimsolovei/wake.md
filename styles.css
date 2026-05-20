@@ -219,6 +219,11 @@ a {
     font-size: 16px;
     line-height: 20px;
     color: var(--white);
+    transition: color 0.18s ease;
+}
+.pill--ghost:hover .pill__text,
+.pill--ghost:focus-visible .pill__text {
+    color: var(--yellow);
 }
 
 /* ---------- Buttons ---------- */
@@ -1394,7 +1399,8 @@ a {
 /* ============================================================
    BOOKING POPUP
 ============================================================ */
-body.has-booking-modal {
+body.has-booking-modal,
+body.has-app-alert {
     overflow: hidden;
 }
 
@@ -1498,6 +1504,62 @@ body.has-booking-modal {
 .booking-info-popup__button {
     width: 100%;
     height: clamp(76px, 9vw, 144px);
+    margin-top: 32px;
+    font-size: clamp(22px, 2.4vw, 30px);
+    line-height: 1;
+}
+
+.app-alert[hidden] {
+    display: none;
+}
+
+.app-alert {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    color: var(--ink);
+}
+
+.app-alert__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(216, 231, 246, 0.92);
+}
+
+.app-alert__dialog {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 820px);
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    overflow: auto;
+    border-radius: 80px;
+    background: var(--white);
+    padding: 64px;
+    box-shadow: 0 28px 90px rgba(17, 27, 45, 0.16);
+    outline: none;
+}
+
+.app-alert__dialog h2 {
+    margin: 0 0 28px;
+    font-weight: 500;
+    font-size: clamp(48px, 5.2vw, 72px);
+    line-height: 1;
+}
+
+.app-alert__message {
+    margin: 0;
+    font-size: clamp(26px, 2.7vw, 36px);
+    line-height: 1.45;
+}
+
+.app-alert__button {
+    width: 100%;
+    height: clamp(76px, 9vw, 120px);
     margin-top: 32px;
     font-size: clamp(22px, 2.4vw, 30px);
     line-height: 1;
@@ -2173,7 +2235,7 @@ body.has-booking-modal {
 }
 
 .booking-submit-placeholder {
-    display: none;
+    display: block;
     margin-left: auto;
     font-family: "Montserrat Alternates", sans-serif;
     font-weight: 500;
@@ -2197,9 +2259,16 @@ body.has-booking-modal {
 }
 
 .booking-submit:disabled {
-    cursor: wait;
-    opacity: 0.82;
+    background: rgba(17, 27, 45, 0.14);
+    color: rgba(17, 27, 45, 0.46);
+    box-shadow: inset 0 0 0 1px rgba(17, 27, 45, 0.12);
+    cursor: not-allowed;
+    opacity: 1;
     transform: none;
+}
+
+.booking-submit.is-loading:disabled {
+    cursor: wait;
 }
 
 .booking-modal__footer-action {
@@ -3136,6 +3205,36 @@ body.has-booking-modal {
     }
 
     .booking-info-popup__button {
+        height: 72px;
+        width: 100%;
+        margin-top: 24px;
+        font-size: 22px;
+    }
+
+    .app-alert {
+        padding: 8px;
+    }
+
+    .app-alert__dialog {
+        width: 100%;
+        max-height: calc(100vh - 16px);
+        max-height: calc(100dvh - 16px);
+        border-radius: 36px;
+        padding: 30px 22px;
+    }
+
+    .app-alert__dialog h2 {
+        margin-bottom: 20px;
+        font-size: clamp(36px, 11vw, 48px);
+        line-height: 1;
+    }
+
+    .app-alert__message {
+        font-size: 22px;
+        line-height: 1.38;
+    }
+
+    .app-alert__button {
         height: 72px;
         width: 100%;
         margin-top: 24px;

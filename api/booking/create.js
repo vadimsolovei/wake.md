@@ -51,12 +51,32 @@ const validatePayload = (body) => {
     );
     const peopleCount = normalizePeopleCount(body.peopleCount);
 
+    if (times.length < peopleCount) {
+        throw new BookingError(
+            `Выберите минимум ${formatSlotCount(peopleCount)} для ${peopleCount} чел.`,
+            400,
+            "INSUFFICIENT_TIME_SLOTS",
+        );
+    }
+
     if (!name) {
         throw new BookingError("Введите имя.", 400, "INVALID_NAME");
     }
 
+    if (!email) {
+        throw new BookingError("Введите email.", 400, "INVALID_EMAIL");
+    }
+
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         throw new BookingError("Введите корректный email.", 400, "INVALID_EMAIL");
+    }
+
+    if (!phone) {
+        throw new BookingError(
+            "Введите номер телефона.",
+            400,
+            "INVALID_PHONE",
+        );
     }
 
     if (phone.replace(/\D/g, "").length < 6) {
@@ -93,6 +113,19 @@ const validatePayload = (body) => {
         times,
         peopleCount,
     };
+};
+
+const formatSlotCount = (count) => {
+    const lastDigit = count % 10;
+    let slotLabel = "слотов";
+
+    if (lastDigit === 1) {
+        slotLabel = "слот";
+    } else if ([2, 3, 4].includes(lastDigit)) {
+        slotLabel = "слота";
+    }
+
+    return `${count} ${slotLabel}`;
 };
 
 const buildAdditionalFields = ({ peopleCount }, config) => {

@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
 const test = require("node:test");
 const {
     BookingError,
@@ -21,6 +22,112 @@ const {
 const datesHandler = require("../api/booking/dates");
 const timesHandler = require("../api/booking/times");
 const createHandler = require("../api/booking/create");
+
+test("booking submit state requires terms and minimum selected times", () => {
+    const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
+    const updateSubmitState = bookingScript.match(
+        /const updateSubmitState = \(\) => \{[\s\S]*?if \(submitLabel\)/,
+    )?.[0];
+    const refreshAvailabilityForPeople = bookingScript.match(
+        /const refreshAvailabilityForPeople = \(\) => \{[\s\S]*?\};/,
+    )?.[0];
+
+    assert.ok(updateSubmitState);
+    assert.match(
+        updateSubmitState,
+        /const hasEnoughSelectedTimes = hasMinimumSelectedTimes\(\);/,
+    );
+    assert.match(updateSubmitState, /!termsCheckbox\?\.checked/);
+    assert.match(updateSubmitState, /!hasEnoughSelectedTimes/);
+    assert.doesNotMatch(
+        updateSubmitState,
+        /isMobileBookingLayout\(\) && !hasEnoughSelectedTimes/,
+    );
+    assert.match(updateSubmitState, /shouldShowPlaceholder/);
+    assert.ok(refreshAvailabilityForPeople);
+    assert.match(refreshAvailabilityForPeople, /updateSubmitState\(\);/);
+});
+
+test("booking contact fields are marked as required", () => {
+    const html = fs.readFileSync("index.html", "utf8");
+
+    for (const field of ["name", "phone", "email"]) {
+        const input = html.match(
+            new RegExp(`<input[\\s\\S]*?name="${field}"[\\s\\S]*?>`),
+        )?.[0];
+
+        assert.ok(input, field);
+        assert.match(input, /\srequired\b/, field);
+        assert.match(input, /aria-required="true"/, field);
+    }
+});
+
+test("booking price counts first sets per selected slot before repeat sets", () => {
+    const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
+    const calculateBookingPrice = bookingScript.match(
+        /const calculateBookingPrice = \(\) => \{[\s\S]*?\n    \};/,
+    )?.[0];
+
+    assert.ok(calculateBookingPrice);
+    assert.match(
+        calculateBookingPrice,
+        /const firstSetCount = Math\.min\(\s*bookingState\.peopleCount,\s*setCount,\s*\);/,
+    );
+    assert.match(
+        calculateBookingPrice,
+        /const nextSetCount = Math\.max\(\s*setCount - bookingState\.peopleCount,\s*0,\s*\);/,
+    );
+    assert.match(
+        calculateBookingPrice,
+        /firstSetCount \* FIRST_SET_PRICE \+\s*nextSetCount \* NEXT_SET_PRICE/,
+    );
+});
+
+test("booking modal refreshes availability every time it opens", () => {
+    const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
+    const initBookingDatepicker = bookingScript.match(
+        /const initBookingDatepicker = \(\) => \{[\s\S]*?\n    \};\n\n    const refreshBookingAvailability/,
+    )?.[0];
+    const refreshBookingAvailability = bookingScript.match(
+        /const refreshBookingAvailability = async \(\) => \{[\s\S]*?\n    \};/,
+    )?.[0];
+    const openModal = bookingScript.match(
+        /const openModal = \(\) => \{[\s\S]*?\n    \};/,
+    )?.[0];
+
+    assert.ok(initBookingDatepicker);
+    assert.ok(refreshBookingAvailability);
+    assert.ok(openModal);
+    assert.match(initBookingDatepicker, /if \(datepicker\) return true;/);
+    assert.doesNotMatch(initBookingDatepicker, /onReady/);
+    assert.match(
+        refreshBookingAvailability,
+        /if \(!initBookingDatepicker\(\)\) return;/,
+    );
+    assert.match(
+        refreshBookingAvailability,
+        /await loadDatesForVisibleMonth\(\);/,
+    );
+    assert.match(openModal, /refreshBookingAvailability\(\);/);
+    assert.doesNotMatch(openModal, /initBookingDatepicker\(\);/);
+});
+
+test("booking date fetches are not memoized in the browser", () => {
+    const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
+    const fetchAvailableDates = bookingScript.match(
+        /const fetchAvailableDates = async \(\{ year, month \}\) => \{[\s\S]*?\n    \};/,
+    )?.[0];
+
+    assert.ok(fetchAvailableDates);
+    assert.doesNotMatch(bookingScript, /availableDatesRequests/);
+    assert.match(
+        fetchAvailableDates,
+        /const data = await fetch\(\s*`\/api\/booking\/dates\?\$\{params\.toString\(\)\}`,\s*\{ cache: "no-store" \},\s*\)\.then\(readJsonResponse\);/,
+    );
+    assert.doesNotMatch(fetchAvailableDates, /\.has\(/);
+    assert.doesNotMatch(fetchAvailableDates, /\.set\(/);
+    assert.doesNotMatch(fetchAvailableDates, /\.get\(/);
+});
 
 test("normalizes SimplyBook time values for the UI", () => {
     assert.equal(normalizeTime("09:00:00"), "09:00");
@@ -714,6 +821,241 @@ test("create endpoint books each selected time", async () => {
         JSON.parse(res.body).bookings.map((booking) => booking.code),
         ["code-09:00:00", "code-10:30:00"],
     );
+});
+
+test("create endpoint books one selected time for one person", async () => {
+    resetTokenCache();
+
+    const previousFetch = global.fetch;
+    const previousEnv = {
+        SIMPLYBOOK_COMPANY_LOGIN: process.env.SIMPLYBOOK_COMPANY_LOGIN,
+        SIMPLYBOOK_API_KEY: process.env.SIMPLYBOOK_API_KEY,
+        SIMPLYBOOK_SERVICE_ID: process.env.SIMPLYBOOK_SERVICE_ID,
+        SIMPLYBOOK_PROVIDER_ID: process.env.SIMPLYBOOK_PROVIDER_ID,
+        SIMPLYBOOK_PEOPLE_FIELD_NAME: process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME,
+        BOOKING_TIMEZONE: process.env.BOOKING_TIMEZONE,
+    };
+    const calls = [];
+
+    process.env.SIMPLYBOOK_COMPANY_LOGIN = "wake";
+    process.env.SIMPLYBOOK_API_KEY = "key";
+    process.env.SIMPLYBOOK_SERVICE_ID = "1";
+    process.env.SIMPLYBOOK_PROVIDER_ID = "2";
+    process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME = "people_field_hash";
+    process.env.BOOKING_TIMEZONE = "UTC";
+
+    global.fetch = async (url, options) => {
+        const body = JSON.parse(options.body);
+        calls.push({ url, body });
+
+        if (body.method === "getToken") {
+            return {
+                ok: true,
+                json: async () => ({ result: "token" }),
+            };
+        }
+
+        return {
+            ok: true,
+            json: async () => ({
+                result: {
+                    bookings: [
+                        {
+                            id: body.params[3],
+                            code: `code-${body.params[3]}`,
+                            start_datetime: `${body.params[2]} ${body.params[3]}`,
+                            is_confirmed: true,
+                        },
+                    ],
+                },
+            }),
+        };
+    };
+
+    const req = {
+        method: "POST",
+        body: {
+            name: "Wake Guest",
+            email: "guest@example.com",
+            phone: "+373 123456",
+            peopleCount: 1,
+            date: "2026-06-10",
+            times: ["09:00"],
+            acceptedTerms: true,
+        },
+    };
+    const res = {
+        headers: {},
+        setHeader(key, value) {
+            this.headers[key] = value;
+        },
+        end(body) {
+            this.body = body;
+        },
+    };
+
+    try {
+        await createHandler(req, res);
+    } finally {
+        global.fetch = previousFetch;
+
+        for (const [key, value] of Object.entries(previousEnv)) {
+            if (value === undefined) {
+                delete process.env[key];
+            } else {
+                process.env[key] = value;
+            }
+        }
+    }
+
+    const bookCalls = calls.filter((call) => call.body.method === "book");
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(bookCalls.length, 1);
+    assert.deepEqual(bookCalls[0].body.params, [
+        1,
+        2,
+        "2026-06-10",
+        "09:00:00",
+        {
+            name: "Wake Guest",
+            email: "guest@example.com",
+            phone: "+373 123456",
+        },
+        { people_field_hash: 1 },
+        1,
+    ]);
+    assert.deepEqual(
+        JSON.parse(res.body).bookings.map((booking) => booking.code),
+        ["code-09:00:00"],
+    );
+});
+
+test("create endpoint requires name, email, and phone", async () => {
+    resetTokenCache();
+
+    const previousFetch = global.fetch;
+    const cases = [
+        {
+            label: "missing name",
+            patch: { name: "" },
+            code: "INVALID_NAME",
+            message: "Введите имя.",
+        },
+        {
+            label: "missing email",
+            patch: { email: "" },
+            code: "INVALID_EMAIL",
+            message: "Введите email.",
+        },
+        {
+            label: "missing phone",
+            patch: { phone: "" },
+            code: "INVALID_PHONE",
+            message: "Введите номер телефона.",
+        },
+    ];
+
+    global.fetch = async () => {
+        throw new Error("Booking validation should stop before SimplyBook.");
+    };
+
+    try {
+        for (const testCase of cases) {
+            const req = {
+                method: "POST",
+                body: {
+                    name: "Wake Guest",
+                    email: "guest@example.com",
+                    phone: "+373 123456",
+                    peopleCount: 1,
+                    date: "2026-06-10",
+                    times: ["09:00"],
+                    acceptedTerms: true,
+                    ...testCase.patch,
+                },
+            };
+            const res = {
+                headers: {},
+                setHeader(key, value) {
+                    this.headers[key] = value;
+                },
+                end(body) {
+                    this.body = body;
+                },
+            };
+
+            await createHandler(req, res);
+
+            const body = JSON.parse(res.body);
+            assert.equal(res.statusCode, 400, testCase.label);
+            assert.equal(body.error.code, testCase.code, testCase.label);
+            assert.equal(body.error.message, testCase.message, testCase.label);
+        }
+    } finally {
+        global.fetch = previousFetch;
+    }
+});
+
+test("create endpoint requires one unique selected time per person", async () => {
+    resetTokenCache();
+
+    const previousFetch = global.fetch;
+    const calls = [];
+    const cases = [
+        { times: ["09:00"], label: "single time" },
+        { times: ["09:00", "09:00"], label: "duplicate times" },
+    ];
+
+    global.fetch = async (url, options) => {
+        calls.push({ url, body: JSON.parse(options.body) });
+        throw new Error("Booking validation should stop before SimplyBook.");
+    };
+
+    try {
+        for (const testCase of cases) {
+            const req = {
+                method: "POST",
+                body: {
+                    name: "Wake Guest",
+                    email: "guest@example.com",
+                    phone: "+373 123456",
+                    peopleCount: 2,
+                    date: "2026-06-10",
+                    times: testCase.times,
+                    acceptedTerms: true,
+                },
+            };
+            const res = {
+                headers: {},
+                setHeader(key, value) {
+                    this.headers[key] = value;
+                },
+                end(body) {
+                    this.body = body;
+                },
+            };
+
+            await createHandler(req, res);
+
+            const body = JSON.parse(res.body);
+            assert.equal(res.statusCode, 400, testCase.label);
+            assert.equal(
+                body.error.code,
+                "INSUFFICIENT_TIME_SLOTS",
+                testCase.label,
+            );
+            assert.equal(
+                body.error.message,
+                "Выберите минимум 2 слота для 2 чел.",
+                testCase.label,
+            );
+        }
+    } finally {
+        global.fetch = previousFetch;
+    }
+
+    assert.equal(calls.length, 0);
 });
 
 test("maps SimplyBook slot conflicts to user-visible conflict errors", async () => {
