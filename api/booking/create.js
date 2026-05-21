@@ -160,6 +160,95 @@ const normalizeBookingResult = (result) => {
     };
 };
 
+const extractPaymentUrl = (value) => {
+    if (!value) return "";
+
+    if (typeof value === "string") {
+        try {
+            const url = new URL(value);
+
+            return ["http:", "https:"].includes(url.protocol)
+                ? url.toString()
+                : "";
+        } catch (error) {
+            return "";
+        }
+    }
+
+    if (typeof value !== "object") return "";
+
+    for (const key of [
+        "payment_url",
+        "paymentUrl",
+        "invoice_url",
+        "invoiceUrl",
+        "checkout_url",
+        "checkoutUrl",
+        "link",
+        "url",
+    ]) {
+        const url = extractPaymentUrl(value[key]);
+
+        if (url) return url;
+    }
+
+    return "";
+};
+
+const getCartId = (cart) =>
+    cart?.cart_id || cart?.cartId || cart?.id || cart?.cart?.id || "";
+
+const findPaymentUrlForBookings = async ({ bookings, config }) => {
+    const bookingIds = bookings.map((booking) => booking.id).filter(Boolean);
+
+    if (!bookingIds.length) return "";
+
+    const isPaymentRequired = await callSimplyBook({
+        method: "isPaymentRequired",
+        params: [config.serviceId],
+        config,
+    });
+
+    if (!isPaymentRequired) return "";
+
+    const cart = await callSimplyBook({
+        method: "getBookingCart",
+        params: [bookingIds],
+        config,
+    });
+    const inlineUrl = extractPaymentUrl(cart);
+
+    if (inlineUrl) return inlineUrl;
+
+    const cartId = getCartId(cart);
+
+    if (!cartId) {
+        throw new BookingError(
+            "SimplyBook did not return a payment cart id.",
+            502,
+            "PAYMENT_CART_ERROR",
+        );
+    }
+
+    const paymentUrl = extractPaymentUrl(
+        await callSimplyBook({
+            method: "getBookingCartPaymentPageUrl",
+            params: [cartId],
+            config,
+        }),
+    );
+
+    if (!paymentUrl) {
+        throw new BookingError(
+            "SimplyBook did not return a payment page URL.",
+            502,
+            "PAYMENT_URL_ERROR",
+        );
+    }
+
+    return paymentUrl;
+};
+
 module.exports = async function handler(req, res) {
     if (req.method !== "POST") {
         res.setHeader("Allow", "POST");
@@ -209,7 +298,17 @@ module.exports = async function handler(req, res) {
                       ),
                   };
 
-        json(res, 200, normalizeBookingResult(result));
+        const responseBody = normalizeBookingResult(result);
+        const paymentUrl = await findPaymentUrlForBookings({
+            bookings: responseBody.bookings,
+            config,
+        });
+
+        json(res, 200, {
+            ...responseBody,
+            paymentRequired: Boolean(paymentUrl),
+            paymentUrl,
+        });
     } catch (error) {
         handleError(res, error);
     }

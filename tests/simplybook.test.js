@@ -214,13 +214,13 @@ test("booking price counts first sets per selected slot before repeat sets", () 
 test("booking modal refreshes availability every time it opens", () => {
   const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
   const initBookingDatepicker = bookingScript.match(
-    /const initBookingDatepicker = \(\) => \{[\s\S]*?\n    \};\n\n    const refreshBookingAvailability/,
+    /const initBookingDatepicker = \(\) => \{[\s\S]*?\n\s+\};\n\n\s+const refreshBookingAvailability/,
   )?.[0];
   const refreshBookingAvailability = bookingScript.match(
-    /const refreshBookingAvailability = async \(\) => \{[\s\S]*?\n    \};/,
+    /const refreshBookingAvailability = async \(\) => \{[\s\S]*?\n\s+\};/,
   )?.[0];
   const openModal = bookingScript.match(
-    /const openModal = \(\) => \{[\s\S]*?\n    \};/,
+    /const openModal = \(\) => \{[\s\S]*?\n\s+\};/,
   )?.[0];
 
   assert.ok(initBookingDatepicker);
@@ -243,14 +243,14 @@ test("booking modal refreshes availability every time it opens", () => {
 test("booking date fetches are not memoized in the browser", () => {
   const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
   const fetchAvailableDates = bookingScript.match(
-    /const fetchAvailableDates = async \(\{ year, month \}\) => \{[\s\S]*?\n    \};/,
+    /const fetchAvailableDates = async \(\{ year, month \}\) => \{[\s\S]*?return Array\.isArray\(data\.dates\) \? data\.dates : \[\];\n\s+\};/,
   )?.[0];
 
   assert.ok(fetchAvailableDates);
   assert.doesNotMatch(bookingScript, /availableDatesRequests/);
   assert.match(
     fetchAvailableDates,
-    /const data = await fetch\(\s*`\/api\/booking\/dates\?\$\{params\.toString\(\)\}`,\s*\{ cache: "no-store" \},\s*\)\.then\(readJsonResponse\);/,
+    /const data = await fetch\(\s*`\/api\/booking\/dates\?\$\{params\.toString\(\)\}`,\s*\{\s*cache: "no-store",\s*\},?\s*\)\.then\(readJsonResponse\);/,
   );
   assert.doesNotMatch(fetchAvailableDates, /\.has\(/);
   assert.doesNotMatch(fetchAvailableDates, /\.set\(/);
@@ -859,6 +859,13 @@ test("create endpoint books each selected time", async () => {
       };
     }
 
+    if (body.method === "isPaymentRequired") {
+      return {
+        ok: true,
+        json: async () => ({ result: false }),
+      };
+    }
+
     return {
       ok: true,
       json: async () => ({
@@ -984,6 +991,13 @@ test("create endpoint books one selected time for one person", async () => {
       };
     }
 
+    if (body.method === "isPaymentRequired") {
+      return {
+        ok: true,
+        json: async () => ({ result: false }),
+      };
+    }
+
     return {
       ok: true,
       json: async () => ({
@@ -1057,6 +1071,152 @@ test("create endpoint books one selected time for one person", async () => {
   assert.deepEqual(
     JSON.parse(res.body).bookings.map((booking) => booking.code),
     ["code-09:00:00"],
+  );
+});
+
+test("create endpoint returns SimplyBook cart payment URL when payment is required", async () => {
+  resetTokenCache();
+
+  const previousFetch = global.fetch;
+  const previousEnv = {
+    SIMPLYBOOK_COMPANY_LOGIN: process.env.SIMPLYBOOK_COMPANY_LOGIN,
+    SIMPLYBOOK_API_KEY: process.env.SIMPLYBOOK_API_KEY,
+    SIMPLYBOOK_SERVICE_ID: process.env.SIMPLYBOOK_SERVICE_ID,
+    SIMPLYBOOK_PROVIDER_ID: process.env.SIMPLYBOOK_PROVIDER_ID,
+    SIMPLYBOOK_PEOPLE_FIELD_NAME: process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME,
+    BOOKING_TIMEZONE: process.env.BOOKING_TIMEZONE,
+  };
+  const calls = [];
+
+  process.env.SIMPLYBOOK_COMPANY_LOGIN = "wake";
+  process.env.SIMPLYBOOK_API_KEY = "key";
+  process.env.SIMPLYBOOK_SERVICE_ID = "1";
+  process.env.SIMPLYBOOK_PROVIDER_ID = "2";
+  process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME = "people_field_hash";
+  process.env.BOOKING_TIMEZONE = "UTC";
+
+  global.fetch = async (url, options) => {
+    calls.push({ url, options });
+
+    if (options.body) {
+      const body = JSON.parse(options.body);
+
+      if (body.method === "getToken") {
+        return {
+          ok: true,
+          json: async () => ({ result: "token" }),
+        };
+      }
+
+      if (body.method === "isPaymentRequired") {
+        return {
+          ok: true,
+          json: async () => ({ result: true }),
+        };
+      }
+
+      if (body.method === "getBookingCart") {
+        return {
+          ok: true,
+          json: async () => ({
+            result: {
+              cart_id: "cart-1",
+              amount: 1000,
+              currency: "MDL",
+            },
+          }),
+        };
+      }
+
+      if (body.method === "getBookingCartPaymentPageUrl") {
+        return {
+          ok: true,
+          json: async () => ({
+            result: "https://booking.example/pay/cart-1",
+          }),
+        };
+      }
+
+      return {
+        ok: true,
+        json: async () => ({
+          result: {
+            bookings: [
+              {
+                id: `booking-${body.params[3]}`,
+                code: `code-${body.params[3]}`,
+                start_datetime: `${body.params[2]} ${body.params[3]}`,
+                is_confirmed: false,
+              },
+            ],
+            require_confirm: true,
+          },
+        }),
+      };
+    }
+
+    throw new Error(`Unexpected fetch: ${url}`);
+  };
+
+  const req = {
+    method: "POST",
+    body: {
+      name: "Wake Guest",
+      email: "guest@example.com",
+      phone: "12345678",
+      peopleCount: 2,
+      date: "2026-06-10",
+      times: ["09:00", "10:00"],
+      acceptedTerms: true,
+    },
+  };
+  const res = {
+    headers: {},
+    setHeader(key, value) {
+      this.headers[key] = value;
+    },
+    end(body) {
+      this.body = body;
+    },
+  };
+
+  try {
+    await createHandler(req, res);
+  } finally {
+    global.fetch = previousFetch;
+
+    for (const [key, value] of Object.entries(previousEnv)) {
+      if (value === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
+    }
+  }
+
+  const body = JSON.parse(res.body);
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(body.paymentRequired, true);
+  assert.equal(body.paymentUrl, "https://booking.example/pay/cart-1");
+  assert.deepEqual(
+    calls
+      .map((call) => JSON.parse(call.options.body))
+      .find((callBody) => callBody.method === "isPaymentRequired").params,
+    [1],
+  );
+  assert.deepEqual(
+    calls
+      .map((call) => JSON.parse(call.options.body))
+      .find((callBody) => callBody.method === "getBookingCart").params,
+    [["booking-09:00:00", "booking-10:00:00"]],
+  );
+  assert.deepEqual(
+    calls
+      .map((call) => JSON.parse(call.options.body))
+      .find((callBody) => callBody.method === "getBookingCartPaymentPageUrl")
+      .params,
+    ["cart-1"],
   );
 });
 

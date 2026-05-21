@@ -186,8 +186,14 @@
 
     if (!setCount) return 0;
 
-    const firstSetCount = Math.min(bookingState.peopleCount, setCount);
-    const nextSetCount = Math.max(setCount - bookingState.peopleCount, 0);
+    const firstSetCount = Math.min(
+      bookingState.peopleCount,
+      setCount,
+    );
+    const nextSetCount = Math.max(
+      setCount - bookingState.peopleCount,
+      0,
+    );
 
     return firstSetCount * FIRST_SET_PRICE + nextSetCount * NEXT_SET_PRICE;
   };
@@ -673,6 +679,11 @@
       const codes = Array.isArray(result?.bookings)
         ? result.bookings.map((booking) => booking.code).filter(Boolean)
         : [];
+
+      if (result?.paymentUrl) {
+        window.location.assign(result.paymentUrl);
+        return;
+      }
 
       await window.showAppAlert({
         title: "Бронирование создано",
