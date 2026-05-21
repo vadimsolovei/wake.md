@@ -1207,18 +1207,6 @@
                                     <strong>400 л</strong>
                                     <span>Стоимость последующих сетов</span>
                                 </div>
-                                <div
-                                    class="booking-price-row booking-price-row--total"
-                                    data-booking-price-sidebar-row
-                                    hidden
-                                >
-                                    <strong data-booking-price-sidebar
-                                        >0 л</strong
-                                    >
-                                    <span data-booking-price-details
-                                        >Выберите время для расчета</span
-                                    >
-                                </div>
                             </section>
                         </aside>
 
@@ -1422,7 +1410,6 @@
                             <button
                                 class="btn btn--primary booking-submit"
                                 type="submit"
-                                hidden
                             >
                                 <span
                                     class="booking-submit__spinner"
@@ -1433,8 +1420,9 @@
                             <span
                                 class="booking-submit-placeholder"
                                 data-booking-submit-placeholder
+                                data-booking-price-details
                                 aria-live="polite"
-                                >Выберите<br />дату и время</span
+                                >Выберите дату и время</span
                             >
                             <a
                                 class="booking-modal__footer-action booking-modal__footer-action--phone btn--ghost"
