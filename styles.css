@@ -85,6 +85,10 @@ a {
     font-style: normal;
 }
 
+.nowrap {
+    white-space: nowrap;
+}
+
 /* ---------- Page shell ---------- */
 .page-scale {
     width: 100%;
@@ -124,7 +128,6 @@ a {
 .hero {
     position: relative;
     width: 100%;
-    height: 720px;
     padding: 40px;
     margin-bottom: 0;
 }
@@ -439,10 +442,14 @@ a {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     box-shadow: 0 0 0 rgba(11, 28, 29, 0);
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+        "icon title"
+        "icon text";
     align-items: center;
     justify-content: center;
-    gap: 32px;
+    gap: 8px 32px;
     color: var(--white);
     transition:
         transform 0.2s ease,
@@ -469,6 +476,7 @@ a {
 }
 
 .telegram-card__icon {
+    grid-area: icon;
     position: relative;
     width: 88px;
     height: 88px;
@@ -586,23 +594,20 @@ a {
 }
 
 .telegram-card__copy {
-    min-width: 0;
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    font-family: "Montserrat Alternates", sans-serif;
-    font-weight: 500;
-    line-height: 24px;
+    display: contents;
 }
 
 .telegram-card__title {
+    grid-area: title;
     font-size: 20px;
+    align-self: center;
 }
 
 .telegram-card__text {
+    grid-area: text;
     font-size: 16px;
     opacity: 0.8;
+    align-self: start;
 }
 
 /* ============================================================
@@ -2733,6 +2738,10 @@ body.has-booking-modal {
 }
 
 @media (max-width: 767px) {
+    .mobile-hide {
+        display: none;
+    }
+
     :root {
         --bg: #d8e7f6;
         --radius-xl: 80px;
@@ -2766,7 +2775,6 @@ body.has-booking-modal {
     }
 
     .hero {
-        height: 1021px;
         min-height: 713px;
         padding: 0 24px;
         margin: 0;
@@ -2891,18 +2899,24 @@ body.has-booking-modal {
     }
 
     .telegram-channel {
-        margin-top: -230px;
         padding: 0 8px;
     }
 
     .telegram-card {
         min-height: 128px;
         padding: 24px;
-        gap: 24px;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-template-areas:
+            "icon title"
+            "text text";
+        gap: 20px 16px;
         align-items: center;
+        border-radius: 40px;
     }
 
     .telegram-card__icon {
+        grid-area: icon;
         width: 72px;
         height: 72px;
         flex-basis: 72px;
@@ -2925,17 +2939,21 @@ body.has-booking-modal {
     }
 
     .telegram-card__copy {
-        gap: 6px;
+        display: contents;
     }
 
     .telegram-card__title {
-        font-size: 20px;
-        line-height: 24px;
+        grid-area: title;
+        font-size: 24px;
+        line-height: 28px;
+        font-weight: 600;
     }
 
     .telegram-card__text {
+        grid-area: text;
         font-size: 16px;
-        line-height: 24px;
+        line-height: 22px;
+        opacity: 0.9;
     }
 
     .video-strip {
