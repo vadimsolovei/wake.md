@@ -1171,7 +1171,7 @@ a {
     height: 735px;
     border-radius: var(--radius-xl);
     background-size: cover;
-    background-position: center;
+    background-position: right center;
     overflow: hidden;
     display: flex;
     flex-direction: column;
