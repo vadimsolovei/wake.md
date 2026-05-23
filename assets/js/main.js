@@ -457,3 +457,58 @@ document.querySelectorAll(".big-video").forEach((section) => {
     video.addEventListener("pause", syncPlayButton);
     video.addEventListener("ended", syncPlayButton);
 });
+
+(() => {
+    try {
+        const getCookie = (name) => {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2)
+                return decodeURIComponent(
+                    parts.pop().split(";").shift(),
+                );
+        };
+
+        const setSourceCookie = (history) => {
+            const date = new Date();
+            date.setTime(
+                date.getTime() + 60 * 24 * 60 * 60 * 1000,
+            );
+            const expires = "; expires=" + date.toUTCString();
+            document.cookie =
+                "visitor_source=" +
+                encodeURIComponent(JSON.stringify(history)) +
+                expires +
+                "; path=/; SameSite=Lax";
+        };
+
+        const params = new URLSearchParams(window.location.search);
+        const sourceFromUrl = params.get("s");
+        const rawHistory = getCookie("visitor_source");
+
+        let history = [];
+        if (rawHistory) {
+            try {
+                history = JSON.parse(rawHistory);
+                if (!Array.isArray(history)) throw new Error();
+            } catch (e) {
+                // Migrate old string-based cookie
+                history = [{ s: rawHistory, d: new Date().toISOString() }];
+            }
+        }
+
+        const now = new Date().toISOString();
+        if (sourceFromUrl) {
+            const lastEntry = history[history.length - 1];
+            if (!lastEntry || lastEntry.s !== sourceFromUrl) {
+                history.push({ s: sourceFromUrl, d: now });
+            }
+            setSourceCookie(history);
+        } else if (history.length > 0) {
+            // Extend existing cookie lifetime
+            setSourceCookie(history);
+        }
+    } catch (e) {
+        console.warn("Failed to set source cookie", e);
+    }
+})();

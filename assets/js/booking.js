@@ -660,7 +660,13 @@
 
     if (!isBookingReady) return;
 
-    const formData = new FormData(form);
+    const getCookie = (name) => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2)
+        return decodeURIComponent(parts.pop().split(";").shift());
+    };
+
     const payload = {
       name: String(formData.get("name") || "").trim(),
       email: String(formData.get("email") || "").trim(),
@@ -669,6 +675,7 @@
       date: bookingState.selectedDate,
       times: bookingState.selectedTimes,
       acceptedTerms: formData.get("terms") === "on",
+      source: getCookie("visitor_source") || "",
     };
 
     bookingState.isSubmitting = true;
