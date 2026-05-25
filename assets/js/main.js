@@ -1,4 +1,74 @@
 (() => {
+    const heroBackground = document.querySelector(".hero__bg");
+
+    if (!heroBackground) return;
+
+    const heroIndexes = [1, 2, 3, 4, 5, 6, 7];
+    const selectedIndex =
+        heroIndexes[Math.floor(Math.random() * heroIndexes.length)];
+    const heroBasePath = "assets/design/sections/hero";
+
+    heroBackground.style.setProperty(
+        "--hero-bg-desktop",
+        `url("${heroBasePath}/hero-desktop-${selectedIndex}.webp")`,
+    );
+    heroBackground.style.setProperty(
+        "--hero-bg-mobile",
+        `url("${heroBasePath}/hero-mobile-${selectedIndex}.webp")`,
+    );
+})();
+
+(() => {
+    const lazyMediaElements = document.querySelectorAll(
+        "[data-bg], [data-poster]",
+    );
+
+    if (!lazyMediaElements.length) return;
+
+    const mobileQuery = window.matchMedia("(max-width: 767px)");
+
+    const loadLazyMedia = (element) => {
+        const desktopBackground = element.dataset.bg;
+        const mobileBackground = element.dataset.bgMobile;
+        const background =
+            mobileQuery.matches && mobileBackground
+                ? mobileBackground
+                : desktopBackground;
+
+        if (background) {
+            element.style.backgroundImage = `url("${background}")`;
+        }
+
+        if (element.dataset.poster) {
+            element.setAttribute("poster", element.dataset.poster);
+        }
+
+        element.classList.add("is-lazy-media-loaded");
+    };
+
+    if (!("IntersectionObserver" in window)) {
+        lazyMediaElements.forEach(loadLazyMedia);
+        return;
+    }
+
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+
+                loadLazyMedia(entry.target);
+                observer.unobserve(entry.target);
+            });
+        },
+        { rootMargin: "600px 0px" },
+    );
+
+    lazyMediaElements.forEach((element) => {
+        observer.observe(element);
+    });
+})();
+
+(() => {
     const desktopMinWidth = 768;
     const desktopBaseWidth = 1440;
     const pageScale = document.querySelector(".page-scale");

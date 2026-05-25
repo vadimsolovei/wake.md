@@ -138,7 +138,7 @@ a {
     top: 0;
     width: 100%;
     height: 1021px;
-    background-image: url("assets/design/sections/hero.webp");
+    background-image: var(--hero-bg-desktop);
     background-size: 100% auto;
     background-repeat: no-repeat;
     z-index: 0;
@@ -151,12 +151,16 @@ a {
     width: 100%;
     height: 1021px;
     background:
-        linear-gradient(180deg,
+        linear-gradient(
+            180deg,
             rgba(216, 231, 246, 0) 70%,
-            rgba(216, 231, 246, 1) 100%),
-        linear-gradient(270deg,
+            rgba(216, 231, 246, 1) 100%
+        ),
+        linear-gradient(
+            270deg,
             rgba(17, 27, 45, 0) 27%,
-            rgba(17, 27, 45, 0.8) 100%);
+            rgba(17, 27, 45, 0.8) 100%
+        );
     z-index: 1;
 }
 
@@ -343,15 +347,20 @@ a {
     --floating-cta-scale: 1;
     --floating-cta-offset-y: 16px;
     position: fixed;
-    left: max(calc(40px * var(--floating-cta-scale)),
-            env(safe-area-inset-left));
-    bottom: max(calc(40px * var(--floating-cta-scale)),
-            env(safe-area-inset-bottom));
+    left: max(
+        calc(40px * var(--floating-cta-scale)),
+        env(safe-area-inset-left)
+    );
+    bottom: max(
+        calc(40px * var(--floating-cta-scale)),
+        env(safe-area-inset-bottom)
+    );
     z-index: 50;
     max-width: calc(100vw - 48px);
     opacity: 0;
     pointer-events: none;
-    transform: translateY(var(--floating-cta-offset-y)) scale(var(--floating-cta-scale));
+    transform: translateY(var(--floating-cta-offset-y))
+        scale(var(--floating-cta-scale));
     transform-origin: left bottom;
     transition:
         opacity 0.22s ease,
@@ -972,6 +981,7 @@ a {
     position: absolute;
     inset: 23px -43px auto -43px;
     height: 388px;
+    background-color: rgba(216, 231, 246, 0.7);
     background-size: cover;
     background-position: center;
 }
@@ -1060,7 +1070,10 @@ a {
 
 .scroll-indicator__handle {
     position: absolute;
-    left: calc(var(--steps-bar-start) - var(--steps-handle-half) + (var(--steps-progress) * (100% - var(--steps-bar-start))));
+    left: calc(
+        var(--steps-bar-start) - var(--steps-handle-half) +
+            (var(--steps-progress) * (100% - var(--steps-bar-start)))
+    );
     top: 50%;
     width: var(--steps-handle-size);
     height: var(--steps-handle-size);
@@ -1085,7 +1098,7 @@ a {
     margin: 0 40px;
     height: 640px;
     border-radius: var(--radius-xl);
-    background-image: url("assets/design/sections/gift.webp");
+    background-color: #e7f1fb;
     background-size: cover;
     background-position: center;
     padding: 80px;
@@ -1116,7 +1129,7 @@ a {
     margin: 0 40px;
     height: 600px;
     border-radius: var(--radius-xl);
-    background-image: url("assets/design/sections/bitalent-kid.webp");
+    background-color: #eef6fd;
     background-size: cover;
     background-position: center;
     padding: 80px;
@@ -1170,6 +1183,7 @@ a {
     width: 100%;
     height: 735px;
     border-radius: var(--radius-xl);
+    background-color: #0d5d78;
     background-size: cover;
     background-position: right center;
     overflow: hidden;
@@ -1183,9 +1197,11 @@ a {
 .map__overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom,
-            rgba(0, 49, 73, 0.7),
-            rgba(0, 49, 73, 0) 50%);
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 49, 73, 0.7),
+        rgba(0, 49, 73, 0) 50%
+    );
 }
 
 .map .section__head {
@@ -1278,16 +1294,7 @@ a {
     color: var(--night);
 }
 
-.boats .boat-card:nth-child(1) {
-    background-image: url("assets/content/boats/sea-doo-spark.webp");
-}
-
-.boats .boat-card:nth-child(2) {
-    background-image: url("assets/content/boats/sea-doo-wake.webp");
-}
-
 .boat-card--wide {
-    background-image: url("assets/content/boats/super-air-nautique.webp");
     margin-top: 16px;
     padding: 80px 80px 144px;
     height: 737px;
@@ -1419,17 +1426,27 @@ a {
     }
 
     to {
-        transform: translate3d(calc(-50% - (var(--gallery-track-gap) / 2) + var(--gallery-drag-offset)),
-                0,
-                0);
+        transform: translate3d(
+            calc(
+                -50% - (var(--gallery-track-gap) / 2) +
+                    var(--gallery-drag-offset)
+            ),
+            0,
+            0
+        );
     }
 }
 
 @keyframes gallery-marquee-right {
     from {
-        transform: translate3d(calc(-50% - (var(--gallery-track-gap) / 2) + var(--gallery-drag-offset)),
-                0,
-                0);
+        transform: translate3d(
+            calc(
+                -50% - (var(--gallery-track-gap) / 2) +
+                    var(--gallery-drag-offset)
+            ),
+            0,
+            0
+        );
     }
 
     to {
@@ -1591,7 +1608,7 @@ body.has-booking-modal {
     line-height: 1.5;
 }
 
-.booking-info-popup__body p+p {
+.booking-info-popup__body p + p {
     margin-top: 20px;
 }
 
@@ -1669,6 +1686,10 @@ body.has-booking-modal {
     width: 100px;
     height: 100px;
     margin-left: -10px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
 }
 
 .booking-modal__brand img {
@@ -2057,7 +2078,7 @@ body.has-booking-modal {
     padding-right: 12px;
 }
 
-.booking-people>span {
+.booking-people > span {
     flex: 1 1 auto;
     min-width: 0;
     color: #0f1b2e;
@@ -2248,16 +2269,16 @@ body.has-booking-modal {
     transition: opacity 0.18s ease;
 }
 
-.booking-check input:checked+span {
+.booking-check input:checked + span {
     border-color: var(--yellow);
     background: var(--yellow);
 }
 
-.booking-check input:checked+span svg {
+.booking-check input:checked + span svg {
     opacity: 1;
 }
 
-.booking-check input:focus-visible+span {
+.booking-check input:focus-visible + span {
     outline: 3px solid rgba(255, 199, 0, 0.42);
     outline-offset: 3px;
 }
@@ -2280,7 +2301,7 @@ body.has-booking-modal {
     padding-left: 24px;
 }
 
-.booking-terms__rules li+li {
+.booking-terms__rules li + li {
     margin-top: 12px;
 }
 
@@ -2404,7 +2425,7 @@ body.has-booking-modal {
 
     .booking-modal__footer {
         position: sticky;
-        bottom: 0;
+        bottom: 20px;
         z-index: 3;
     }
 }
@@ -2466,8 +2487,8 @@ body.has-booking-modal {
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
-        gap: 12px;
-        padding: 0 8px calc(188px + env(safe-area-inset-bottom));
+        gap: 8px;
+        padding: 0 8px calc(158px + env(safe-area-inset-bottom));
     }
 
     .booking-sidebar,
@@ -2592,7 +2613,7 @@ body.has-booking-modal {
         padding-bottom: 12px;
     }
 
-    .booking-people>span {
+    .booking-people > span {
         width: 100%;
     }
 
@@ -2631,7 +2652,7 @@ body.has-booking-modal {
         position: fixed;
         left: 0;
         right: 0;
-        bottom: 0;
+        bottom: 8px;
         z-index: 5;
         width: auto;
         border-radius: 28px;
@@ -2725,7 +2746,7 @@ body.has-booking-modal {
         line-height: 1.45;
     }
 
-    .booking-info-popup__body p+p {
+    .booking-info-popup__body p + p {
         margin-top: 14px;
     }
 
@@ -2775,27 +2796,31 @@ body.has-booking-modal {
     }
 
     .hero {
-        min-height: 713px;
+        min-height: 680px;
         padding: 0 24px;
         margin: 0;
         overflow: hidden;
     }
 
     .hero__bg {
-        background-image: url("assets/design/sections/hero-mobile.webp");
+        background-image: var(--hero-bg-mobile);
         background-size: cover;
-        background-position: center -45px;
+        background-position: -250px center;
     }
 
     .hero__shadow {
         background:
-            linear-gradient(180deg,
+            linear-gradient(
+                180deg,
                 rgba(18, 73, 96, 0) 50%,
                 rgba(18, 73, 96, 0.49) 73.99%,
-                #d8e7f6 100%),
-            linear-gradient(270deg,
+                #d8e7f6 100%
+            ),
+            linear-gradient(
+                270deg,
                 rgba(17, 27, 45, 0) 27.29%,
-                rgba(17, 27, 45, 0.8) 100%);
+                rgba(17, 27, 45, 0.8) 100%
+            );
     }
 
     .hero__content {
@@ -3121,7 +3146,6 @@ body.has-booking-modal {
         margin: 0 8px;
         padding: 40px 24px;
         border-radius: 80px;
-        background-image: url("assets/design/sections/gift_mobile.webp");
         background-position: center bottom;
         align-items: flex-start;
         justify-content: center;
@@ -3143,7 +3167,6 @@ body.has-booking-modal {
         margin: 0 8px;
         padding: 40px 0 0;
         border-radius: 80px;
-        background-image: url("assets/design/sections/bitalent-kid_mobile.webp");
         align-items: flex-start;
         justify-content: center;
         background-position: center bottom;
@@ -3208,7 +3231,6 @@ body.has-booking-modal {
     }
 
     .boat-card--wide {
-        background-image: url("assets/content/boats/super-air-nautique_mobile.webp");
         aspect-ratio: 768 / 720;
         min-height: 0;
     }
@@ -3352,7 +3374,6 @@ body.has-booking-modal {
 }
 
 @media (min-width: 768px) {
-
     html,
     body {
         width: 100%;

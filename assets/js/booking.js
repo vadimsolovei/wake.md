@@ -33,6 +33,7 @@
 
   const FIRST_SET_PRICE = 600;
   const NEXT_SET_PRICE = 400;
+  const BOOKING_UNAVAILABLE_MESSAGE = "Сервис бронирования временно недоступен.";
 
   if (!modal || !dialog || !form || !openButtons.length) return;
 
@@ -136,7 +137,7 @@
 
     if (!response.ok) {
       throw new Error(
-        data?.error?.message || "Сервис бронирования временно недоступен.",
+        data?.error?.message || BOOKING_UNAVAILABLE_MESSAGE,
       );
     }
 
@@ -466,6 +467,23 @@
 
     bookingState.availableDates = new Set(availableDates);
     bookingState.isLoadingDates = false;
+
+    if (!availableDates.length) {
+      bookingState.availableTimes = [];
+      bookingState.selectedDate = "";
+      bookingState.selectedTimes = [];
+      bookingState.availabilityError = BOOKING_UNAVAILABLE_MESSAGE;
+      renderTimes();
+    } else if (
+      bookingState.selectedDate &&
+      !bookingState.availableDates.has(bookingState.selectedDate)
+    ) {
+      bookingState.availableTimes = [];
+      bookingState.selectedDate = "";
+      bookingState.selectedTimes = [];
+      renderTimes();
+    }
+
     updateDatesLoader();
     updateMonthControls();
     applyDateAvailability();
