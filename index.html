@@ -91,19 +91,62 @@
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link rel="preload" as="image" href="assets/design/brand/loader.webp" />
+        <script>
+            (() => {
+                const heroIndexes = [1, 2, 3, 4, 5, 6, 7];
+                const selectedIndex =
+                    heroIndexes[
+                        Math.floor(Math.random() * heroIndexes.length)
+                    ];
+                const heroBasePath = "assets/design/sections/hero";
+                const desktop = `${heroBasePath}/hero-desktop-${selectedIndex}.webp`;
+                const mobile = `${heroBasePath}/hero-mobile-${selectedIndex}.webp`;
+                const active =
+                    window.matchMedia("(max-width: 767px)").matches
+                        ? mobile
+                        : desktop;
+                const preload = document.createElement("link");
+
+                document.documentElement.style.setProperty(
+                    "--hero-bg-desktop",
+                    `url("${desktop}")`,
+                );
+                document.documentElement.style.setProperty(
+                    "--hero-bg-mobile",
+                    `url("${mobile}")`,
+                );
+                window.__wakeHeroAssets = { desktop, mobile };
+
+                preload.rel = "preload";
+                preload.as = "image";
+                preload.href = active;
+                preload.fetchPriority = "high";
+                document.head.append(preload);
+            })();
+        </script>
         <link
+            rel="preload"
+            as="style"
             href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@500&family=Montserrat:wght@400;500;600;700&display=swap"
-            rel="stylesheet"
+            onload="this.onload=null;this.rel='stylesheet'"
         />
         <link
-            rel="stylesheet"
+            rel="preload"
+            as="style"
             href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+            onload="this.onload=null;this.rel='stylesheet'"
         />
-        <link
-            rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
-        />
-        <link rel="stylesheet" href="styles.css" />
+        <noscript>
+            <link
+                rel="stylesheet"
+                href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@500&family=Montserrat:wght@400;500;600;700&display=swap"
+            />
+            <link
+                rel="stylesheet"
+                href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+            />
+        </noscript>
+        <link rel="stylesheet" href="styles.css" data-app-stylesheet />
     </head>
 
     <body>
@@ -1775,32 +1818,157 @@
                 Позвонить
             </a>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
-        <script src="assets/js/app-alert.js"></script>
-        <script src="assets/js/booking.js"></script>
-        <script src="assets/js/main.js"></script>
         <script>
             (() => {
                 const loader = document.querySelector("[data-app-loader]");
+                const stylesheet = document.querySelector(
+                    "[data-app-stylesheet]",
+                );
+                const desktopMinWidth = 768;
+                const desktopBaseWidth = 1440;
+                const pageScale = document.querySelector(".page-scale");
+                const page = document.querySelector(".page");
+                let isHidden = false;
 
                 if (!loader) return;
 
                 const hideLoader = () => {
+                    if (isHidden) return;
+
+                    isHidden = true;
                     loader.classList.add("is-hidden");
                     window.setTimeout(() => {
                         loader.remove();
                     }, 300);
                 };
 
-                if (document.readyState === "complete") {
-                    hideLoader();
-                    return;
-                }
+                const waitForStylesheet = () => {
+                    if (!stylesheet || stylesheet.sheet) {
+                        return Promise.resolve();
+                    }
 
-                window.addEventListener("load", hideLoader, { once: true });
+                    return new Promise((resolve) => {
+                        let isResolved = false;
+
+                        const finish = () => {
+                            if (isResolved) return;
+
+                            isResolved = true;
+                            stylesheet.removeEventListener("load", finish);
+                            stylesheet.removeEventListener("error", finish);
+                            resolve();
+                        };
+
+                        stylesheet.addEventListener("load", finish, {
+                            once: true,
+                        });
+                        stylesheet.addEventListener("error", finish, {
+                            once: true,
+                        });
+                    });
+                };
+
+                const getHeroImageUrl = () => {
+                    const assets = window.__wakeHeroAssets;
+
+                    if (!assets) return "";
+
+                    return window.matchMedia("(max-width: 767px)").matches
+                        ? assets.mobile
+                        : assets.desktop;
+                };
+
+                const waitForHeroImage = () => {
+                    const url = getHeroImageUrl();
+
+                    if (!url) return Promise.resolve();
+
+                    return new Promise((resolve) => {
+                        const image = new Image();
+                        let isResolved = false;
+
+                        const finish = () => {
+                            if (isResolved) return;
+
+                            isResolved = true;
+                            image.onload = null;
+                            image.onerror = null;
+
+                            if (
+                                image.complete &&
+                                image.naturalWidth > 0 &&
+                                image.decode
+                            ) {
+                                image.decode().catch(() => {}).finally(resolve);
+                                return;
+                            }
+
+                            resolve();
+                        };
+
+                        image.onload = finish;
+                        image.onerror = finish;
+                        image.src = url;
+                    });
+                };
+
+                const updateDesktopScale = () => {
+                    if (!pageScale || !page) return;
+
+                    if (window.innerWidth < desktopMinWidth) {
+                        document.documentElement.style.removeProperty(
+                            "--desktop-scale",
+                        );
+                        document.documentElement.style.removeProperty(
+                            "--activity-emoji-bottom-offset",
+                        );
+                        pageScale.style.removeProperty("height");
+                        return;
+                    }
+
+                    const scale = window.innerWidth / desktopBaseWidth;
+
+                    document.documentElement.style.setProperty(
+                        "--desktop-scale",
+                        scale,
+                    );
+                    document.documentElement.style.setProperty(
+                        "--activity-emoji-bottom-offset",
+                        `${20 / scale}px`,
+                    );
+                    pageScale.style.height = `${page.offsetHeight * scale}px`;
+                };
+
+                Promise.all([waitForStylesheet(), waitForHeroImage()]).then(
+                    () => {
+                        updateDesktopScale();
+
+                        if ("requestAnimationFrame" in window) {
+                            window.requestAnimationFrame(hideLoader);
+                        } else {
+                            hideLoader();
+                        }
+                    },
+                );
+
+                window.addEventListener("load", updateDesktopScale);
+                window.addEventListener("resize", updateDesktopScale);
+                document.fonts?.ready.then(updateDesktopScale);
+                Array.from(document.images).forEach((image) => {
+                    if (image.complete) return;
+
+                    image.addEventListener("load", updateDesktopScale, {
+                        once: true,
+                    });
+                    image.addEventListener("error", updateDesktopScale, {
+                        once: true,
+                    });
+                });
             })();
         </script>
+        <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+        <script src="assets/js/app-alert.js"></script>
+        <script src="assets/js/booking.js"></script>
+        <script src="assets/js/main.js"></script>
     </body>
 </html>

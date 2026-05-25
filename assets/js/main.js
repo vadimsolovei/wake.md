@@ -1,24 +1,4 @@
 (() => {
-    const heroBackground = document.querySelector(".hero__bg");
-
-    if (!heroBackground) return;
-
-    const heroIndexes = [1, 2, 3, 4, 5, 6, 7];
-    const selectedIndex =
-        heroIndexes[Math.floor(Math.random() * heroIndexes.length)];
-    const heroBasePath = "assets/design/sections/hero";
-
-    heroBackground.style.setProperty(
-        "--hero-bg-desktop",
-        `url("${heroBasePath}/hero-desktop-${selectedIndex}.webp")`,
-    );
-    heroBackground.style.setProperty(
-        "--hero-bg-mobile",
-        `url("${heroBasePath}/hero-mobile-${selectedIndex}.webp")`,
-    );
-})();
-
-(() => {
     const lazyMediaElements = document.querySelectorAll(
         "[data-bg], [data-poster]",
     );
@@ -66,66 +46,6 @@
     lazyMediaElements.forEach((element) => {
         observer.observe(element);
     });
-})();
-
-(() => {
-    const desktopMinWidth = 768;
-    const desktopBaseWidth = 1440;
-    const pageScale = document.querySelector(".page-scale");
-    const page = document.querySelector(".page");
-
-    if (!pageScale || !page) return;
-
-    let frameRequest = null;
-
-    const updateDesktopScale = () => {
-        if (frameRequest) {
-            window.cancelAnimationFrame(frameRequest);
-        }
-
-        frameRequest = window.requestAnimationFrame(() => {
-            frameRequest = null;
-
-            if (window.innerWidth < desktopMinWidth) {
-                document.documentElement.style.removeProperty(
-                    "--desktop-scale",
-                );
-                document.documentElement.style.removeProperty(
-                    "--activity-emoji-bottom-offset",
-                );
-                pageScale.style.removeProperty("height");
-                return;
-            }
-
-            const scale = window.innerWidth / desktopBaseWidth;
-
-            document.documentElement.style.setProperty(
-                "--desktop-scale",
-                scale,
-            );
-            document.documentElement.style.setProperty(
-                "--activity-emoji-bottom-offset",
-                `${20 / scale}px`,
-            );
-            pageScale.style.height = `${page.offsetHeight * scale}px`;
-        });
-    };
-
-    window.addEventListener("load", updateDesktopScale);
-    window.addEventListener("resize", updateDesktopScale);
-    document.fonts?.ready.then(updateDesktopScale);
-    Array.from(document.images).forEach((image) => {
-        if (image.complete) return;
-
-        image.addEventListener("load", updateDesktopScale, {
-            once: true,
-        });
-        image.addEventListener("error", updateDesktopScale, {
-            once: true,
-        });
-    });
-
-    updateDesktopScale();
 })();
 
 (() => {

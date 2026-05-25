@@ -34,12 +34,18 @@
   const FIRST_SET_PRICE = 600;
   const NEXT_SET_PRICE = 400;
   const BOOKING_UNAVAILABLE_MESSAGE = "Сервис бронирования временно недоступен.";
+  const FLATPICKR_STYLE_URL =
+    "https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css";
+  const FLATPICKR_SCRIPT_URL = "https://cdn.jsdelivr.net/npm/flatpickr";
+  const FLATPICKR_LOCALE_URL =
+    "https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js";
 
   if (!modal || !dialog || !form || !openButtons.length) return;
 
   let lastFocusedElement = null;
   let lastFocusedInfoElement = null;
   let datepicker = null;
+  let flatpickrAssetsPromise = null;
   let activeDatesRequest = 0;
   let activeTimesRequest = 0;
   let isBookingReady = false;
@@ -489,6 +495,78 @@
     applyDateAvailability();
   };
 
+  const getAbsoluteAssetUrl = (url) => new URL(url, document.baseURI).href;
+
+  const hasAssetElement = (selector, urlAttribute, url) =>
+    Array.from(document.querySelectorAll(selector)).some(
+      (element) => element[urlAttribute] === getAbsoluteAssetUrl(url),
+    );
+
+  const loadStylesheet = (href) => {
+    if (
+      hasAssetElement(
+        "link[rel='stylesheet'], link[rel='preload']",
+        "href",
+        href,
+      )
+    ) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve, reject) => {
+      const link = document.createElement("link");
+
+      link.rel = "stylesheet";
+      link.href = href;
+      link.onload = resolve;
+      link.onerror = () => {
+        link.remove();
+        reject(new Error(BOOKING_UNAVAILABLE_MESSAGE));
+      };
+      document.head.append(link);
+    });
+  };
+
+  const loadScript = (src) => {
+    if (hasAssetElement("script[src]", "src", src)) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+
+      script.src = src;
+      script.async = true;
+      script.onload = resolve;
+      script.onerror = () => {
+        script.remove();
+        reject(new Error(BOOKING_UNAVAILABLE_MESSAGE));
+      };
+      document.body.append(script);
+    });
+  };
+
+  const loadFlatpickrAssets = () => {
+    if (window.flatpickr?.l10ns?.ru) return Promise.resolve();
+
+    flatpickrAssetsPromise =
+      flatpickrAssetsPromise ||
+      (async () => {
+        try {
+          await Promise.all([
+            loadStylesheet(FLATPICKR_STYLE_URL),
+            loadScript(FLATPICKR_SCRIPT_URL),
+          ]);
+          await loadScript(FLATPICKR_LOCALE_URL);
+        } catch (error) {
+          flatpickrAssetsPromise = null;
+          throw error;
+        }
+      })();
+
+    return flatpickrAssetsPromise;
+  };
+
   const initBookingDatepicker = () => {
     if (datepicker) return true;
     if (!dateInput || !window.flatpickr) return false;
@@ -534,6 +612,27 @@
   };
 
   const refreshBookingAvailability = async () => {
+    bookingState.isLoadingDates = true;
+    bookingState.availabilityError = "";
+    updateDatesLoader();
+    updateMonthControls();
+
+    try {
+      await loadFlatpickrAssets();
+    } catch (error) {
+      bookingState.availableDates = new Set();
+      bookingState.availableTimes = [];
+      bookingState.selectedDate = "";
+      bookingState.selectedTimes = [];
+      bookingState.isLoadingDates = false;
+      bookingState.availabilityError =
+        error.message || BOOKING_UNAVAILABLE_MESSAGE;
+      updateDatesLoader();
+      updateMonthControls();
+      renderTimes();
+      return;
+    }
+
     if (!initBookingDatepicker()) return;
 
     isBookingReady = false;

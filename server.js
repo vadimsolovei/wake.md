@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const express = require("express");
+const compression = require("compression");
 const path = require("node:path");
 const datesHandler = require("./api/booking/dates");
 const timesHandler = require("./api/booking/times");
@@ -32,6 +33,7 @@ app.use(
     }),
 );
 app.use(express.urlencoded({ extended: false, limit: "32kb" }));
+app.use(compression());
 
 app.get("/api/health", (req, res) => {
     res.json({ ok: true });
