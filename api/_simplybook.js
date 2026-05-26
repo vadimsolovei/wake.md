@@ -25,6 +25,9 @@ const getConfig = (env = process.env) => {
     const config = {
         companyLogin: env.SIMPLYBOOK_COMPANY_LOGIN,
         apiKey: env.SIMPLYBOOK_API_KEY,
+        apiSecretKey: env.SIMPLYBOOK_API_SECRET_KEY || "",
+        paymentProcessorName:
+            env.SIMPLYBOOK_PAYMENT_PROCESSOR_NAME || "Custom Payment",
         serviceId: Number(env.SIMPLYBOOK_SERVICE_ID),
         providerId: Number(env.SIMPLYBOOK_PROVIDER_ID),
         peopleFieldName: env.SIMPLYBOOK_PEOPLE_FIELD_NAME || "",

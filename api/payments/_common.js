@@ -98,7 +98,8 @@ const readJsonBodyWithRaw = async (req) => {
 
 const trimTrailingSlash = (value) => String(value || "").replace(/\/+$/, "");
 
-const getPaymentConfig = (env = process.env) => {
+const getPaymentConfig = (env = process.env, options = {}) => {
+    const requireSbpay = options.requireSbpay !== false;
     const storePath = env.PAYMENT_STORE_PATH || ".data/maib-payments.json";
     const config = {
         publicBaseUrl: trimTrailingSlash(env.PUBLIC_BASE_URL),
@@ -122,9 +123,11 @@ const getPaymentConfig = (env = process.env) => {
     const missing = [];
 
     if (!config.publicBaseUrl) missing.push("PUBLIC_BASE_URL");
-    if (!config.sbpayToken) missing.push("SBPAY_TOKEN");
-    if (!config.sbpaySecret) missing.push("SBPAY_SECRET");
-    if (!config.sbpayMerchant) missing.push("SBPAY_MERCHANT");
+    if (requireSbpay) {
+        if (!config.sbpayToken) missing.push("SBPAY_TOKEN");
+        if (!config.sbpaySecret) missing.push("SBPAY_SECRET");
+        if (!config.sbpayMerchant) missing.push("SBPAY_MERCHANT");
+    }
     if (!config.maibClientId) missing.push("MAIB_CLIENT_ID");
     if (!config.maibClientSecret) missing.push("MAIB_CLIENT_SECRET");
     if (!config.maibSignatureKey) missing.push("MAIB_SIGNATURE_KEY");
@@ -138,6 +141,22 @@ const getPaymentConfig = (env = process.env) => {
     }
 
     return config;
+};
+
+const requireSbpayConfig = (config) => {
+    const missing = [];
+
+    if (!config.sbpayToken) missing.push("SBPAY_TOKEN");
+    if (!config.sbpaySecret) missing.push("SBPAY_SECRET");
+    if (!config.sbpayMerchant) missing.push("SBPAY_MERCHANT");
+
+    if (missing.length) {
+        throw new PaymentError(
+            `Missing payment configuration: ${missing.join(", ")}`,
+            500,
+            "PAYMENT_CONFIG_ERROR",
+        );
+    }
 };
 
 const buildPublicUrl = (config, pathname, params = {}) => {
@@ -160,4 +179,5 @@ module.exports = {
     json,
     readFormBody,
     readJsonBodyWithRaw,
+    requireSbpayConfig,
 };

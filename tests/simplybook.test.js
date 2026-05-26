@@ -30,6 +30,7 @@ const {
   verifyMaibCallbackSignature,
 } = require("../api/payments/_maib");
 const { createPaymentStore } = require("../api/payments/_store");
+const { createCartSignature } = require("../api/payments/direct");
 const {
   buildSbpayValidationPayload,
   validateCustomPaymentRequest,
@@ -61,6 +62,7 @@ const jsonFetchResponse = (body, status = 200) => ({
 const setPaymentEnv = (storePath, overrides = {}) => {
   const values = {
     PUBLIC_BASE_URL: "https://local.example",
+    SIMPLYBOOK_API_SECRET_KEY: "simplybook-secret",
     SBPAY_API_BASE_URL: "https://app.sbpay.test/api",
     SBPAY_TOKEN: "sb-token",
     SBPAY_SECRET: "sb-secret",
@@ -171,6 +173,20 @@ test("booking contact fields are marked as required", () => {
     assert.match(input, /\srequired\b/, field);
     assert.match(input, /aria-required="true"/, field);
   }
+});
+
+test("booking submit builds form data before payload", () => {
+  const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
+
+  assert.match(
+    bookingScript,
+    /const formData = new FormData\(form\);\s+const getCookie = \(name\) =>/,
+  );
+  assert.match(bookingScript, /name: String\(formData\.get\("name"\)/);
+  assert.match(
+    bookingScript,
+    /acceptedTerms: formData\.get\("terms"\) === "on"/,
+  );
 });
 
 test("booking phone field accepts exactly 8 digits", () => {
@@ -583,6 +599,8 @@ test("dates endpoint returns available dates for a requested month", async () =>
   const previousEnv = {
     SIMPLYBOOK_COMPANY_LOGIN: process.env.SIMPLYBOOK_COMPANY_LOGIN,
     SIMPLYBOOK_API_KEY: process.env.SIMPLYBOOK_API_KEY,
+    SIMPLYBOOK_PAYMENT_PROCESSOR_NAME:
+      process.env.SIMPLYBOOK_PAYMENT_PROCESSOR_NAME,
     SIMPLYBOOK_SERVICE_ID: process.env.SIMPLYBOOK_SERVICE_ID,
     SIMPLYBOOK_PROVIDER_ID: process.env.SIMPLYBOOK_PROVIDER_ID,
     BOOKING_TIMEZONE: process.env.BOOKING_TIMEZONE,
@@ -591,6 +609,7 @@ test("dates endpoint returns available dates for a requested month", async () =>
 
   process.env.SIMPLYBOOK_COMPANY_LOGIN = "wake";
   process.env.SIMPLYBOOK_API_KEY = "key";
+  process.env.SIMPLYBOOK_PAYMENT_PROCESSOR_NAME = "Custom Payment";
   process.env.SIMPLYBOOK_SERVICE_ID = "1";
   process.env.SIMPLYBOOK_PROVIDER_ID = "2";
   process.env.BOOKING_TIMEZONE = "UTC";
@@ -678,6 +697,8 @@ test("times endpoint requests slots without people count filtering", async () =>
   const previousEnv = {
     SIMPLYBOOK_COMPANY_LOGIN: process.env.SIMPLYBOOK_COMPANY_LOGIN,
     SIMPLYBOOK_API_KEY: process.env.SIMPLYBOOK_API_KEY,
+    SIMPLYBOOK_PAYMENT_PROCESSOR_NAME:
+      process.env.SIMPLYBOOK_PAYMENT_PROCESSOR_NAME,
     SIMPLYBOOK_SERVICE_ID: process.env.SIMPLYBOOK_SERVICE_ID,
     SIMPLYBOOK_PROVIDER_ID: process.env.SIMPLYBOOK_PROVIDER_ID,
     BOOKING_TIMEZONE: process.env.BOOKING_TIMEZONE,
@@ -686,6 +707,7 @@ test("times endpoint requests slots without people count filtering", async () =>
 
   process.env.SIMPLYBOOK_COMPANY_LOGIN = "wake";
   process.env.SIMPLYBOOK_API_KEY = "key";
+  process.env.SIMPLYBOOK_PAYMENT_PROCESSOR_NAME = "Custom Payment";
   process.env.SIMPLYBOOK_SERVICE_ID = "1";
   process.env.SIMPLYBOOK_PROVIDER_ID = "2";
   process.env.BOOKING_TIMEZONE = "UTC";
@@ -1074,8 +1096,9 @@ test("create endpoint books one selected time for one person", async () => {
   );
 });
 
-test("create endpoint returns SimplyBook cart payment URL when payment is required", async () => {
+test("create endpoint returns maib checkout URL when payment is required", async () => {
   resetTokenCache();
+  resetMaibTokenCache();
 
   const previousFetch = global.fetch;
   const previousEnv = {
@@ -1086,6 +1109,8 @@ test("create endpoint returns SimplyBook cart payment URL when payment is requir
     SIMPLYBOOK_PEOPLE_FIELD_NAME: process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME,
     BOOKING_TIMEZONE: process.env.BOOKING_TIMEZONE,
   };
+  const storePath = createPaymentStorePath();
+  const restorePaymentEnv = setPaymentEnv(storePath);
   const calls = [];
 
   process.env.SIMPLYBOOK_COMPANY_LOGIN = "wake";
@@ -1096,7 +1121,32 @@ test("create endpoint returns SimplyBook cart payment URL when payment is requir
   process.env.BOOKING_TIMEZONE = "UTC";
 
   global.fetch = async (url, options) => {
-    calls.push({ url, options });
+    calls.push({
+      url,
+      options,
+      body: options.body ? JSON.parse(options.body) : null,
+    });
+
+    if (url.endsWith("/v2/auth/token")) {
+      return jsonFetchResponse({
+        ok: true,
+        result: {
+          accessToken: "maib-token",
+          expiresIn: 300,
+          tokenType: "Bearer",
+        },
+      });
+    }
+
+    if (url.endsWith("/v2/checkouts")) {
+      return jsonFetchResponse({
+        ok: true,
+        result: {
+          checkoutId: "checkout-cart-3",
+          checkoutUrl: "https://checkout.maib.test/checkout-cart-3",
+        },
+      });
+    }
 
     if (options.body) {
       const body = JSON.parse(options.body);
@@ -1120,19 +1170,25 @@ test("create endpoint returns SimplyBook cart payment URL when payment is requir
           ok: true,
           json: async () => ({
             result: {
-              cart_id: "cart-1",
+              cart_id: 3,
+              cart_hash: "cart-hash-3",
               amount: 1000,
               currency: "MDL",
+              cart: [
+                {
+                  id: "booking-09:00:00",
+                  name: "Wakeboarding 09:00",
+                  price: 500,
+                  qty: 1,
+                },
+                {
+                  id: "booking-10:00:00",
+                  name: "Wakeboarding 10:00",
+                  price: 500,
+                  qty: 1,
+                },
+              ],
             },
-          }),
-        };
-      }
-
-      if (body.method === "getBookingCartPaymentPageUrl") {
-        return {
-          ok: true,
-          json: async () => ({
-            result: "https://booking.example/pay/cart-1",
           }),
         };
       }
@@ -1184,6 +1240,8 @@ test("create endpoint returns SimplyBook cart payment URL when payment is requir
     await createHandler(req, res);
   } finally {
     global.fetch = previousFetch;
+    restorePaymentEnv();
+    resetMaibTokenCache();
 
     for (const [key, value] of Object.entries(previousEnv)) {
       if (value === undefined) {
@@ -1198,25 +1256,26 @@ test("create endpoint returns SimplyBook cart payment URL when payment is requir
 
   assert.equal(res.statusCode, 200);
   assert.equal(body.paymentRequired, true);
-  assert.equal(body.paymentUrl, "https://booking.example/pay/cart-1");
+  assert.equal(body.paymentUrl, "https://checkout.maib.test/checkout-cart-3");
   assert.deepEqual(
-    calls
-      .map((call) => JSON.parse(call.options.body))
-      .find((callBody) => callBody.method === "isPaymentRequired").params,
+    calls.find((call) => call.body?.method === "isPaymentRequired").body.params,
     [1],
   );
   assert.deepEqual(
-    calls
-      .map((call) => JSON.parse(call.options.body))
-      .find((callBody) => callBody.method === "getBookingCart").params,
+    calls.find((call) => call.body?.method === "getBookingCart").body.params,
     [["booking-09:00:00", "booking-10:00:00"]],
   );
-  assert.deepEqual(
-    calls
-      .map((call) => JSON.parse(call.options.body))
-      .find((callBody) => callBody.method === "getBookingCartPaymentPageUrl")
-      .params,
-    ["cart-1"],
+  assert.equal(
+    calls.some((call) => call.body?.method === "getBookingCartPaymentPageUrl"),
+    false,
+  );
+  assert.equal(
+    calls.find((call) => call.url.endsWith("/v2/checkouts")).body.orderInfo.id,
+    "simplybook-cart-3",
+  );
+  assert.equal(
+    createPaymentStore(storePath).get("simplybook-cart-3").cartHash,
+    "cart-hash-3",
   );
 });
 
@@ -1747,6 +1806,157 @@ test("maib callback approves SBPay order after executed checkout", async () => {
   } finally {
     restoreEnv();
     global.fetch = previousFetch;
+    resetMaibTokenCache();
+  }
+});
+
+test("maib callback confirms direct SimplyBook cart after executed checkout", async () => {
+  resetTokenCache();
+  resetMaibTokenCache();
+
+  const previousFetch = global.fetch;
+  const storePath = createPaymentStorePath();
+  const restorePaymentEnv = setPaymentEnv(storePath);
+  const previousEnv = {
+    SIMPLYBOOK_COMPANY_LOGIN: process.env.SIMPLYBOOK_COMPANY_LOGIN,
+    SIMPLYBOOK_API_KEY: process.env.SIMPLYBOOK_API_KEY,
+    SIMPLYBOOK_SERVICE_ID: process.env.SIMPLYBOOK_SERVICE_ID,
+    SIMPLYBOOK_PROVIDER_ID: process.env.SIMPLYBOOK_PROVIDER_ID,
+    BOOKING_TIMEZONE: process.env.BOOKING_TIMEZONE,
+  };
+  const store = createPaymentStore(storePath);
+  const calls = [];
+
+  process.env.SIMPLYBOOK_COMPANY_LOGIN = "wake";
+  process.env.SIMPLYBOOK_API_KEY = "key";
+  process.env.SIMPLYBOOK_SERVICE_ID = "1";
+  process.env.SIMPLYBOOK_PROVIDER_ID = "2";
+  process.env.BOOKING_TIMEZONE = "UTC";
+
+  store.save({
+    orderId: "simplybook-cart-3",
+    source: "simplybook_cart",
+    checkoutId: "checkout-1",
+    cartId: 3,
+    cartHash: "cart-hash-3",
+    amount: 1000,
+    currency: "MDL",
+    paymentProcessor: "Custom Payment",
+    status: "checkout_created",
+  });
+
+  global.fetch = async (url, options) => {
+    const body = options.body ? JSON.parse(options.body) : null;
+
+    calls.push({
+      url,
+      method: options.method,
+      headers: options.headers,
+      body,
+    });
+
+    if (url.endsWith("/v2/auth/token")) {
+      return jsonFetchResponse({
+        ok: true,
+        result: {
+          accessToken: "maib-token",
+          expiresIn: 300,
+          tokenType: "Bearer",
+        },
+      });
+    }
+
+    if (url.endsWith("/v2/checkouts/checkout-1")) {
+      return jsonFetchResponse({
+        ok: true,
+        result: {
+          id: "checkout-1",
+          status: "Completed",
+          order: {
+            id: "simplybook-cart-3",
+          },
+          payment: {
+            PaymentId: "pay-1",
+            status: "Executed",
+          },
+        },
+      });
+    }
+
+    if (body?.method === "getToken") {
+      return {
+        ok: true,
+        json: async () => ({ result: "token" }),
+      };
+    }
+
+    if (body?.method === "confirmBookingCart") {
+      return {
+        ok: true,
+        json: async () => ({ result: true }),
+      };
+    }
+
+    throw new Error(`Unexpected fetch: ${url}`);
+  };
+
+  try {
+    const rawBody = JSON.stringify({
+      checkoutId: "checkout-1",
+      orderId: "simplybook-cart-3",
+    });
+    const timestamp = String(Date.now());
+    const req = {
+      method: "POST",
+      headers: {
+        "x-signature": `sha256=${signMaibPayload({
+          rawBody,
+          timestamp,
+        })}`,
+        "x-signature-timestamp": timestamp,
+      },
+      rawBody: Buffer.from(rawBody),
+    };
+    const res = createMockRes();
+
+    await maibCallbackHandler(req, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.deepEqual(JSON.parse(res.body), { ok: true, approved: true });
+    assert.deepEqual(
+      calls.find((call) => call.body?.method === "confirmBookingCart").body
+        .params,
+      [
+        3,
+        "Custom Payment",
+        createCartSignature({
+          cartId: 3,
+          cartHash: "cart-hash-3",
+          secret: "simplybook-secret",
+        }),
+      ],
+    );
+    assert.equal(
+      calls.some((call) => String(call.url).includes("app.sbpay.test")),
+      false,
+    );
+
+    const storedOrder = store.get("simplybook-cart-3");
+
+    assert.equal(storedOrder.status, "approved");
+    assert.equal(storedOrder.payId, "pay-1");
+  } finally {
+    for (const [key, value] of Object.entries(previousEnv)) {
+      if (value === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
+    }
+
+    restorePaymentEnv();
+    global.fetch = previousFetch;
+    resetTokenCache();
     resetMaibTokenCache();
   }
 });

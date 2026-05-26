@@ -8,6 +8,8 @@ const {
     normalizePeopleCount,
     toSimplyBookTime,
 } = require("../_simplybook");
+const { getPaymentConfig } = require("../payments/_common");
+const { createDirectMaibPayment } = require("../payments/direct");
 
 const readBody = async (req) => {
     if (req.body && typeof req.body === "object") return req.body;
@@ -160,93 +162,31 @@ const normalizeBookingResult = (result) => {
     };
 };
 
-const extractPaymentUrl = (value) => {
-    if (!value) return "";
-
-    if (typeof value === "string") {
-        try {
-            const url = new URL(value);
-
-            return ["http:", "https:"].includes(url.protocol)
-                ? url.toString()
-                : "";
-        } catch (error) {
-            return "";
-        }
-    }
-
-    if (typeof value !== "object") return "";
-
-    for (const key of [
-        "payment_url",
-        "paymentUrl",
-        "invoice_url",
-        "invoiceUrl",
-        "checkout_url",
-        "checkoutUrl",
-        "link",
-        "url",
-    ]) {
-        const url = extractPaymentUrl(value[key]);
-
-        if (url) return url;
-    }
-
-    return "";
-};
-
-const getCartId = (cart) =>
-    cart?.cart_id || cart?.cartId || cart?.id || cart?.cart?.id || "";
-
-const findPaymentUrlForBookings = async ({ bookings, config }) => {
+const findPaymentUrlForBookings = async ({
+    bookings,
+    bookingConfig,
+    paymentConfig,
+    clientData,
+    req,
+}) => {
     const bookingIds = bookings.map((booking) => booking.id).filter(Boolean);
 
     if (!bookingIds.length) return "";
 
-    const isPaymentRequired = await callSimplyBook({
-        method: "isPaymentRequired",
-        params: [config.serviceId],
-        config,
-    });
-
-    if (!isPaymentRequired) return "";
-
     const cart = await callSimplyBook({
         method: "getBookingCart",
         params: [bookingIds],
-        config,
+        config: bookingConfig,
     });
-    const inlineUrl = extractPaymentUrl(cart);
 
-    if (inlineUrl) return inlineUrl;
-
-    const cartId = getCartId(cart);
-
-    if (!cartId) {
-        throw new BookingError(
-            "SimplyBook did not return a payment cart id.",
-            502,
-            "PAYMENT_CART_ERROR",
-        );
-    }
-
-    const paymentUrl = extractPaymentUrl(
-        await callSimplyBook({
-            method: "getBookingCartPaymentPageUrl",
-            params: [cartId],
-            config,
-        }),
-    );
-
-    if (!paymentUrl) {
-        throw new BookingError(
-            "SimplyBook did not return a payment page URL.",
-            502,
-            "PAYMENT_URL_ERROR",
-        );
-    }
-
-    return paymentUrl;
+    return createDirectMaibPayment({
+        cart,
+        bookings,
+        bookingConfig,
+        paymentConfig,
+        clientData,
+        req,
+    });
 };
 
 module.exports = async function handler(req, res) {
@@ -265,6 +205,23 @@ module.exports = async function handler(req, res) {
     try {
         const payload = validatePayload(await readBody(req));
         const config = getConfig();
+        const paymentRequired = await callSimplyBook({
+            method: "isPaymentRequired",
+            params: [config.serviceId],
+            config,
+        });
+        const paymentConfig = paymentRequired
+            ? getPaymentConfig(process.env, { requireSbpay: false })
+            : null;
+
+        if (paymentRequired && !config.apiSecretKey) {
+            throw new BookingError(
+                "Missing SimplyBook configuration: SIMPLYBOOK_API_SECRET_KEY",
+                500,
+                "CONFIG_ERROR",
+            );
+        }
+
         const additionalFields = buildAdditionalFields(payload, config);
         const results = [];
 
@@ -299,10 +256,15 @@ module.exports = async function handler(req, res) {
                   };
 
         const responseBody = normalizeBookingResult(result);
-        const paymentUrl = await findPaymentUrlForBookings({
-            bookings: responseBody.bookings,
-            config,
-        });
+        const paymentUrl = paymentRequired
+            ? await findPaymentUrlForBookings({
+                  bookings: responseBody.bookings,
+                  bookingConfig: config,
+                  paymentConfig,
+                  clientData: payload.clientData,
+                  req,
+              })
+            : "";
 
         json(res, 200, {
             ...responseBody,

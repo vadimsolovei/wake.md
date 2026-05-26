@@ -4,7 +4,9 @@ const {
     handlePaymentError,
     json,
     readJsonBodyWithRaw,
+    requireSbpayConfig,
 } = require("./_common");
+const { getConfig: getSimplyBookConfig } = require("../_simplybook");
 const {
     getMaibCheckout,
     getMaibPaymentId,
@@ -12,6 +14,10 @@ const {
     verifyMaibCallbackSignature,
 } = require("./_maib");
 const { createPaymentStore } = require("./_store");
+const {
+    confirmDirectMaibPaymentOrder,
+    isDirectMaibPaymentOrder,
+} = require("./direct");
 const { approveSbpayOrder } = require("./_sbpay");
 
 const requireMethod = (req, res, method) => {
@@ -48,7 +54,7 @@ const maibCallbackHandler = async (req, res) => {
     if (!requireMethod(req, res, "POST")) return;
 
     try {
-        const config = getPaymentConfig();
+        const config = getPaymentConfig(process.env, { requireSbpay: false });
         const { rawBody, body } = await readJsonBodyWithRaw(req);
 
         verifyMaibCallbackSignature({
@@ -82,7 +88,7 @@ const maibCallbackHandler = async (req, res) => {
 
         if (!orderId) {
             throw new PaymentError(
-                "SBPay order id is missing.",
+                "Payment order id is missing.",
                 400,
                 "MISSING_ORDER_ID",
             );
@@ -103,7 +109,15 @@ const maibCallbackHandler = async (req, res) => {
             return;
         }
 
-        if (storedOrder?.status !== "approved") {
+        if (isDirectMaibPaymentOrder(storedOrder)) {
+            if (storedOrder.status !== "approved") {
+                await confirmDirectMaibPaymentOrder({
+                    order: storedOrder,
+                    bookingConfig: getSimplyBookConfig(),
+                });
+            }
+        } else if (storedOrder?.status !== "approved") {
+            requireSbpayConfig(config);
             await approveSbpayOrder({
                 orderId,
                 reason: "Payment processed by maib.",
@@ -131,7 +145,7 @@ const maibReturnHandler = (req, res) => {
     if (!requireMethod(req, res, "GET")) return;
 
     try {
-        const config = getPaymentConfig();
+        const config = getPaymentConfig(process.env, { requireSbpay: false });
         const store = createPaymentStore(config.paymentStorePath);
         const query = req.query || {};
         const orderId = query.orderId || query.order_id || "";

@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const compression = require("compression");
+const fs = require("node:fs");
 const path = require("node:path");
 const datesHandler = require("./api/booking/dates");
 const timesHandler = require("./api/booking/times");
@@ -20,6 +21,60 @@ const {
 const app = express();
 const port = Number(process.env.PORT) || 3000;
 const publicDir = __dirname;
+const indexPath = path.join(publicDir, "index.html");
+const taplinkIndexPath = path.join(publicDir, "taplink", "index.html");
+const versionedAssetPaths = [
+    "styles.css",
+    "assets/js/app-alert.js",
+    "assets/js/booking.js",
+    "assets/js/main.js",
+];
+
+function setNoStoreHeaders(res) {
+    res.setHeader("Cache-Control", "no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+}
+
+function getAssetVersion(assetPath) {
+    const absolutePath = path.join(publicDir, assetPath);
+
+    return String(Math.trunc(fs.statSync(absolutePath).mtimeMs));
+}
+
+function addAssetVersions(html) {
+    return versionedAssetPaths.reduce((updatedHtml, assetPath) => {
+        const version = getAssetVersion(assetPath);
+        const versionedPath = `${assetPath}?v=${version}`;
+
+        return updatedHtml.replaceAll(assetPath, versionedPath);
+    }, html);
+}
+
+function sendIndex(req, res, next) {
+    fs.readFile(indexPath, "utf8", (error, html) => {
+        if (error) {
+            next(error);
+            return;
+        }
+
+        try {
+            setNoStoreHeaders(res);
+            res.type("html").send(addAssetVersions(html));
+        } catch (assetError) {
+            next(assetError);
+        }
+    });
+}
+
+function sendTaplinkIndex(req, res, next) {
+    setNoStoreHeaders(res);
+    res.sendFile(taplinkIndexPath, (error) => {
+        if (error) {
+            next(error);
+        }
+    });
+}
 
 app.disable("x-powered-by");
 app.use(
@@ -52,16 +107,22 @@ app.post(
 app.post("/api/payments/maib/callback", maibCallbackHandler);
 app.get("/api/payments/maib/return", maibReturnHandler);
 
-app.use(
-    express.static(publicDir, {
-        extensions: ["html"],
-        index: "index.html",
-    }),
-);
+app.get(["/", "/index.html"], sendIndex);
+app.get(["/taplink", "/taplink/", "/taplink/index"], sendTaplinkIndex);
 
-app.get("*", (req, res) => {
-    res.sendFile(path.join(publicDir, "index.html"));
+app.use((req, res, next) => {
+    if (/\.(?:css|js)$/i.test(req.path) && req.query.v) {
+        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    } else if (req.path.endsWith(".html")) {
+        setNoStoreHeaders(res);
+    }
+
+    next();
 });
+
+app.use(express.static(publicDir, { index: false }));
+
+app.get("*", sendIndex);
 
 app.listen(port, "127.0.0.1", () => {
     console.log(`Wake.md server listening on http://127.0.0.1:${port}`);

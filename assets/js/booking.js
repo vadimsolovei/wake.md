@@ -777,6 +777,8 @@
 
     if (!isBookingReady) return;
 
+    const formData = new FormData(form);
+
     const getCookie = (name) => {
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);
