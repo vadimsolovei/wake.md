@@ -99,8 +99,15 @@
                         Math.floor(Math.random() * heroIndexes.length)
                     ];
                 const heroBasePath = "assets/design/sections/hero";
-                const desktop = `${heroBasePath}/hero-desktop-${selectedIndex}.webp`;
-                const mobile = `${heroBasePath}/hero-mobile-${selectedIndex}.webp`;
+                const heroBaseUrl = new URL(`${heroBasePath}/`, document.baseURI);
+                const desktop = new URL(
+                    `hero-desktop-${selectedIndex}.webp`,
+                    heroBaseUrl,
+                ).href;
+                const mobile = new URL(
+                    `hero-mobile-${selectedIndex}.webp`,
+                    heroBaseUrl,
+                ).href;
                 const active =
                     window.matchMedia("(max-width: 767px)").matches
                         ? mobile

@@ -20,7 +20,8 @@ const {
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
-const publicDir = __dirname;
+const isProduction = process.env.NODE_ENV === "production";
+const publicDir = isProduction ? path.join(__dirname, "dist") : __dirname;
 const indexPath = path.join(publicDir, "index.html");
 const taplinkIndexPath = path.join(publicDir, "taplink", "index.html");
 const versionedAssetPaths = [
@@ -43,6 +44,10 @@ function getAssetVersion(assetPath) {
 }
 
 function addAssetVersions(html) {
+    if (isProduction) {
+        return html;
+    }
+
     return versionedAssetPaths.reduce((updatedHtml, assetPath) => {
         const version = getAssetVersion(assetPath);
         const versionedPath = `${assetPath}?v=${version}`;
@@ -111,7 +116,12 @@ app.get(["/", "/index.html"], sendIndex);
 app.get(["/taplink", "/taplink/", "/taplink/index"], sendTaplinkIndex);
 
 app.use((req, res, next) => {
-    if (/\.(?:css|js)$/i.test(req.path) && req.query.v) {
+    if (
+        isProduction &&
+        /^\/assets\/.+\.[a-f0-9]{10}\.(?:css|js)$/i.test(req.path)
+    ) {
+        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    } else if (!isProduction && /\.(?:css|js)$/i.test(req.path) && req.query.v) {
         res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
     } else if (req.path.endsWith(".html")) {
         setNoStoreHeaders(res);
@@ -121,6 +131,15 @@ app.use((req, res, next) => {
 });
 
 app.use(express.static(publicDir, { index: false }));
+
+app.use((req, res, next) => {
+    if (isProduction && path.extname(req.path)) {
+        res.status(404).end();
+        return;
+    }
+
+    next();
+});
 
 app.get("*", sendIndex);
 
