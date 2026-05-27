@@ -164,6 +164,7 @@ const normalizeBookingResult = (result) => {
 
 const findPaymentUrlForBookings = async ({
     bookings,
+    peopleCount,
     bookingConfig,
     paymentConfig,
     clientData,
@@ -182,6 +183,7 @@ const findPaymentUrlForBookings = async ({
     return createDirectMaibPayment({
         cart,
         bookings,
+        peopleCount,
         bookingConfig,
         paymentConfig,
         clientData,
@@ -259,6 +261,7 @@ module.exports = async function handler(req, res) {
         const paymentUrl = paymentRequired
             ? await findPaymentUrlForBookings({
                   bookings: responseBody.bookings,
+                  peopleCount: payload.peopleCount,
                   bookingConfig: config,
                   paymentConfig,
                   clientData: payload.clientData,

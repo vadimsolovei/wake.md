@@ -5,6 +5,10 @@ const { createMaibCheckout } = require("./_maib");
 const { createPaymentStore } = require("./_store");
 
 const DIRECT_PAYMENT_SOURCE = "simplybook_cart";
+const FIRST_SET_PRICE = 600;
+const NEXT_SET_PRICE = 400;
+const WAKE_MD_PAYMENT_CURRENCY = "MDL";
+const WAKE_MD_PRICING_SOURCE = "wakemd_formula";
 
 const normalizeAmount = (value) => {
     const amount = Number(value);
@@ -22,49 +26,78 @@ const normalizeAmount = (value) => {
 
 const normalizeCurrency = (value) => String(value || "").trim().toUpperCase();
 
+const normalizePositiveInteger = (value) => {
+    const number = Number(value);
+
+    return Number.isInteger(number) && number > 0 ? number : 0;
+};
+
+const calculateWakeMdBookingPrice = ({ peopleCount, setCount }) => {
+    const normalizedPeopleCount = normalizePositiveInteger(peopleCount);
+    const normalizedSetCount = normalizePositiveInteger(setCount);
+
+    if (!normalizedPeopleCount || !normalizedSetCount) {
+        throw new BookingError(
+            "Wake.md booking price could not be calculated.",
+            500,
+            "PAYMENT_PRICE_ERROR",
+        );
+    }
+
+    if (normalizedSetCount < normalizedPeopleCount) {
+        throw new BookingError(
+            "Booking price requires at least one set per person.",
+            400,
+            "INSUFFICIENT_TIME_SLOTS",
+        );
+    }
+
+    const firstSetCount = Math.min(normalizedPeopleCount, normalizedSetCount);
+    const nextSetCount = Math.max(normalizedSetCount - normalizedPeopleCount, 0);
+    const amount =
+        firstSetCount * FIRST_SET_PRICE + nextSetCount * NEXT_SET_PRICE;
+
+    return {
+        pricingSource: WAKE_MD_PRICING_SOURCE,
+        amount,
+        currency: WAKE_MD_PAYMENT_CURRENCY,
+        peopleCount: normalizedPeopleCount,
+        setCount: normalizedSetCount,
+        firstSetCount,
+        nextSetCount,
+        firstSetPrice: FIRST_SET_PRICE,
+        nextSetPrice: NEXT_SET_PRICE,
+    };
+};
+
 const getCartId = (cart) =>
     cart?.cart_id ?? cart?.cartId ?? cart?.id ?? cart?.cart?.id ?? "";
 
 const getCartHash = (cart) =>
     cart?.cart_hash ?? cart?.cartHash ?? cart?.hash ?? cart?.cart?.hash ?? "";
 
-const normalizeCartItems = (cart, currency, fallbackAmount) => {
-    const rawItems = Array.isArray(cart?.cart)
-        ? cart.cart
-        : Object.values(cart?.cart || {});
-    const items = rawItems
-        .map((item, index) => {
-            const title =
-                item?.name ||
-                item?.title ||
-                item?.service_name ||
-                `Wake.md booking ${index + 1}`;
-            const amount = normalizeAmount(
-                item?.price ?? item?.amount ?? fallbackAmount,
-            );
-            const quantity = Number(item?.qty ?? item?.quantity ?? 1);
-
-            return {
-                externalId: String(item?.id || item?.booking_id || index + 1),
-                title: String(title),
-                amount,
-                currency,
-                quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
-            };
-        })
-        .filter((item) => item.amount > 0);
-
-    if (items.length) return items;
-
-    return [
+const buildWakeMdPricingItems = (price) => {
+    const items = [
         {
-            externalId: String(getCartId(cart)),
-            title: "Wake.md booking",
-            amount: fallbackAmount,
-            currency,
-            quantity: 1,
+            externalId: "first-sets",
+            title: "Wake.md first sets",
+            amount: FIRST_SET_PRICE,
+            currency: price.currency,
+            quantity: price.firstSetCount,
         },
     ];
+
+    if (price.nextSetCount > 0) {
+        items.push({
+            externalId: "repeat-sets",
+            title: "Wake.md repeat sets",
+            amount: NEXT_SET_PRICE,
+            currency: price.currency,
+            quantity: price.nextSetCount,
+        });
+    }
+
+    return items;
 };
 
 const getPayerInfo = ({ clientData, req }) => {
@@ -103,6 +136,7 @@ const requireSimplyBookPaymentSecret = (bookingConfig, ErrorClass) => {
 const createDirectMaibPayment = async ({
     cart,
     bookings,
+    peopleCount,
     bookingConfig,
     paymentConfig,
     clientData,
@@ -129,10 +163,10 @@ const createDirectMaibPayment = async ({
         );
     }
 
-    const amount = normalizeAmount(cart.amount);
+    const simplybookAmount = normalizeAmount(cart.amount);
     const currency = normalizeCurrency(cart.currency);
 
-    if (currency !== "MDL") {
+    if (currency !== WAKE_MD_PAYMENT_CURRENCY) {
         throw new BookingError(
             "Only MDL payments are supported.",
             400,
@@ -140,6 +174,12 @@ const createDirectMaibPayment = async ({
         );
     }
 
+    const bookingIds = bookings.map((booking) => booking.id).filter(Boolean);
+    const bookingCodes = bookings.map((booking) => booking.code).filter(Boolean);
+    const price = calculateWakeMdBookingPrice({
+        peopleCount,
+        setCount: bookingIds.length,
+    });
     const orderId = `simplybook-cart-${cartId}`;
     const description = `Wake.md booking cart ${cartId}`;
     const callbackUrl = buildPublicUrl(
@@ -156,15 +196,15 @@ const createDirectMaibPayment = async ({
     });
     const checkout = await createMaibCheckout({
         payload: {
-            amount,
+            amount: price.amount,
             currency,
             orderInfo: {
                 id: orderId,
                 description,
                 date: new Date().toISOString(),
-                orderAmount: amount,
+                orderAmount: price.amount,
                 orderCurrency: currency,
-                items: normalizeCartItems(cart, currency, amount),
+                items: buildWakeMdPricingItems(price),
             },
             payerInfo: getPayerInfo({ clientData, req }),
             language: paymentConfig.maibLanguage,
@@ -184,11 +224,19 @@ const createDirectMaibPayment = async ({
         payId: null,
         cartId,
         cartHash,
-        bookingIds: bookings.map((booking) => booking.id).filter(Boolean),
-        bookingCodes: bookings.map((booking) => booking.code).filter(Boolean),
+        bookingIds,
+        bookingCodes,
         paymentProcessor,
-        amount,
+        amount: price.amount,
+        simplybookAmount,
         currency,
+        pricingSource: price.pricingSource,
+        peopleCount: price.peopleCount,
+        setCount: price.setCount,
+        firstSetCount: price.firstSetCount,
+        nextSetCount: price.nextSetCount,
+        firstSetPrice: price.firstSetPrice,
+        nextSetPrice: price.nextSetPrice,
         returnUrl: paymentConfig.publicBaseUrl,
         cancelUrl: paymentConfig.publicBaseUrl,
         status: "checkout_created",
@@ -222,6 +270,7 @@ const confirmDirectMaibPaymentOrder = async ({ order, bookingConfig }) => {
 
 module.exports = {
     DIRECT_PAYMENT_SOURCE,
+    calculateWakeMdBookingPrice,
     confirmDirectMaibPaymentOrder,
     createCartSignature,
     createDirectMaibPayment,

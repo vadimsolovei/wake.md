@@ -2507,11 +2507,11 @@ body.has-booking-modal {
     }
 
     .booking-fields {
-        order: 2;
+        order: 3;
     }
 
     .booking-time-card {
-        order: 3;
+        order: 2;
     }
 
     .booking-terms {

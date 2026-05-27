@@ -946,54 +946,100 @@
                         </section>
                     </aside>
 
-                    <div class="booking-main">
-                        <div class="booking-fields">
-                            <label class="booking-field">
-                                <span>Имя</span>
-                                <input name="name" autocomplete="name" aria-required="true" placeholder="Имя *"
-                                    required />
-                            </label>
-                            <label class="booking-field booking-phone">
-                                <span>Телефон</span>
-                                <span class="booking-phone__code">🇲🇩 +373</span>
-                                <input name="phone" type="tel" autocomplete="tel" inputmode="numeric" pattern="[0-9]{8}"
-                                    minlength="8" maxlength="8" aria-required="true" placeholder="Телефон *"
-                                    title="Введите 8 цифр" required />
-                            </label>
-                            <label class="booking-field booking-field--wide">
-                                <span>Email</span>
-                                <input name="email" type="email" autocomplete="email" aria-required="true"
-                                    placeholder="Email *" required />
-                            </label>
-                            <div class="booking-people" aria-label="Количество человек">
-                                <span>Кол-во человек</span>
-                                <button type="button" data-booking-people-minus aria-label="Уменьшить количество">
-                                    −
-                                </button>
-                                <output data-booking-people-output>1</output>
-                                <button type="button" data-booking-people-plus aria-label="Увеличить количество">
-                                    +
-                                </button>
-                            </div>
-                        </div>
-
-                        <section class="booking-card booking-time-card">
-                            <h3>Выберите время и количество сетов</h3>
-                            <p>
-                                Минимальное бронирование для новичка - 2
-                                сета на человека.
-                                <button class="booking-time-card__details" type="button" data-booking-info-open>
-                                    Подробнее
-                                </button>
-                            </p>
-                            <div class="booking-times" data-booking-times aria-label="Время катания">
-                                <p class="booking-times__empty">
-                                    <!-- Выберите доступную дату -->
-                                    Бронирование будет доступно в ближайшее
-                                    время.
+                        <div class="booking-main">
+                            <section class="booking-card booking-time-card">
+                                <h3>Выберите время и количество сетов</h3>
+                                <p>
+                                    Минимальное бронирование для новичка - 2
+                                    сета на человека.
+                                    <button
+                                        class="booking-time-card__details"
+                                        type="button"
+                                        data-booking-info-open
+                                    >
+                                        Подробнее
+                                    </button>
                                 </p>
+                                <div
+                                    class="booking-times"
+                                    data-booking-times
+                                    aria-label="Время катания"
+                                >
+                                    <p class="booking-times__empty">
+                                        <!-- Выберите доступную дату -->
+                                        Бронирование будет доступно в ближайшее
+                                        время.
+                                    </p>
+                                </div>
+                            </section>
+
+                            <div class="booking-fields">
+                                <div
+                                    class="booking-people"
+                                    aria-label="Количество человек"
+                                >
+                                    <span>Кол-во человек</span>
+                                    <button
+                                        type="button"
+                                        data-booking-people-minus
+                                        aria-label="Уменьшить количество"
+                                    >
+                                        −
+                                    </button>
+                                    <output data-booking-people-output
+                                        >1</output
+                                    >
+                                    <button
+                                        type="button"
+                                        data-booking-people-plus
+                                        aria-label="Увеличить количество"
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                                <label class="booking-field">
+                                    <span>Имя</span>
+                                    <input
+                                        name="name"
+                                        autocomplete="name"
+                                        aria-required="true"
+                                        placeholder="Имя *"
+                                        required
+                                    />
+                                </label>
+                                <label class="booking-field booking-phone">
+                                    <span>Телефон</span>
+                                    <span class="booking-phone__code"
+                                        >🇲🇩 +373</span
+                                    >
+                                    <input
+                                        name="phone"
+                                        type="tel"
+                                        autocomplete="tel"
+                                        inputmode="numeric"
+                                        pattern="[0-9]{8}"
+                                        minlength="8"
+                                        maxlength="8"
+                                        aria-required="true"
+                                        placeholder="Телефон *"
+                                        title="Введите 8 цифр"
+                                        required
+                                    />
+                                </label>
+                                <label
+                                    class="booking-field booking-field--wide"
+                                >
+                                    <span>Email</span>
+                                    <input
+                                        name="email"
+                                        type="email"
+                                        autocomplete="email"
+                                        aria-required="true"
+                                        placeholder="Email *"
+                                        required
+                                    />
+                                </label>
                             </div>
-                        </section>
 
                         <section class="booking-card booking-terms">
                             <label class="booking-check">

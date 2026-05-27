@@ -109,13 +109,18 @@ const maibRequest = async ({
     fetchImpl = fetch,
 }) => {
     const token = await getMaibToken({ config, fetchImpl });
+    const headers = {
+        Authorization: token,
+        Accept: "application/json",
+    };
+
+    if (body !== undefined) {
+        headers["Content-Type"] = "application/json";
+    }
+
     const response = await fetchImpl(`${config.maibBaseUrl}${path}`, {
         method,
-        headers: {
-            Authorization: token,
-            "Content-Type": "application/json",
-            Accept: "application/json",
-        },
+        headers,
         body: body === undefined ? undefined : JSON.stringify(body),
     });
 

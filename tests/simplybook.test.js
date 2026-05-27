@@ -30,7 +30,10 @@ const {
   verifyMaibCallbackSignature,
 } = require("../api/payments/_maib");
 const { createPaymentStore } = require("../api/payments/_store");
-const { createCartSignature } = require("../api/payments/direct");
+const {
+  calculateWakeMdBookingPrice,
+  createCartSignature,
+} = require("../api/payments/direct");
 const {
   buildSbpayValidationPayload,
   validateCustomPaymentRequest,
@@ -225,6 +228,23 @@ test("booking price counts first sets per selected slot before repeat sets", () 
     calculateBookingPrice,
     /firstSetCount \* FIRST_SET_PRICE \+\s*nextSetCount \* NEXT_SET_PRICE/,
   );
+});
+
+test("backend booking price matches Wake.md first and repeat set formula", () => {
+  const cases = [
+    { peopleCount: 1, setCount: 1, amount: 600 },
+    { peopleCount: 1, setCount: 2, amount: 1000 },
+    { peopleCount: 2, setCount: 2, amount: 1200 },
+    { peopleCount: 2, setCount: 3, amount: 1600 },
+    { peopleCount: 3, setCount: 5, amount: 2600 },
+  ];
+
+  for (const testCase of cases) {
+    assert.equal(
+      calculateWakeMdBookingPrice(testCase).amount,
+      testCase.amount,
+    );
+  }
 });
 
 test("booking modal refreshes availability every time it opens", () => {
@@ -1172,19 +1192,19 @@ test("create endpoint returns maib checkout URL when payment is required", async
             result: {
               cart_id: 3,
               cart_hash: "cart-hash-3",
-              amount: 1000,
+              amount: 1200,
               currency: "MDL",
               cart: [
                 {
                   id: "booking-09:00:00",
                   name: "Wakeboarding 09:00",
-                  price: 500,
+                  price: 600,
                   qty: 1,
                 },
                 {
                   id: "booking-10:00:00",
                   name: "Wakeboarding 10:00",
-                  price: 500,
+                  price: 600,
                   qty: 1,
                 },
               ],
@@ -1220,7 +1240,7 @@ test("create endpoint returns maib checkout URL when payment is required", async
       name: "Wake Guest",
       email: "guest@example.com",
       phone: "12345678",
-      peopleCount: 2,
+      peopleCount: 1,
       date: "2026-06-10",
       times: ["09:00", "10:00"],
       acceptedTerms: true,
@@ -1253,6 +1273,10 @@ test("create endpoint returns maib checkout URL when payment is required", async
   }
 
   const body = JSON.parse(res.body);
+  const checkoutBody = calls.find((call) =>
+    call.url.endsWith("/v2/checkouts"),
+  ).body;
+  const storedOrder = createPaymentStore(storePath).get("simplybook-cart-3");
 
   assert.equal(res.statusCode, 200);
   assert.equal(body.paymentRequired, true);
@@ -1269,14 +1293,33 @@ test("create endpoint returns maib checkout URL when payment is required", async
     calls.some((call) => call.body?.method === "getBookingCartPaymentPageUrl"),
     false,
   );
-  assert.equal(
-    calls.find((call) => call.url.endsWith("/v2/checkouts")).body.orderInfo.id,
-    "simplybook-cart-3",
-  );
-  assert.equal(
-    createPaymentStore(storePath).get("simplybook-cart-3").cartHash,
-    "cart-hash-3",
-  );
+  assert.equal(checkoutBody.amount, 1000);
+  assert.equal(checkoutBody.orderInfo.id, "simplybook-cart-3");
+  assert.equal(checkoutBody.orderInfo.orderAmount, 1000);
+  assert.deepEqual(checkoutBody.orderInfo.items, [
+    {
+      externalId: "first-sets",
+      title: "Wake.md first sets",
+      amount: 600,
+      currency: "MDL",
+      quantity: 1,
+    },
+    {
+      externalId: "repeat-sets",
+      title: "Wake.md repeat sets",
+      amount: 400,
+      currency: "MDL",
+      quantity: 1,
+    },
+  ]);
+  assert.equal(storedOrder.cartHash, "cart-hash-3");
+  assert.equal(storedOrder.amount, 1000);
+  assert.equal(storedOrder.simplybookAmount, 1200);
+  assert.equal(storedOrder.pricingSource, "wakemd_formula");
+  assert.equal(storedOrder.peopleCount, 1);
+  assert.equal(storedOrder.setCount, 2);
+  assert.equal(storedOrder.firstSetCount, 1);
+  assert.equal(storedOrder.nextSetCount, 1);
 });
 
 test("create endpoint requires phone to be exactly 8 digits", async () => {
@@ -1923,6 +1966,12 @@ test("maib callback confirms direct SimplyBook cart after executed checkout", as
 
     assert.equal(res.statusCode, 200);
     assert.deepEqual(JSON.parse(res.body), { ok: true, approved: true });
+    const checkoutCall = calls.find((call) =>
+      call.url.endsWith("/v2/checkouts/checkout-1"),
+    );
+
+    assert.equal(checkoutCall.method, "GET");
+    assert.equal(checkoutCall.headers["Content-Type"], undefined);
     assert.deepEqual(
       calls.find((call) => call.body?.method === "confirmBookingCart").body
         .params,
