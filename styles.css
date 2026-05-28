@@ -1099,7 +1099,7 @@ a {
     margin: 0 40px;
     border-radius: var(--radius-xl);
     background-color: #e7f1fb;
-    background-image: url("assets/design/sections/gift.webp");
+    background-image: var(--gift-certificate-bg);
     background-size: cover;
     background-position: center;
     padding: 80px;
@@ -1135,7 +1135,7 @@ a {
     height: 600px;
     border-radius: var(--radius-xl);
     background-color: #eef6fd;
-    background-image: url("assets/design/sections/bitalent-kid.webp");
+    background-image: var(--contact-bg);
     background-size: cover;
     background-position: bottom center;
     padding: 80px;
@@ -1922,10 +1922,6 @@ body.has-booking-modal {
     font-size: 16px;
     font-weight: 500;
     line-height: 44px;
-}
-
-.booking-modal .dayContainer {
-    gap: 0 2px;
 }
 
 .booking-modal .flatpickr-day {
@@ -3128,7 +3124,7 @@ body.has-booking-modal {
         margin: 0 8px;
         padding: 40px 24px 0;
         border-radius: 80px;
-        background-image: url("assets/design/sections/gift_mobile.webp");
+        background-image: var(--gift-certificate-bg-mobile);
         background-position: center bottom;
         flex-direction: column;
         gap: 24px;
@@ -3165,7 +3161,7 @@ body.has-booking-modal {
         padding: 40px 0 0;
         align-items: flex-start;
         justify-content: center;
-        background-image: url("assets/design/sections/bitalent-kid_mobile.webp");
+        background-image: var(--contact-bg-mobile);
         background-position: center bottom;
         text-align: center;
     }
@@ -3189,7 +3185,7 @@ body.has-booking-modal {
         padding: 40px 16px;
         gap: 16px;
         border-radius: 80px;
-        background-position: center;
+        background-position: 58% center;
     }
 
     .map__buttons {
