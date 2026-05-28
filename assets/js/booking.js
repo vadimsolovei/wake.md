@@ -28,6 +28,7 @@
   const submitPlaceholder = form?.querySelector(
     "[data-booking-submit-placeholder]",
   );
+  const footer = modal?.querySelector(".booking-modal__footer");
   const priceTotal = modal?.querySelector("[data-booking-price-total]");
   const priceDetails = modal?.querySelector("[data-booking-price-details]");
 
@@ -249,10 +250,27 @@
     if (!submitButton) return;
 
     const hasEnoughSelectedTimes = hasMinimumSelectedTimes();
+    const isMobileLayout = isMobileBookingLayout();
+    const hasSelectedDateAndTime =
+      Boolean(bookingState.selectedDate) &&
+      bookingState.selectedTimes.length > 0;
+    const shouldShowMobilePlaceholder =
+      isMobileLayout && !hasSelectedDateAndTime;
+
+    footer?.classList.toggle(
+      "booking-modal__footer--awaiting-slot",
+      shouldShowMobilePlaceholder,
+    );
+    footer?.classList.toggle(
+      "booking-modal__footer--has-slot",
+      isMobileLayout && hasSelectedDateAndTime,
+    );
 
     if (submitPlaceholder) {
       submitPlaceholder.hidden = false;
     }
+
+    submitButton.hidden = shouldShowMobilePlaceholder;
 
     submitButton.toggleAttribute(
       "disabled",
