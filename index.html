@@ -95,11 +95,12 @@
         (() => {
             const heroIndexes = [1, 2, 3, 4, 5, 6, 7];
             const selectedIndex =
-                heroIndexes[
-                Math.floor(Math.random() * heroIndexes.length)
-                ];
+                heroIndexes[Math.floor(Math.random() * heroIndexes.length)];
             const heroBasePath = "assets/design/sections/hero";
-            const heroBaseUrl = new URL(`${heroBasePath}/`, document.baseURI);
+            const heroBaseUrl = new URL(
+                `${heroBasePath}/`,
+                document.baseURI,
+            );
             const desktop = new URL(
                 `hero-desktop-${selectedIndex}.webp`,
                 heroBaseUrl,
@@ -108,10 +109,9 @@
                 `hero-mobile-${selectedIndex}.webp`,
                 heroBaseUrl,
             ).href;
-            const active =
-                window.matchMedia("(max-width: 767px)").matches
-                    ? mobile
-                    : desktop;
+            const active = window.matchMedia("(max-width: 767px)").matches
+                ? mobile
+                : desktop;
             const preload = document.createElement("link");
 
             document.documentElement.style.setProperty(
@@ -133,9 +133,14 @@
     </script>
     <link rel="preload" as="style"
         href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@500&family=Montserrat:wght@400;500;600;700&display=swap"
-        onload="this.onload=null;this.rel='stylesheet'" />
-    <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
-        onload="this.onload=null;this.rel='stylesheet'" />
+        onload="
+                this.onload = null;
+                this.rel = 'stylesheet';
+            " />
+    <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" onload="
+                this.onload = null;
+                this.rel = 'stylesheet';
+            " />
     <noscript>
         <link rel="stylesheet"
             href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@500&family=Montserrat:wght@400;500;600;700&display=swap" />
@@ -177,7 +182,7 @@
                                     fill="white" />
                             </svg>
                         </span>
-                        <span class="pill__text">Днестр,<br />Вадул луй Воды</span>
+                        <span class="pill__text">Днестр,<br />Вадул-луй-Водэ</span>
                     </a>
 
                     <h1 class="hero__title">
@@ -628,8 +633,7 @@
             </section>
 
             <!-- GIFT CERTIFICATE -->
-            <section class="gift-certificate" data-bg="assets/design/sections/gift.webp"
-                data-bg-mobile="assets/design/sections/gift_mobile.webp">
+            <section class="gift-certificate">
                 <div class="gift-certificate__copy">
                     <h2 class="section__title">
                         Подарите <span class="emoji">🎁</span> эмоции, драйв
@@ -640,18 +644,20 @@
                         запоминается на всю жизнь.
                     </p>
                 </div>
+                <div class="gift-certificate__image" aria-hidden="true">
+                    <img src="assets/design/sections/certificate.webp" alt="" decoding="async" />
+                </div>
             </section>
 
             <!-- BITALENT / CONTACT -->
-            <section class="contact" data-bg="assets/design/sections/bitalent-kid.webp"
-                data-bg-mobile="assets/design/sections/bitalent-kid_mobile.webp">
+            <section class="contact">
                 <div class="contact__copy">
                     <img class="contact__logo" src="assets/design/brand/bitalent-logo.webp" alt="Bitalent"
-                        loading="lazy" decoding="async" />
+                        decoding="async" />
                     <h2 class="section__title contact__title">
                         Мы на <br /><span class="emoji">🤙</span> связи
                     </h2>
-                    <p class="contact__lead">
+                    <p class="section__lead">
                         Инструктор сразу корректирует движения, помогая
                         быстрее встать на доску и кататься увереннее.
                     </p>
@@ -949,13 +955,15 @@
                     <div class="booking-main">
                         <div class="booking-people" aria-label="Количество человек">
                             <span>Кол-во человек</span>
-                            <button type="button" data-booking-people-minus aria-label="Уменьшить количество">
-                                −
-                            </button>
-                            <output data-booking-people-output>1</output>
-                            <button type="button" data-booking-people-plus aria-label="Увеличить количество">
-                                +
-                            </button>
+                            <div class="booking-people__controls">
+                                <button type="button" data-booking-people-minus aria-label="Уменьшить количество">
+                                    −
+                                </button>
+                                <output data-booking-people-output>1</output>
+                                <button type="button" data-booking-people-plus aria-label="Увеличить количество">
+                                    +
+                                </button>
+                            </div>
                         </div>
 
                         <section class="booking-card booking-time-card">
@@ -1053,7 +1061,7 @@
                     </div>
 
                     <footer class="booking-modal__footer">
-                        <strong data-booking-price-total>0 леев</strong>
+                        <strong data-booking-price-total>0 лей</strong>
                         <button class="booking-modal__footer-action booking-modal__footer-action--close btn--ghost"
                             type="button" data-booking-close aria-label="Закрыть">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
@@ -1233,7 +1241,10 @@
                             image.naturalWidth > 0 &&
                             image.decode
                         ) {
-                            image.decode().catch(() => { }).finally(resolve);
+                            image
+                                .decode()
+                                .catch(() => { })
+                                .finally(resolve);
                             return;
                         }
 

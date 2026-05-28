@@ -28,12 +28,14 @@
   const submitPlaceholder = form?.querySelector(
     "[data-booking-submit-placeholder]",
   );
+  const footer = modal?.querySelector(".booking-modal__footer");
   const priceTotal = modal?.querySelector("[data-booking-price-total]");
   const priceDetails = modal?.querySelector("[data-booking-price-details]");
 
   const FIRST_SET_PRICE = 600;
   const NEXT_SET_PRICE = 400;
-  const BOOKING_UNAVAILABLE_MESSAGE = "Сервис бронирования временно недоступен.";
+  const BOOKING_UNAVAILABLE_MESSAGE =
+    "Сервис бронирования временно недоступен.";
   const FLATPICKR_STYLE_URL =
     "https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css";
   const FLATPICKR_SCRIPT_URL = "https://cdn.jsdelivr.net/npm/flatpickr";
@@ -71,11 +73,16 @@
     return `${year}-${month}-${day}`;
   };
 
+  const capitalizeFirstLetter = (value) =>
+    value ? value.charAt(0).toLocaleUpperCase("ru-RU") + value.slice(1) : value;
+
   const getMonthName = (date) =>
-    new Intl.DateTimeFormat("ru-RU", {
-      month: "long",
-      year: "numeric",
-    }).format(date);
+    capitalizeFirstLetter(
+      new Intl.DateTimeFormat("ru-RU", {
+        month: "long",
+        year: "numeric",
+      }).format(date),
+    );
 
   const getCurrentMonthIndex = () => {
     const today = new Date();
@@ -142,9 +149,7 @@
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      throw new Error(
-        data?.error?.message || BOOKING_UNAVAILABLE_MESSAGE,
-      );
+      throw new Error(data?.error?.message || BOOKING_UNAVAILABLE_MESSAGE);
     }
 
     return data;
@@ -185,7 +190,7 @@
     return readJsonResponse(response);
   };
 
-  const formatPrice = (amount, unit = "леев") =>
+  const formatPrice = (amount, unit = "лей") =>
     `${new Intl.NumberFormat("ru-RU").format(amount)} ${unit}`;
 
   const calculateBookingPrice = () => {
@@ -193,14 +198,8 @@
 
     if (!setCount) return 0;
 
-    const firstSetCount = Math.min(
-      bookingState.peopleCount,
-      setCount,
-    );
-    const nextSetCount = Math.max(
-      setCount - bookingState.peopleCount,
-      0,
-    );
+    const firstSetCount = Math.min(bookingState.peopleCount, setCount);
+    const nextSetCount = Math.max(setCount - bookingState.peopleCount, 0);
 
     return firstSetCount * FIRST_SET_PRICE + nextSetCount * NEXT_SET_PRICE;
   };
@@ -249,10 +248,27 @@
     if (!submitButton) return;
 
     const hasEnoughSelectedTimes = hasMinimumSelectedTimes();
+    const isMobileLayout = isMobileBookingLayout();
+    const hasSelectedDateAndTime =
+      Boolean(bookingState.selectedDate) &&
+      bookingState.selectedTimes.length > 0;
+    const shouldShowMobilePlaceholder =
+      isMobileLayout && !hasSelectedDateAndTime;
+
+    footer?.classList.toggle(
+      "booking-modal__footer--awaiting-slot",
+      shouldShowMobilePlaceholder,
+    );
+    footer?.classList.toggle(
+      "booking-modal__footer--has-slot",
+      isMobileLayout && hasSelectedDateAndTime,
+    );
 
     if (submitPlaceholder) {
       submitPlaceholder.hidden = false;
     }
+
+    submitButton.hidden = shouldShowMobilePlaceholder;
 
     submitButton.toggleAttribute(
       "disabled",

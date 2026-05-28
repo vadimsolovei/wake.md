@@ -444,8 +444,7 @@ a {
 
 .telegram-card {
     width: 100%;
-    min-height: 152px;
-    padding: 32px;
+    padding: 24px;
     border-radius: 40px;
     background: rgba(11, 28, 29, 0.4);
     backdrop-filter: blur(20px);
@@ -458,7 +457,7 @@ a {
         "icon text";
     align-items: center;
     justify-content: center;
-    gap: 8px 32px;
+    gap: 4px 24px;
     color: var(--white);
     transition:
         transform 0.2s ease,
@@ -609,12 +608,14 @@ a {
 .telegram-card__title {
     grid-area: title;
     font-size: 20px;
+    line-height: 24px;
     align-self: center;
 }
 
 .telegram-card__text {
     grid-area: text;
     font-size: 16px;
+    line-height: 24px;
     opacity: 0.8;
     align-self: start;
 }
@@ -857,11 +858,11 @@ a {
 
 .activity__avatar .activity__free-label {
     z-index: 2;
-    top: -30px;
+    top: 5px;
     right: 0;
     left: auto;
     bottom: auto;
-    width: 82px;
+    width: 48px;
     height: auto;
     border-radius: 0;
     object-fit: contain;
@@ -1096,9 +1097,9 @@ a {
 .gift-certificate {
     position: relative;
     margin: 0 40px;
-    height: 640px;
     border-radius: var(--radius-xl);
     background-color: #e7f1fb;
+    background-image: url("assets/design/sections/gift.webp");
     background-size: cover;
     background-position: center;
     padding: 80px;
@@ -1117,6 +1118,10 @@ a {
     width: 40%;
 }
 
+.gift-certificate__image {
+    display: none;
+}
+
 .gift-certificate .section__lead {
     width: 440px;
 }
@@ -1130,8 +1135,9 @@ a {
     height: 600px;
     border-radius: var(--radius-xl);
     background-color: #eef6fd;
+    background-image: url("assets/design/sections/bitalent-kid.webp");
     background-size: cover;
-    background-position: center;
+    background-position: bottom center;
     padding: 80px;
     display: flex;
     align-items: center;
@@ -1159,16 +1165,6 @@ a {
     font-size: 48px;
     line-height: 48px;
     color: var(--night);
-}
-
-.contact__lead {
-    margin: 0;
-    font-weight: 500;
-    font-size: 20px;
-    line-height: 32px;
-    color: var(--night);
-    opacity: 0.6;
-    width: 420px;
 }
 
 /* ============================================================
@@ -1339,7 +1335,7 @@ a {
 
 .faq-card h3 {
     margin: 0 0 12px 0;
-    font-weight: 700;
+    font-weight: 500;
     font-size: 24px;
     line-height: 24px;
     color: var(--ink);
@@ -1781,6 +1777,7 @@ body.has-booking-modal {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 16px;
+    padding-left: 12px;
     color: #0f1b2e;
     font-size: 20px;
     line-height: 24px;
@@ -1928,7 +1925,7 @@ body.has-booking-modal {
 }
 
 .booking-modal .dayContainer {
-    gap: 4px;
+    gap: 0 2px;
 }
 
 .booking-modal .flatpickr-day {
@@ -2014,18 +2011,14 @@ body.has-booking-modal {
 
 .booking-field,
 .booking-people {
-    min-height: 88px;
-    border-radius: 999px;
+    border-radius: 40px;
     background: var(--white);
     display: flex;
     align-items: center;
     color: rgba(15, 27, 46, 0.6);
     font-size: 20px;
     line-height: 24px;
-}
-
-.booking-field {
-    padding: 0 40px;
+    padding: 32px 40px;
 }
 
 .booking-field--wide {
@@ -2071,11 +2064,8 @@ body.has-booking-modal {
 }
 
 .booking-people {
-    grid-column: 1 / -1;
-    justify-content: space-between;
+    padding: 12px 12px 12px 40px;
     gap: 8px;
-    padding-left: 40px;
-    padding-right: 12px;
 }
 
 .booking-people > span {
@@ -2084,10 +2074,15 @@ body.has-booking-modal {
     color: #0f1b2e;
 }
 
-.booking-people button {
-    flex: 0 0 62px;
-    width: 62px;
-    height: 62px;
+.booking-people__controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.booking-people__controls button {
+    width: 64px;
+    height: 64px;
     border: 1px solid #cee1f4;
     border-radius: 999px;
     color: #0f1b2e;
@@ -2101,24 +2096,21 @@ body.has-booking-modal {
         transform 0.16s ease;
 }
 
-.booking-people button:not(:disabled):hover,
-.booking-people button:not(:disabled):focus-visible {
+.booking-people__controls button:not(:disabled):hover,
+.booking-people__controls button:not(:disabled):focus-visible {
     background: #d8e7f6;
     border-color: #b8d4ef;
     box-shadow: 0 8px 18px rgba(15, 27, 46, 0.1);
     transform: translateY(-1px);
 }
 
-.booking-people button:disabled {
+.booking-people__controls button:disabled {
     color: #9aabba;
     cursor: not-allowed;
     opacity: 0.65;
 }
 
-.booking-people output {
-    flex: 0 1 192px;
-    min-width: 62px;
-    height: 62px;
+.booking-people__controls output {
     border: 1px solid #cee1f4;
     border-radius: 999px;
     display: flex;
@@ -2127,6 +2119,7 @@ body.has-booking-modal {
     color: #0f1b2e;
     font-size: 20px;
     line-height: 24px;
+    padding: 20px 70px;
 }
 
 .booking-time-card h3 {
@@ -2323,7 +2316,7 @@ body.has-booking-modal {
     border-radius: 40px;
     background: var(--white);
     box-shadow: 0px 4px 80px 0px #b2d0ed;
-    padding: 32px 40px;
+    padding: 4px 4px 4px 32px;
     display: flex;
     align-items: center;
     gap: 20px;
@@ -2331,8 +2324,8 @@ body.has-booking-modal {
 
 .booking-modal__footer strong {
     font-weight: 500;
-    font-size: 40px;
-    line-height: 40px;
+    font-size: 32px;
+    line-height: 32px;
 }
 
 .booking-modal__footer .btn {
@@ -2488,7 +2481,17 @@ body.has-booking-modal {
         display: flex;
         flex-direction: column;
         gap: 8px;
-        padding: 0 8px calc(158px + env(safe-area-inset-bottom));
+        padding: 0 8px calc(164px + env(safe-area-inset-bottom));
+    }
+
+    .booking-form:has(.booking-modal__footer--awaiting-slot)
+        .booking-modal__content {
+        padding: 0 8px calc(96px + env(safe-area-inset-bottom));
+    }
+
+    .booking-form:has(.booking-modal__footer--has-slot)
+        .booking-modal__content {
+        padding: 0 8px calc(164px + env(safe-area-inset-bottom));
     }
 
     .booking-sidebar,
@@ -2506,23 +2509,23 @@ body.has-booking-modal {
         order: 1;
     }
 
-    .booking-fields {
-        order: 3;
-    }
-
-    .booking-time-card {
+    .booking-people {
         order: 2;
     }
 
-    .booking-terms {
+    .booking-time-card {
+        order: 3;
+    }
+
+    .booking-fields {
         order: 4;
     }
 
-    .booking-price-card {
+    .booking-terms {
         order: 5;
     }
 
-    .booking-modal__footer {
+    .booking-price-card {
         order: 6;
     }
 
@@ -2530,13 +2533,7 @@ body.has-booking-modal {
         width: 100%;
         max-width: none;
         box-sizing: border-box;
-        border-radius: 28px;
-        padding: 24px 16px;
-    }
-
-    .booking-card__head {
-        font-size: 18px;
-        line-height: 22px;
+        padding: 24px;
     }
 
     .booking-loader {
@@ -2564,17 +2561,11 @@ body.has-booking-modal {
         max-width: 100%;
     }
 
-    .booking-modal .dayContainer {
-        gap: 0;
-    }
-
     .booking-modal .flatpickr-day {
         width: 14.285%;
         max-width: 14.285%;
         height: auto;
         aspect-ratio: 1;
-        font-size: 14px;
-        line-height: 1;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -2599,37 +2590,27 @@ body.has-booking-modal {
     .booking-field,
     .booking-people {
         width: 100%;
-        box-sizing: border-box;
-        min-height: 64px;
-        border-radius: 32px;
-        padding-left: 24px;
-        padding-right: 24px;
+        padding: 24px;
     }
 
     .booking-people {
         flex-wrap: wrap;
         justify-content: flex-start;
-        padding-top: 12px;
-        padding-bottom: 12px;
+        gap: 16px 4px;
+        padding: 24px 12px 12px;
     }
 
     .booking-people > span {
+        margin-left: 12px;
         width: 100%;
     }
 
-    .booking-people button,
-    .booking-people output {
-        height: 48px;
+    .booking-people__controls {
+        width: 100%;
     }
 
-    .booking-people button {
-        flex-basis: 48px;
-        width: 48px;
-    }
-
-    .booking-people output {
-        flex: 1 1 192px;
-        min-width: 48px;
+    .booking-people__controls output {
+        flex: auto;
     }
 
     .booking-times {
@@ -2650,27 +2631,36 @@ body.has-booking-modal {
 
     .booking-modal__footer {
         position: fixed;
-        left: 0;
-        right: 0;
+        left: 8px;
+        right: 8px;
         bottom: 8px;
         z-index: 5;
         width: auto;
-        border-radius: 28px;
-        padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+        border-radius: 999px;
+        padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
         display: grid;
         grid-template-columns: 74px minmax(0, 1fr) 74px;
+        grid-template-areas: "close placeholder phone";
+        gap: 4px;
+        align-items: center;
+    }
+
+    .booking-modal__footer--has-slot {
+        min-height: 0;
+        border-radius: 40px;
+        padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+        grid-template-columns: 56px minmax(0, 1fr) 56px;
         grid-template-areas:
             "price price price"
             "placeholder placeholder placeholder"
             "close submit phone";
         gap: 8px 4px;
-        align-items: center;
     }
 
     .booking-modal__footer strong {
         grid-area: price;
         justify-self: center;
-        font-size: 28px;
+        font-size: 32px;
         line-height: 32px;
     }
 
@@ -2681,7 +2671,7 @@ body.has-booking-modal {
         width: 100%;
         min-width: auto;
         height: auto;
-        padding: 26px 50px;
+        padding: 18px 0;
     }
 
     .booking-submit-placeholder {
@@ -2690,14 +2680,22 @@ body.has-booking-modal {
         grid-area: placeholder;
         margin-left: 0;
         justify-self: center;
-        width: 100%;
         text-align: center;
     }
 
+    .booking-modal__footer--has-slot .booking-submit-placeholder {
+        width: 100%;
+        font-size: 16px;
+        line-height: 20px;
+    }
+
     .booking-modal__footer-action {
-        width: 74px;
-        height: 74px;
+        width: 56px;
+        height: 56px;
         border-radius: 999px;
+        border-color: transparent;
+        background: var(--bg);
+        color: var(--night-soft);
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -2705,10 +2703,12 @@ body.has-booking-modal {
 
     .booking-modal__footer-action--close {
         grid-area: close;
+        justify-self: start;
     }
 
     .booking-modal__footer-action--phone {
         grid-area: phone;
+        justify-self: end;
     }
 
     .booking-modal__footer-action svg {
@@ -2799,13 +2799,12 @@ body.has-booking-modal {
         min-height: 680px;
         padding: 0 24px;
         margin: 0;
-        overflow: hidden;
     }
 
     .hero__bg {
         background-image: var(--hero-bg-mobile);
         background-size: cover;
-        background-position: -250px center;
+        background-position: center;
     }
 
     .hero__shadow {
@@ -2841,7 +2840,6 @@ body.has-booking-modal {
     .step-card__title,
     .step-card__desc,
     .contact__title,
-    .contact__lead,
     .boat-card__sub,
     .boat-card__title,
     .faq-card,
@@ -2927,19 +2925,6 @@ body.has-booking-modal {
         padding: 0 8px;
     }
 
-    .telegram-card {
-        min-height: 128px;
-        padding: 24px;
-        display: grid;
-        grid-template-columns: auto 1fr;
-        grid-template-areas:
-            "icon title"
-            "text text";
-        gap: 20px 16px;
-        align-items: center;
-        border-radius: 40px;
-    }
-
     .telegram-card__icon {
         grid-area: icon;
         width: 72px;
@@ -2968,17 +2953,15 @@ body.has-booking-modal {
     }
 
     .telegram-card__title {
-        grid-area: title;
-        font-size: 24px;
-        line-height: 28px;
+        font-size: 18px;
+        line-height: 20px;
         font-weight: 600;
     }
 
     .telegram-card__text {
-        grid-area: text;
-        font-size: 16px;
-        line-height: 22px;
-        opacity: 0.9;
+        font-size: 14px;
+        line-height: 20px;
+        opacity: 0.8;
     }
 
     .video-strip {
@@ -3142,11 +3125,13 @@ body.has-booking-modal {
     }
 
     .gift-certificate {
-        height: 640px;
         margin: 0 8px;
-        padding: 40px 24px;
+        padding: 40px 24px 0;
         border-radius: 80px;
+        background-image: url("assets/design/sections/gift_mobile.webp");
         background-position: center bottom;
+        flex-direction: column;
+        gap: 24px;
         align-items: flex-start;
         justify-content: center;
         text-align: center;
@@ -3162,31 +3147,37 @@ body.has-booking-modal {
         width: 100%;
     }
 
+    .gift-certificate__image {
+        position: relative;
+        z-index: 2;
+        display: block;
+        width: 100%;
+        margin: auto 0 0;
+    }
+
+    .gift-certificate__image img {
+        width: 100%;
+        height: auto;
+    }
+
     .contact {
-        height: 700px;
         margin: 0 8px;
         padding: 40px 0 0;
-        border-radius: 80px;
         align-items: flex-start;
         justify-content: center;
+        background-image: url("assets/design/sections/bitalent-kid_mobile.webp");
         background-position: center bottom;
         text-align: center;
     }
 
     .contact__copy {
         align-items: center;
-        padding: 0 24px;
+        padding: 0 24px 300px;
         gap: 0;
     }
 
     .contact__logo {
         margin-bottom: 16px;
-    }
-
-    .contact__lead {
-        width: 100%;
-        font-size: 20px;
-        line-height: 32px;
     }
 
     .section--map {
