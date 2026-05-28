@@ -93,7 +93,7 @@
     monthPrev?.toggleAttribute(
       "disabled",
       bookingState.isLoadingDates ||
-        getVisibleMonthIndex() <= getCurrentMonthIndex(),
+      getVisibleMonthIndex() <= getCurrentMonthIndex(),
     );
     monthNext?.toggleAttribute("disabled", bookingState.isLoadingDates);
   };
@@ -256,9 +256,7 @@
 
     submitButton.toggleAttribute(
       "disabled",
-      bookingState.isSubmitting ||
-        !termsCheckbox?.checked ||
-        !hasEnoughSelectedTimes,
+      bookingState.isSubmitting || !hasEnoughSelectedTimes,
     );
     submitButton.classList.toggle("is-loading", bookingState.isSubmitting);
     submitButton.setAttribute("aria-busy", String(bookingState.isSubmitting));
@@ -266,7 +264,7 @@
     if (submitLabel) {
       submitLabel.textContent = bookingState.isSubmitting
         ? "Бронируем..."
-        : "Оплатить";
+        : "Забронировать";
     }
   };
 
@@ -813,9 +811,10 @@
 
       await window.showAppAlert({
         title: "Бронирование создано",
-        message: codes.length
-          ? `Код: ${codes.join(", ")}`
-          : "Мы получили вашу бронь.",
+        message: "Ждем вас минимум за пол часа до вашего старта 🙂",
+        // message: codes.length
+        // ? `Код: ${codes.join(", ")}`
+        // : "Мы получили вашу бронь.",
       });
       closeModal();
     } catch (error) {

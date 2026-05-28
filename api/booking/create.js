@@ -207,16 +207,23 @@ module.exports = async function handler(req, res) {
     try {
         const payload = validatePayload(await readBody(req));
         const config = getConfig();
-        const paymentRequired = await callSimplyBook({
-            method: "isPaymentRequired",
-            params: [config.serviceId],
-            config,
-        });
-        const paymentConfig = paymentRequired
-            ? getPaymentConfig(process.env, { requireSbpay: false })
-            : null;
+        // Temporary bypass for payment phase
+        const BYPASS_PAYMENT = true;
 
-        if (paymentRequired && !config.apiSecretKey) {
+        const paymentRequired = BYPASS_PAYMENT
+            ? false
+            : await callSimplyBook({
+                  method: "isPaymentRequired",
+                  params: [config.serviceId],
+                  config,
+              });
+
+        const paymentConfig =
+            paymentRequired && !BYPASS_PAYMENT
+                ? getPaymentConfig(process.env, { requireSbpay: false })
+                : null;
+
+        if (paymentRequired && !config.apiSecretKey && !BYPASS_PAYMENT) {
             throw new BookingError(
                 "Missing SimplyBook configuration: SIMPLYBOOK_API_SECRET_KEY",
                 500,
@@ -258,16 +265,17 @@ module.exports = async function handler(req, res) {
                   };
 
         const responseBody = normalizeBookingResult(result);
-        const paymentUrl = paymentRequired
-            ? await findPaymentUrlForBookings({
-                  bookings: responseBody.bookings,
-                  peopleCount: payload.peopleCount,
-                  bookingConfig: config,
-                  paymentConfig,
-                  clientData: payload.clientData,
-                  req,
-              })
-            : "";
+        const paymentUrl =
+            paymentRequired && !BYPASS_PAYMENT
+                ? await findPaymentUrlForBookings({
+                      bookings: responseBody.bookings,
+                      peopleCount: payload.peopleCount,
+                      bookingConfig: config,
+                      paymentConfig,
+                      clientData: payload.clientData,
+                      req,
+                  })
+                : "";
 
         json(res, 200, {
             ...responseBody,
