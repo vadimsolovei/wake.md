@@ -942,11 +942,7 @@
                 </section>
 
                 <!-- GIFT CERTIFICATE -->
-                <section
-                    class="gift-certificate"
-                    data-bg="assets/design/sections/gift.webp"
-                    data-bg-mobile="assets/design/sections/gift_mobile.webp"
-                >
+                <section class="gift-certificate">
                     <div class="gift-certificate__copy">
                         <h2 class="section__title">
                             Подарите <span class="emoji">🎁</span> эмоции, драйв
@@ -957,20 +953,22 @@
                             запоминается на всю жизнь.
                         </p>
                     </div>
+                    <div class="gift-certificate__image" aria-hidden="true">
+                        <img
+                            src="assets/design/sections/certificate.webp"
+                            alt=""
+                            decoding="async"
+                        />
+                    </div>
                 </section>
 
                 <!-- BITALENT / CONTACT -->
-                <section
-                    class="contact"
-                    data-bg="assets/design/sections/bitalent-kid.webp"
-                    data-bg-mobile="assets/design/sections/bitalent-kid_mobile.webp"
-                >
+                <section class="contact">
                     <div class="contact__copy">
                         <img
                             class="contact__logo"
                             src="assets/design/brand/bitalent-logo.webp"
                             alt="Bitalent"
-                            loading="lazy"
                             decoding="async"
                         />
                         <h2 class="section__title contact__title">
@@ -1454,7 +1452,9 @@
                                     >
                                         −
                                     </button>
-                                    <output data-booking-people-output>1</output>
+                                    <output data-booking-people-output
+                                        >1</output
+                                    >
                                     <button
                                         type="button"
                                         data-booking-people-plus
@@ -1623,7 +1623,7 @@
                         </div>
 
                         <footer class="booking-modal__footer">
-                            <strong data-booking-price-total>0 леев</strong>
+                            <strong data-booking-price-total>0 лей</strong>
                             <button
                                 class="booking-modal__footer-action booking-modal__footer-action--close btn--ghost"
                                 type="button"
@@ -1650,7 +1650,9 @@
                                     class="booking-submit__spinner"
                                     aria-hidden="true"
                                 ></span>
-                                <span data-booking-submit-label>Оплатить</span>
+                                <span data-booking-submit-label
+                                    >Забронировать</span
+                                >
                             </button>
                             <span
                                 class="booking-submit-placeholder"
