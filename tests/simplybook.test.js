@@ -263,7 +263,7 @@ test("booking modal refreshes availability every time it opens", () => {
   assert.ok(refreshBookingAvailability);
   assert.ok(openModal);
   assert.match(initBookingDatepicker, /if \(datepicker\) return true;/);
-  assert.doesNotMatch(initBookingDatepicker, /onReady/);
+  assert.doesNotMatch(initBookingDatepicker, /onReady:\s*loadDatesForVisibleMonth/);
   assert.match(
     refreshBookingAvailability,
     /if \(!initBookingDatepicker\(\)\) return;/,
@@ -581,6 +581,66 @@ test("caches token and retries once after token failures", async () => {
         ok: true,
         json: async () => ({
           error: { code: 401, message: "Invalid token" },
+        }),
+      };
+    }
+
+    return {
+      ok: true,
+      json: async () => ({ result: { "2026-05-13": ["10:00:00"] } }),
+    };
+  };
+
+  const result = await callSimplyBook({
+    method: "getStartTimeMatrix",
+    params: ["2026-05-13", "2026-05-13", 1, 2, 1],
+    config: {
+      companyLogin: "wake",
+      apiKey: "key",
+      serviceId: 1,
+      providerId: 2,
+      timezone: "Europe/Chisinau",
+    },
+    fetchImpl,
+  });
+
+  assert.deepEqual(result, { "2026-05-13": ["10:00:00"] });
+  assert.equal(
+    calls.filter((call) => call.body.method === "getToken").length,
+    2,
+  );
+  assert.equal(calls.at(-1).headers["X-Token"], "token-2");
+});
+
+test("refreshes token after SimplyBook access denied response", async () => {
+  resetTokenCache();
+
+  const calls = [];
+  const fetchImpl = async (url, options) => {
+    const body = JSON.parse(options.body);
+
+    calls.push({ url, body, headers: options.headers });
+
+    if (body.method === "getToken") {
+      return {
+        ok: true,
+        json: async () => ({
+          result:
+            calls.filter((call) => call.body.method === "getToken").length === 1
+              ? "token-1"
+              : "token-2",
+        }),
+      };
+    }
+
+    if (
+      calls.filter((call) => call.body.method === "getStartTimeMatrix")
+        .length === 1
+    ) {
+      return {
+        ok: true,
+        json: async () => ({
+          error: { code: -32600, message: "Access denied" },
         }),
       };
     }

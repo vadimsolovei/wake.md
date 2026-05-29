@@ -125,6 +125,7 @@
 
     datepicker.clear(false);
     datepicker.jumpToDate(visibleDate, false);
+    collapseTrailingNextMonthRows();
     updateMonthControls();
   };
 
@@ -142,6 +143,33 @@
     if (isVisibleMonth && !isAvailableDate(date)) {
       dayElement.classList.add("flatpickr-disabled");
       dayElement.setAttribute("aria-disabled", "true");
+    }
+  };
+
+  const collapseTrailingNextMonthRows = (instance = datepicker) => {
+    const dayElements = Array.from(
+      instance?.calendarContainer?.querySelectorAll(".flatpickr-day") || [],
+    );
+
+    dayElements.forEach((dayElement) => {
+      dayElement.classList.remove(
+        "booking-calendar__day--collapsed-trailing-row",
+      );
+    });
+
+    for (let rowEnd = dayElements.length; rowEnd >= 7; rowEnd -= 7) {
+      const row = dayElements.slice(rowEnd - 7, rowEnd);
+      const isTrailingNextMonthRow = row.every((dayElement) =>
+        dayElement.classList.contains("nextMonthDay"),
+      );
+
+      if (!isTrailingNextMonthRow) return;
+
+      row.forEach((dayElement) => {
+        dayElement.classList.add(
+          "booking-calendar__day--collapsed-trailing-row",
+        );
+      });
     }
   };
 
@@ -419,6 +447,7 @@
     if (!datepicker) return;
 
     datepicker.redraw();
+    collapseTrailingNextMonthRows();
 
     const firstAvailableDate = Array.from(bookingState.availableDates)[0];
 
@@ -439,6 +468,7 @@
       clearDatepickerSelection();
     }
 
+    collapseTrailingNextMonthRows();
     loadTimesForSelectedDate();
   };
 
@@ -585,6 +615,11 @@
     if (datepicker) return true;
     if (!dateInput || !window.flatpickr) return false;
 
+    const handleVisibleMonthChange = (_selectedDates, _dateString, instance) => {
+      collapseTrailingNextMonthRows(instance);
+      loadDatesForVisibleMonth();
+    };
+
     datepicker = window.flatpickr(dateInput, {
       inline: true,
       static: true,
@@ -595,8 +630,11 @@
       prevArrow: "",
       nextArrow: "",
       onDayCreate: updateCalendarDayAvailability,
-      onMonthChange: loadDatesForVisibleMonth,
-      onYearChange: loadDatesForVisibleMonth,
+      onReady: (_selectedDates, _dateString, instance) => {
+        collapseTrailingNextMonthRows(instance);
+      },
+      onMonthChange: handleVisibleMonthChange,
+      onYearChange: handleVisibleMonthChange,
       onChange: ([date]) => {
         if (date && !isAvailableDate(date)) {
           clearDatepickerSelection();

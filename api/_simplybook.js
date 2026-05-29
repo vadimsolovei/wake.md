@@ -192,6 +192,7 @@ const callSimplyBook = async ({
         const isAuthError =
             code.includes("401") ||
             code.includes("403") ||
+            (code === "-32600" && message.includes("access denied")) ||
             message.includes("token") ||
             message.includes("auth");
 
