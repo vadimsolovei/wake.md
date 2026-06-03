@@ -209,6 +209,28 @@ test("booking phone field accepts exactly 8 digits", () => {
   );
 });
 
+test("booking calendar avoids mobile browser focus zoom traps", () => {
+  const html = fs.readFileSync("index.html", "utf8");
+  const css = fs.readFileSync("styles.css", "utf8");
+  const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
+  const input = html.match(
+    /<input[\s\S]*?data-booking-datepicker[\s\S]*?>/,
+  )?.[0];
+
+  assert.ok(input);
+  assert.match(input, /type="text"/);
+  assert.match(input, /inputmode="none"/);
+  assert.match(input, /autocomplete="off"/);
+  assert.match(input, /tabindex="-1"/);
+  assert.match(input, /\sreadonly\b/);
+  assert.match(css, /\.booking-date-input \{[\s\S]*?font-size: 16px;/);
+  assert.match(css, /touch-action: pan-y pinch-zoom;/);
+  assert.match(bookingScript, /dateInput\.readOnly = true;/);
+  assert.match(bookingScript, /dateInput\.inputMode = "none";/);
+  assert.match(bookingScript, /dateInput\.tabIndex = -1;/);
+  assert.match(bookingScript, /dateInput\.blur\(\);/);
+});
+
 test("booking price counts first sets per selected slot before repeat sets", () => {
   const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
   const calculateBookingPrice = bookingScript.match(

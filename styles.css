@@ -1524,7 +1524,7 @@ body.has-booking-modal {
     padding: 0;
     color: var(--ink);
     overscroll-behavior: contain;
-    touch-action: none;
+    touch-action: pan-y pinch-zoom;
 }
 
 .booking-modal__backdrop {
@@ -1541,7 +1541,7 @@ body.has-booking-modal {
     max-height: min(100vh, 1768px);
     overflow: auto;
     overscroll-behavior: contain;
-    touch-action: pan-y;
+    touch-action: pan-y pinch-zoom;
     background: var(--bg);
     border-radius: 40px;
     box-shadow: 0 28px 90px rgba(17, 27, 45, 0.28);
@@ -1886,6 +1886,7 @@ body.has-booking-modal {
     position: absolute;
     width: 1px;
     height: 1px;
+    font-size: 16px;
     opacity: 0;
     pointer-events: none;
 }
@@ -2515,11 +2516,11 @@ body.has-booking-modal {
     }
 
     .booking-card--calendar {
-        order: 1;
+        order: 2;
     }
 
     .booking-people {
-        order: 2;
+        order: 1;
     }
 
     .booking-time-card {

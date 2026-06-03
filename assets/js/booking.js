@@ -615,6 +615,11 @@
     if (datepicker) return true;
     if (!dateInput || !window.flatpickr) return false;
 
+    dateInput.readOnly = true;
+    dateInput.inputMode = "none";
+    dateInput.autocomplete = "off";
+    dateInput.tabIndex = -1;
+
     const handleVisibleMonthChange = (_selectedDates, _dateString, instance) => {
       collapseTrailingNextMonthRows(instance);
       loadDatesForVisibleMonth();
@@ -643,6 +648,7 @@
 
         bookingState.selectedDate = date ? toIsoDate(date) : "";
         bookingState.selectedTimes = [];
+        dateInput.blur();
         loadTimesForSelectedDate();
       },
     });
