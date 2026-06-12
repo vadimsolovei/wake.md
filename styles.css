@@ -1097,9 +1097,12 @@ a {
 .gift-certificate {
     position: relative;
     margin: 0 40px;
-    height: 640px;
     border-radius: var(--radius-xl);
     background-color: #e7f1fb;
+    background-image: var(
+        --gift-certificate-bg,
+        url("/assets/design/sections/gift.webp")
+    );
     background-size: cover;
     background-position: center;
     padding: 80px;
@@ -1118,6 +1121,10 @@ a {
     width: 40%;
 }
 
+.gift-certificate__image {
+    display: none;
+}
+
 .gift-certificate .section__lead {
     width: 440px;
 }
@@ -1131,6 +1138,7 @@ a {
     height: 600px;
     border-radius: var(--radius-xl);
     background-color: #eef6fd;
+    background-image: var(--contact-bg, url("/assets/design/sections/bitalent-kid.webp"));
     background-size: cover;
     background-position: bottom center;
     padding: 80px;
@@ -1516,7 +1524,7 @@ body.has-booking-modal {
     padding: 0;
     color: var(--ink);
     overscroll-behavior: contain;
-    touch-action: none;
+    touch-action: pan-y pinch-zoom;
 }
 
 .booking-modal__backdrop {
@@ -1533,7 +1541,7 @@ body.has-booking-modal {
     max-height: min(100vh, 1768px);
     overflow: auto;
     overscroll-behavior: contain;
-    touch-action: pan-y;
+    touch-action: pan-y pinch-zoom;
     background: var(--bg);
     border-radius: 40px;
     box-shadow: 0 28px 90px rgba(17, 27, 45, 0.28);
@@ -1772,6 +1780,7 @@ body.has-booking-modal {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 16px;
+    padding-left: 12px;
     color: #0f1b2e;
     font-size: 20px;
     line-height: 24px;
@@ -1877,6 +1886,7 @@ body.has-booking-modal {
     position: absolute;
     width: 1px;
     height: 1px;
+    font-size: 16px;
     opacity: 0;
     pointer-events: none;
 }
@@ -1918,10 +1928,6 @@ body.has-booking-modal {
     line-height: 44px;
 }
 
-.booking-modal .dayContainer {
-    gap: 4px;
-}
-
 .booking-modal .flatpickr-day {
     width: 44px;
     max-width: 44px;
@@ -1961,6 +1967,16 @@ body.has-booking-modal {
     background: transparent;
     color: rgba(15, 27, 46, 0.4);
     cursor: not-allowed;
+}
+
+.booking-modal .flatpickr-day.prevMonthDay,
+.booking-modal .flatpickr-day.nextMonthDay {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.booking-modal .flatpickr-day.booking-calendar__day--collapsed-trailing-row {
+    display: none;
 }
 
 .booking-price-card {
@@ -2475,7 +2491,17 @@ body.has-booking-modal {
         display: flex;
         flex-direction: column;
         gap: 8px;
-        padding: 0 8px calc(158px + env(safe-area-inset-bottom));
+        padding: 0 8px calc(164px + env(safe-area-inset-bottom));
+    }
+
+    .booking-form:has(.booking-modal__footer--awaiting-slot)
+        .booking-modal__content {
+        padding: 0 8px calc(96px + env(safe-area-inset-bottom));
+    }
+
+    .booking-form:has(.booking-modal__footer--has-slot)
+        .booking-modal__content {
+        padding: 0 8px calc(164px + env(safe-area-inset-bottom));
     }
 
     .booking-sidebar,
@@ -2490,11 +2516,11 @@ body.has-booking-modal {
     }
 
     .booking-card--calendar {
-        order: 1;
+        order: 2;
     }
 
     .booking-people {
-        order: 2;
+        order: 1;
     }
 
     .booking-time-card {
@@ -2518,11 +2544,6 @@ body.has-booking-modal {
         max-width: none;
         box-sizing: border-box;
         padding: 24px;
-    }
-
-    .booking-card__head {
-        font-size: 18px;
-        line-height: 22px;
     }
 
     .booking-loader {
@@ -2550,17 +2571,11 @@ body.has-booking-modal {
         max-width: 100%;
     }
 
-    .booking-modal .dayContainer {
-        gap: 0;
-    }
-
     .booking-modal .flatpickr-day {
         width: 14.285%;
         max-width: 14.285%;
         height: auto;
         aspect-ratio: 1;
-        font-size: 14px;
-        line-height: 1;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -2675,10 +2690,7 @@ body.has-booking-modal {
         grid-area: placeholder;
         margin-left: 0;
         justify-self: center;
-        width: min(100%, 190px);
         text-align: center;
-        font-size: 20px;
-        line-height: 24px;
     }
 
     .booking-modal__footer--has-slot .booking-submit-placeholder {
@@ -2797,13 +2809,12 @@ body.has-booking-modal {
         min-height: 680px;
         padding: 0 24px;
         margin: 0;
-        overflow: hidden;
     }
 
     .hero__bg {
         background-image: var(--hero-bg-mobile);
         background-size: cover;
-        background-position: -250px center;
+        background-position: center;
     }
 
     .hero__shadow {
@@ -3124,11 +3135,16 @@ body.has-booking-modal {
     }
 
     .gift-certificate {
-        height: 640px;
         margin: 0 8px;
-        padding: 40px 24px;
+        padding: 40px 24px 0;
         border-radius: 80px;
+        background-image: var(
+            --gift-certificate-bg-mobile,
+            url("/assets/design/sections/gift_mobile.webp")
+        );
         background-position: center bottom;
+        flex-direction: column;
+        gap: 24px;
         align-items: flex-start;
         justify-content: center;
         text-align: center;
@@ -3144,19 +3160,35 @@ body.has-booking-modal {
         width: 100%;
     }
 
+    .gift-certificate__image {
+        position: relative;
+        z-index: 2;
+        display: block;
+        width: 100%;
+        margin: auto 0 0;
+    }
+
+    .gift-certificate__image img {
+        width: 100%;
+        height: auto;
+    }
+
     .contact {
-        height: 700px;
         margin: 0 8px;
         padding: 40px 0 0;
         align-items: flex-start;
         justify-content: center;
+        background-image: var(
+            --contact-bg-mobile,
+            url("/assets/design/sections/bitalent-kid_mobile.webp")
+        );
         background-position: center bottom;
         text-align: center;
     }
 
     .contact__copy {
         align-items: center;
-        padding: 0 24px;
+        padding: 0 24px 300px;
         gap: 0;
     }
 
@@ -3173,7 +3205,7 @@ body.has-booking-modal {
         padding: 40px 16px;
         gap: 16px;
         border-radius: 80px;
-        background-position: center;
+        background-position: 58% center;
     }
 
     .map__buttons {

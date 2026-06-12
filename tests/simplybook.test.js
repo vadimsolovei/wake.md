@@ -149,7 +149,10 @@ test("booking submit state requires terms and minimum selected times", () => {
   );
   assert.match(updateSubmitState, /!termsCheckbox\?\.checked/);
   assert.match(updateSubmitState, /!hasEnoughSelectedTimes/);
-  assert.doesNotMatch(updateSubmitState, /submitButton\.hidden/);
+  assert.match(
+    updateSubmitState,
+    /submitButton\.hidden = shouldShowMobilePlaceholder/,
+  );
   assert.doesNotMatch(updateSubmitState, /innerHTML/);
   assert.doesNotMatch(
     updateSubmitState,
@@ -209,6 +212,28 @@ test("booking phone field accepts exactly 8 digits", () => {
   );
 });
 
+test("booking calendar avoids mobile browser focus zoom traps", () => {
+  const html = fs.readFileSync("index.html", "utf8");
+  const css = fs.readFileSync("styles.css", "utf8");
+  const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
+  const input = html.match(
+    /<input[\s\S]*?data-booking-datepicker[\s\S]*?>/,
+  )?.[0];
+
+  assert.ok(input);
+  assert.match(input, /type="text"/);
+  assert.match(input, /inputmode="none"/);
+  assert.match(input, /autocomplete="off"/);
+  assert.match(input, /tabindex="-1"/);
+  assert.match(input, /\sreadonly\b/);
+  assert.match(css, /\.booking-date-input \{[\s\S]*?font-size: 16px;/);
+  assert.match(css, /touch-action: pan-y pinch-zoom;/);
+  assert.match(bookingScript, /dateInput\.readOnly = true;/);
+  assert.match(bookingScript, /dateInput\.inputMode = "none";/);
+  assert.match(bookingScript, /dateInput\.tabIndex = -1;/);
+  assert.match(bookingScript, /dateInput\.blur\(\);/);
+});
+
 test("booking price counts first sets per selected slot before repeat sets", () => {
   const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
   const calculateBookingPrice = bookingScript.match(
@@ -263,7 +288,7 @@ test("booking modal refreshes availability every time it opens", () => {
   assert.ok(refreshBookingAvailability);
   assert.ok(openModal);
   assert.match(initBookingDatepicker, /if \(datepicker\) return true;/);
-  assert.doesNotMatch(initBookingDatepicker, /onReady/);
+  assert.doesNotMatch(initBookingDatepicker, /onReady:\s*loadDatesForVisibleMonth/);
   assert.match(
     refreshBookingAvailability,
     /if \(!initBookingDatepicker\(\)\) return;/,
@@ -612,6 +637,66 @@ test("caches token and retries once after token failures", async () => {
   assert.equal(calls.at(-1).headers["X-Token"], "token-2");
 });
 
+test("refreshes token after SimplyBook access denied response", async () => {
+  resetTokenCache();
+
+  const calls = [];
+  const fetchImpl = async (url, options) => {
+    const body = JSON.parse(options.body);
+
+    calls.push({ url, body, headers: options.headers });
+
+    if (body.method === "getToken") {
+      return {
+        ok: true,
+        json: async () => ({
+          result:
+            calls.filter((call) => call.body.method === "getToken").length === 1
+              ? "token-1"
+              : "token-2",
+        }),
+      };
+    }
+
+    if (
+      calls.filter((call) => call.body.method === "getStartTimeMatrix")
+        .length === 1
+    ) {
+      return {
+        ok: true,
+        json: async () => ({
+          error: { code: -32600, message: "Access denied" },
+        }),
+      };
+    }
+
+    return {
+      ok: true,
+      json: async () => ({ result: { "2026-05-13": ["10:00:00"] } }),
+    };
+  };
+
+  const result = await callSimplyBook({
+    method: "getStartTimeMatrix",
+    params: ["2026-05-13", "2026-05-13", 1, 2, 1],
+    config: {
+      companyLogin: "wake",
+      apiKey: "key",
+      serviceId: 1,
+      providerId: 2,
+      timezone: "Europe/Chisinau",
+    },
+    fetchImpl,
+  });
+
+  assert.deepEqual(result, { "2026-05-13": ["10:00:00"] });
+  assert.equal(
+    calls.filter((call) => call.body.method === "getToken").length,
+    2,
+  );
+  assert.equal(calls.at(-1).headers["X-Token"], "token-2");
+});
+
 test("dates endpoint returns available dates for a requested month", async () => {
   resetTokenCache();
 
@@ -659,7 +744,7 @@ test("dates endpoint returns available dates for a requested month", async () =>
   const req = {
     method: "GET",
     query: {
-      year: "2026",
+      year: "2099",
       month: "6",
     },
   };

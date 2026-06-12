@@ -192,6 +192,7 @@ const callSimplyBook = async ({
         const isAuthError =
             code.includes("401") ||
             code.includes("403") ||
+            (code === "-32600" && message.includes("access denied")) ||
             message.includes("token") ||
             message.includes("auth");
 
@@ -673,10 +674,17 @@ const normalizeSlotMatrixTimes = (matrix, date, options = {}) => {
 
 const handleError = (res, error) => {
     const status = Number.isInteger(error?.status) ? error.status : 500;
+    const code = error?.code || "BOOKING_ERROR";
+    const message = error.message;
+
+    if (status >= 500) {
+        console.error(`[${code}] ${message}`, error);
+    }
+
     const safeMessage =
         status >= 500
             ? "Сервис бронирования временно недоступен. Попробуйте позже."
-            : error.message;
+            : message;
 
     json(res, status, {
         ok: false,

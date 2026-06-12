@@ -34,7 +34,8 @@
 
   const FIRST_SET_PRICE = 600;
   const NEXT_SET_PRICE = 400;
-  const BOOKING_UNAVAILABLE_MESSAGE = "Сервис бронирования временно недоступен.";
+  const BOOKING_UNAVAILABLE_MESSAGE =
+    "Сервис бронирования временно недоступен.";
   const FLATPICKR_STYLE_URL =
     "https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css";
   const FLATPICKR_SCRIPT_URL = "https://cdn.jsdelivr.net/npm/flatpickr";
@@ -72,11 +73,16 @@
     return `${year}-${month}-${day}`;
   };
 
+  const capitalizeFirstLetter = (value) =>
+    value ? value.charAt(0).toLocaleUpperCase("ru-RU") + value.slice(1) : value;
+
   const getMonthName = (date) =>
-    new Intl.DateTimeFormat("ru-RU", {
-      month: "long",
-      year: "numeric",
-    }).format(date);
+    capitalizeFirstLetter(
+      new Intl.DateTimeFormat("ru-RU", {
+        month: "long",
+        year: "numeric",
+      }).format(date),
+    );
 
   const getCurrentMonthIndex = () => {
     const today = new Date();
@@ -94,7 +100,7 @@
     monthPrev?.toggleAttribute(
       "disabled",
       bookingState.isLoadingDates ||
-        getVisibleMonthIndex() <= getCurrentMonthIndex(),
+      getVisibleMonthIndex() <= getCurrentMonthIndex(),
     );
     monthNext?.toggleAttribute("disabled", bookingState.isLoadingDates);
   };
@@ -119,6 +125,7 @@
 
     datepicker.clear(false);
     datepicker.jumpToDate(visibleDate, false);
+    collapseTrailingNextMonthRows();
     updateMonthControls();
   };
 
@@ -139,13 +146,38 @@
     }
   };
 
+  const collapseTrailingNextMonthRows = (instance = datepicker) => {
+    const dayElements = Array.from(
+      instance?.calendarContainer?.querySelectorAll(".flatpickr-day") || [],
+    );
+
+    dayElements.forEach((dayElement) => {
+      dayElement.classList.remove(
+        "booking-calendar__day--collapsed-trailing-row",
+      );
+    });
+
+    for (let rowEnd = dayElements.length; rowEnd >= 7; rowEnd -= 7) {
+      const row = dayElements.slice(rowEnd - 7, rowEnd);
+      const isTrailingNextMonthRow = row.every((dayElement) =>
+        dayElement.classList.contains("nextMonthDay"),
+      );
+
+      if (!isTrailingNextMonthRow) return;
+
+      row.forEach((dayElement) => {
+        dayElement.classList.add(
+          "booking-calendar__day--collapsed-trailing-row",
+        );
+      });
+    }
+  };
+
   const readJsonResponse = async (response) => {
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      throw new Error(
-        data?.error?.message || BOOKING_UNAVAILABLE_MESSAGE,
-      );
+      throw new Error(data?.error?.message || BOOKING_UNAVAILABLE_MESSAGE);
     }
 
     return data;
@@ -186,7 +218,7 @@
     return readJsonResponse(response);
   };
 
-  const formatPrice = (amount, unit = "леев") =>
+  const formatPrice = (amount, unit = "лей") =>
     `${new Intl.NumberFormat("ru-RU").format(amount)} ${unit}`;
 
   const calculateBookingPrice = () => {
@@ -423,6 +455,7 @@
     if (!datepicker) return;
 
     datepicker.redraw();
+    collapseTrailingNextMonthRows();
 
     const firstAvailableDate = Array.from(bookingState.availableDates)[0];
 
@@ -443,6 +476,7 @@
       clearDatepickerSelection();
     }
 
+    collapseTrailingNextMonthRows();
     loadTimesForSelectedDate();
   };
 
@@ -589,6 +623,16 @@
     if (datepicker) return true;
     if (!dateInput || !window.flatpickr) return false;
 
+    dateInput.readOnly = true;
+    dateInput.inputMode = "none";
+    dateInput.autocomplete = "off";
+    dateInput.tabIndex = -1;
+
+    const handleVisibleMonthChange = (_selectedDates, _dateString, instance) => {
+      collapseTrailingNextMonthRows(instance);
+      loadDatesForVisibleMonth();
+    };
+
     datepicker = window.flatpickr(dateInput, {
       inline: true,
       static: true,
@@ -599,8 +643,11 @@
       prevArrow: "",
       nextArrow: "",
       onDayCreate: updateCalendarDayAvailability,
-      onMonthChange: loadDatesForVisibleMonth,
-      onYearChange: loadDatesForVisibleMonth,
+      onReady: (_selectedDates, _dateString, instance) => {
+        collapseTrailingNextMonthRows(instance);
+      },
+      onMonthChange: handleVisibleMonthChange,
+      onYearChange: handleVisibleMonthChange,
       onChange: ([date]) => {
         if (date && !isAvailableDate(date)) {
           clearDatepickerSelection();
@@ -609,6 +656,7 @@
 
         bookingState.selectedDate = date ? toIsoDate(date) : "";
         bookingState.selectedTimes = [];
+        dateInput.blur();
         loadTimesForSelectedDate();
       },
     });
@@ -831,9 +879,10 @@
 
       await window.showAppAlert({
         title: "Бронирование создано",
-        message: codes.length
-          ? `Код: ${codes.join(", ")}`
-          : "Мы получили вашу бронь.",
+        message: "Ждем вас минимум за пол часа до вашего старта 🙂",
+        // message: codes.length
+        // ? `Код: ${codes.join(", ")}`
+        // : "Мы получили вашу бронь.",
       });
       closeModal();
     } catch (error) {
