@@ -2342,10 +2342,20 @@ body.has-booking-modal {
     width: auto;
 }
 
-.booking-submit {
+.booking-submit-actions {
     order: 3;
     margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.booking-submit {
     min-width: 154px;
+}
+
+.booking-submit--payment-test {
+    display: none;
 }
 
 .booking-submit-placeholder {
@@ -2360,7 +2370,7 @@ body.has-booking-modal {
     width: 160px;
 }
 
-.booking-submit[hidden],
+.booking-submit-actions[hidden],
 .booking-submit-placeholder[hidden] {
     display: none;
 }
@@ -2674,14 +2684,22 @@ body.has-booking-modal {
         line-height: 32px;
     }
 
-    .booking-modal__footer .btn {
+    .booking-submit-actions {
         grid-area: submit;
         order: initial;
         margin-left: 0;
         width: 100%;
+        gap: 8px;
+    }
+
+    .booking-modal__footer .btn {
         min-width: auto;
         height: auto;
         padding: 18px 0;
+    }
+
+    .booking-submit-actions .btn {
+        width: 100%;
     }
 
     .booking-submit-placeholder {

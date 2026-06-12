@@ -113,7 +113,7 @@ async function writeHtml(sourcePath, outputPath, assetManifest) {
     const minified = await minifyHtml(rewritten, htmlOptions);
 
     await fs.mkdir(path.dirname(absoluteOutputPath), { recursive: true });
-    await fs.writeFile(absoluteOutputPath, minified);
+    await fs.writeFile(absoluteOutputPath, minified.trimEnd());
 }
 
 async function build() {

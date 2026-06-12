@@ -19,12 +19,12 @@
   const infoCloseButtons = infoPopup?.querySelectorAll(
     "[data-booking-info-close]",
   );
-  const submitButton = form?.querySelector("[type='submit']");
+  const submitActions = form?.querySelector("[data-booking-submit-actions]");
+  const submitButtons = Array.from(
+    form?.querySelectorAll("[data-booking-submit]") || [],
+  );
   const termsCheckbox = form?.querySelector("input[name='terms']");
   const phoneInput = form?.querySelector("input[name='phone']");
-  const submitLabel = submitButton?.querySelector(
-    "[data-booking-submit-label]",
-  );
   const submitPlaceholder = form?.querySelector(
     "[data-booking-submit-placeholder]",
   );
@@ -260,6 +260,12 @@
   const getMinimumTimesMessage = () =>
     `Выберите минимум ${formatSlotCount(bookingState.peopleCount)} для ${bookingState.peopleCount} чел.`;
 
+  const getPaymentMode = (submitter) => {
+    const mode = submitter?.dataset?.bookingPaymentMode || "book";
+
+    return mode === "pay" ? "pay" : "book";
+  };
+
   const updatePriceSummary = () => {
     const setCount = bookingState.selectedTimes.length;
     const total = calculateBookingPrice();
@@ -279,7 +285,7 @@
   };
 
   const updateSubmitState = () => {
-    if (!submitButton) return;
+    if (!submitButtons.length) return;
 
     const hasEnoughSelectedTimes = hasMinimumSelectedTimes();
     const isMobileLayout = isMobileBookingLayout();
@@ -302,22 +308,32 @@
       submitPlaceholder.hidden = false;
     }
 
-    submitButton.hidden = shouldShowMobilePlaceholder;
-
-    submitButton.toggleAttribute(
-      "disabled",
-      bookingState.isSubmitting ||
-        !termsCheckbox?.checked ||
-        !hasEnoughSelectedTimes,
-    );
-    submitButton.classList.toggle("is-loading", bookingState.isSubmitting);
-    submitButton.setAttribute("aria-busy", String(bookingState.isSubmitting));
-
-    if (submitLabel) {
-      submitLabel.textContent = bookingState.isSubmitting
-        ? "Бронируем..."
-        : "Оплатить";
+    if (submitActions) {
+      submitActions.hidden = shouldShowMobilePlaceholder;
     }
+
+    submitButtons.forEach((submitButton) => {
+      const submitLabel = submitButton.querySelector(
+        "[data-booking-submit-label]",
+      );
+
+      submitButton.toggleAttribute(
+        "disabled",
+        bookingState.isSubmitting ||
+          !termsCheckbox?.checked ||
+          !hasEnoughSelectedTimes,
+      );
+      submitButton.classList.toggle("is-loading", bookingState.isSubmitting);
+      submitButton.setAttribute("aria-busy", String(bookingState.isSubmitting));
+
+      if (submitLabel) {
+        submitLabel.textContent = bookingState.isSubmitting
+          ? "Бронируем..."
+          : submitButton.dataset.bookingPaymentMode === "pay"
+            ? "Оплатить"
+            : "Забронировать";
+      }
+    });
   };
 
   const updatePeopleOutput = () => {
@@ -859,6 +875,7 @@
       peopleCount: bookingState.peopleCount,
       date: bookingState.selectedDate,
       times: bookingState.selectedTimes,
+      paymentMode: getPaymentMode(event.submitter),
       acceptedTerms: formData.get("terms") === "on",
       source: getCookie("visitor_source") || "",
     };

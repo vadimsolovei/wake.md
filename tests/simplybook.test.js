@@ -151,8 +151,9 @@ test("booking submit state requires terms and minimum selected times", () => {
   assert.match(updateSubmitState, /!hasEnoughSelectedTimes/);
   assert.match(
     updateSubmitState,
-    /submitButton\.hidden = shouldShowMobilePlaceholder/,
+    /submitActions\.hidden = shouldShowMobilePlaceholder/,
   );
+  assert.match(updateSubmitState, /submitButtons\.forEach/);
   assert.doesNotMatch(updateSubmitState, /innerHTML/);
   assert.doesNotMatch(
     updateSubmitState,
@@ -193,6 +194,24 @@ test("booking submit builds form data before payload", () => {
     bookingScript,
     /acceptedTerms: formData\.get\("terms"\) === "on"/,
   );
+  assert.match(
+    bookingScript,
+    /paymentMode: getPaymentMode\(event\.submitter\)/,
+  );
+  assert.match(
+    bookingScript,
+    /submitter\?\.dataset\?\.bookingPaymentMode \|\| "book"/,
+  );
+});
+
+test("booking modal has visible booking button and hidden payment test button", () => {
+  const html = fs.readFileSync("index.html", "utf8");
+  const css = fs.readFileSync("styles.css", "utf8");
+
+  assert.match(html, /data-booking-submit-actions/);
+  assert.match(html, /data-booking-payment-mode="book"[\s\S]*?Забронировать/);
+  assert.match(html, /data-booking-payment-mode="pay"[\s\S]*?Оплатить/);
+  assert.match(css, /\.booking-submit--payment-test \{[\s\S]*?display: none;/);
 });
 
 test("booking phone field accepts exactly 8 digits", () => {
@@ -986,10 +1005,10 @@ test("create endpoint books each selected time", async () => {
       };
     }
 
-    if (body.method === "isPaymentRequired") {
+    if (body.method === "confirmBooking") {
       return {
         ok: true,
-        json: async () => ({ result: false }),
+        json: async () => ({ result: true }),
       };
     }
 
@@ -1002,9 +1021,10 @@ test("create endpoint books each selected time", async () => {
               id: body.params[3],
               code: `code-${body.params[3]}`,
               start_datetime: `${body.params[2]} ${body.params[3]}`,
-              is_confirmed: true,
+              is_confirmed: false,
             },
           ],
+          require_confirm: true,
         },
       }),
     };
@@ -1047,8 +1067,19 @@ test("create endpoint books each selected time", async () => {
   }
 
   const bookCalls = calls.filter((call) => call.body.method === "book");
+  const confirmCalls = calls.filter(
+    (call) => call.body.method === "confirmBooking",
+  );
 
   assert.equal(res.statusCode, 200);
+  assert.equal(
+    calls.some((call) => call.body.method === "isPaymentRequired"),
+    false,
+  );
+  assert.equal(
+    calls.some((call) => call.body.method === "getBookingCart"),
+    false,
+  );
   assert.deepEqual(
     bookCalls.map((call) => call.body.params),
     [
@@ -1080,9 +1111,20 @@ test("create endpoint books each selected time", async () => {
       ],
     ],
   );
+  const body = JSON.parse(res.body);
+
+  assert.equal(body.requireConfirm, false);
   assert.deepEqual(
-    JSON.parse(res.body).bookings.map((booking) => booking.code),
+    body.bookings.map((booking) => booking.code),
     ["code-09:00:00", "code-10:30:00"],
+  );
+  assert.deepEqual(
+    body.bookings.map((booking) => booking.isConfirmed),
+    [true, true],
+  );
+  assert.deepEqual(
+    confirmCalls.map((call) => call.body.params),
+    [["09:00:00"], ["10:30:00"]],
   );
 });
 
@@ -1118,10 +1160,10 @@ test("create endpoint books one selected time for one person", async () => {
       };
     }
 
-    if (body.method === "isPaymentRequired") {
+    if (body.method === "confirmBooking") {
       return {
         ok: true,
-        json: async () => ({ result: false }),
+        json: async () => ({ result: true }),
       };
     }
 
@@ -1134,9 +1176,10 @@ test("create endpoint books one selected time for one person", async () => {
               id: body.params[3],
               code: `code-${body.params[3]}`,
               start_datetime: `${body.params[2]} ${body.params[3]}`,
-              is_confirmed: true,
+              is_confirmed: false,
             },
           ],
+          require_confirm: true,
         },
       }),
     };
@@ -1151,6 +1194,7 @@ test("create endpoint books one selected time for one person", async () => {
       peopleCount: 1,
       date: "2026-06-10",
       times: ["09:00"],
+      paymentMode: "book",
       acceptedTerms: true,
     },
   };
@@ -1179,8 +1223,19 @@ test("create endpoint books one selected time for one person", async () => {
   }
 
   const bookCalls = calls.filter((call) => call.body.method === "book");
+  const confirmCalls = calls.filter(
+    (call) => call.body.method === "confirmBooking",
+  );
 
   assert.equal(res.statusCode, 200);
+  assert.equal(
+    calls.some((call) => call.body.method === "isPaymentRequired"),
+    false,
+  );
+  assert.equal(
+    calls.some((call) => call.body.method === "getBookingCart"),
+    false,
+  );
   assert.equal(bookCalls.length, 1);
   assert.deepEqual(bookCalls[0].body.params, [
     1,
@@ -1195,9 +1250,20 @@ test("create endpoint books one selected time for one person", async () => {
     { people_field_hash: 1 },
     1,
   ]);
+  const body = JSON.parse(res.body);
+
+  assert.equal(body.requireConfirm, false);
   assert.deepEqual(
-    JSON.parse(res.body).bookings.map((booking) => booking.code),
+    body.bookings.map((booking) => booking.code),
     ["code-09:00:00"],
+  );
+  assert.deepEqual(
+    body.bookings.map((booking) => booking.isConfirmed),
+    [true],
+  );
+  assert.deepEqual(
+    confirmCalls.map((call) => call.body.params),
+    [["09:00:00"]],
   );
 });
 
@@ -1263,13 +1329,6 @@ test("create endpoint returns maib checkout URL when payment is required", async
         };
       }
 
-      if (body.method === "isPaymentRequired") {
-        return {
-          ok: true,
-          json: async () => ({ result: true }),
-        };
-      }
-
       if (body.method === "getBookingCart") {
         return {
           ok: true,
@@ -1328,6 +1387,7 @@ test("create endpoint returns maib checkout URL when payment is required", async
       peopleCount: 1,
       date: "2026-06-10",
       times: ["09:00", "10:00"],
+      paymentMode: "pay",
       acceptedTerms: true,
     },
   };
@@ -1366,9 +1426,9 @@ test("create endpoint returns maib checkout URL when payment is required", async
   assert.equal(res.statusCode, 200);
   assert.equal(body.paymentRequired, true);
   assert.equal(body.paymentUrl, "https://checkout.maib.test/checkout-cart-3");
-  assert.deepEqual(
-    calls.find((call) => call.body?.method === "isPaymentRequired").body.params,
-    [1],
+  assert.equal(
+    calls.some((call) => call.body?.method === "isPaymentRequired"),
+    false,
   );
   assert.deepEqual(
     calls.find((call) => call.body?.method === "getBookingCart").body.params,

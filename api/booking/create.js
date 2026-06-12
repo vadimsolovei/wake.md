@@ -40,6 +40,7 @@ const validatePayload = (body) => {
     const email = String(body.email || "").trim();
     const phone = String(body.phone || "").trim();
     const date = String(body.date || "").trim();
+    const paymentMode = String(body.paymentMode || "book").trim();
     const rawTimes = Array.isArray(body.times) ? body.times : [body.time];
     if (!rawTimes.length) {
         throw new BookingError(
@@ -105,6 +106,14 @@ const validatePayload = (body) => {
         );
     }
 
+    if (!["book", "pay"].includes(paymentMode)) {
+        throw new BookingError(
+            "Некорректный способ бронирования.",
+            400,
+            "INVALID_PAYMENT_MODE",
+        );
+    }
+
     return {
         clientData: {
             name,
@@ -114,6 +123,7 @@ const validatePayload = (body) => {
         date,
         times,
         peopleCount,
+        paymentMode,
     };
 };
 
@@ -191,6 +201,37 @@ const findPaymentUrlForBookings = async ({
     });
 };
 
+const confirmRequiredBookings = async ({ responseBody, config }) => {
+    const needsConfirmation =
+        responseBody.requireConfirm ||
+        responseBody.bookings.some((booking) => booking.isConfirmed !== true);
+
+    if (!needsConfirmation) return responseBody;
+
+    const bookingIds = responseBody.bookings
+        .map((booking) => booking.id)
+        .filter(Boolean);
+
+    if (!bookingIds.length) return responseBody;
+
+    for (const bookingId of bookingIds) {
+        await callSimplyBook({
+            method: "confirmBooking",
+            params: [bookingId],
+            config,
+        });
+    }
+
+    return {
+        ...responseBody,
+        requireConfirm: false,
+        bookings: responseBody.bookings.map((booking) => ({
+            ...booking,
+            isConfirmed: true,
+        })),
+    };
+};
+
 module.exports = async function handler(req, res) {
     if (req.method !== "POST") {
         res.setHeader("Allow", "POST");
@@ -207,16 +248,12 @@ module.exports = async function handler(req, res) {
     try {
         const payload = validatePayload(await readBody(req));
         const config = getConfig();
-        const paymentRequired = await callSimplyBook({
-            method: "isPaymentRequired",
-            params: [config.serviceId],
-            config,
-        });
-        const paymentConfig = paymentRequired
+        const shouldCreatePayment = payload.paymentMode === "pay";
+        const paymentConfig = shouldCreatePayment
             ? getPaymentConfig(process.env, { requireSbpay: false })
             : null;
 
-        if (paymentRequired && !config.apiSecretKey) {
+        if (shouldCreatePayment && !config.apiSecretKey) {
             throw new BookingError(
                 "Missing SimplyBook configuration: SIMPLYBOOK_API_SECRET_KEY",
                 500,
@@ -257,8 +294,8 @@ module.exports = async function handler(req, res) {
                       ),
                   };
 
-        const responseBody = normalizeBookingResult(result);
-        const paymentUrl = paymentRequired
+        let responseBody = normalizeBookingResult(result);
+        const paymentUrl = shouldCreatePayment
             ? await findPaymentUrlForBookings({
                   bookings: responseBody.bookings,
                   peopleCount: payload.peopleCount,
@@ -268,6 +305,13 @@ module.exports = async function handler(req, res) {
                   req,
               })
             : "";
+
+        if (!shouldCreatePayment) {
+            responseBody = await confirmRequiredBookings({
+                responseBody,
+                config,
+            });
+        }
 
         json(res, 200, {
             ...responseBody,
