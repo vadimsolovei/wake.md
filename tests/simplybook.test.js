@@ -38,7 +38,10 @@ const {
   buildSbpayValidationPayload,
   validateCustomPaymentRequest,
 } = require("../api/payments/_sbpay");
-const { maibCallbackHandler } = require("../api/payments/maib");
+const {
+  maibCallbackHandler,
+  maibReturnHandler,
+} = require("../api/payments/maib");
 const {
   sbpayDeletePaymentMethodHandler,
   sbpayFormHandler,
@@ -212,6 +215,36 @@ test("booking modal has visible booking button and hidden payment test button", 
   assert.match(html, /data-booking-payment-mode="book"[\s\S]*?Забронировать/);
   assert.match(html, /data-booking-payment-mode="pay"[\s\S]*?Оплатить/);
   assert.match(css, /\.booking-submit--payment-test \{[\s\S]*?display: none;/);
+});
+
+test("app alert shows maib booking payment return messages once", () => {
+  const alertScript = fs.readFileSync("assets/js/app-alert.js", "utf8");
+
+  assert.match(alertScript, /bookingPaymentAlerts = \{/);
+  assert.match(alertScript, /success: \{[\s\S]*?title: "Оплата прошла"/);
+  assert.match(
+    alertScript,
+    /message:\s*"Бронирование создано\. Ждем вас минимум за полчаса до старта\."/,
+  );
+  assert.match(alertScript, /failed: \{[\s\S]*?title: "Оплата не завершена"/);
+  assert.match(
+    alertScript,
+    /error: \{[\s\S]*?title: "Статус оплаты не проверен"/,
+  );
+  assert.match(
+    alertScript,
+    /url\.searchParams\.get\("booking_payment"\)/,
+  );
+  assert.match(
+    alertScript,
+    /url\.searchParams\.delete\("booking_payment"\)/,
+  );
+  assert.match(alertScript, /window\.showAppAlert\(alert\)/);
+  assert.match(
+    alertScript,
+    /`\$\{url\.pathname\}\$\{url\.search\}\$\{url\.hash\}`/,
+  );
+  assert.doesNotMatch(alertScript, /window\.location\.search\s*=/);
 });
 
 test("booking phone field accepts exactly 8 digits", () => {
@@ -2152,6 +2185,149 @@ test("maib callback confirms direct SimplyBook cart after executed checkout", as
     global.fetch = previousFetch;
     resetTokenCache();
     resetMaibTokenCache();
+  }
+});
+
+test("maib return redirects direct bookings with booking payment status", () => {
+  const storePath = createPaymentStorePath();
+  const restoreEnv = setPaymentEnv(storePath);
+  const store = createPaymentStore(storePath);
+  const cases = [
+    {
+      label: "success target",
+      orderId: "simplybook-cart-success",
+      order: {
+        source: "simplybook_cart",
+        cartId: 1,
+        cartHash: "hash-1",
+        status: "checkout_created",
+      },
+      query: {
+        order_id: "simplybook-cart-success",
+        target: "success",
+      },
+      expected: "https://local.example/?booking_payment=success",
+    },
+    {
+      label: "failed target",
+      orderId: "simplybook-cart-failed",
+      order: {
+        source: "simplybook_cart",
+        cartId: 2,
+        cartHash: "hash-2",
+        status: "checkout_created",
+      },
+      query: {
+        order_id: "simplybook-cart-failed",
+        target: "fail",
+      },
+      expected: "https://local.example/?booking_payment=failed",
+    },
+    {
+      label: "unverifiable direct order",
+      orderId: "simplybook-cart-pending",
+      order: {
+        source: "simplybook_cart",
+        cartId: 3,
+        cartHash: "hash-3",
+        status: "checkout_created",
+      },
+      query: {
+        order_id: "simplybook-cart-pending",
+      },
+      expected: "https://local.example/?booking_payment=error",
+    },
+    {
+      label: "missing direct order",
+      query: {
+        order_id: "simplybook-cart-missing",
+      },
+      expected: "https://local.example/?booking_payment=error",
+    },
+  ];
+
+  try {
+    for (const testCase of cases) {
+      if (testCase.orderId) {
+        store.save({
+          orderId: testCase.orderId,
+          checkoutId: `${testCase.orderId}-checkout`,
+          amount: 600,
+          currency: "MDL",
+          ...testCase.order,
+        });
+      }
+
+      const res = createMockRes();
+
+      maibReturnHandler(
+        {
+          method: "GET",
+          query: testCase.query,
+        },
+        res,
+      );
+
+      assert.equal(res.statusCode, 302, testCase.label);
+      assert.equal(res.headers.location, testCase.expected, testCase.label);
+    }
+  } finally {
+    restoreEnv();
+  }
+});
+
+test("maib return preserves SBPay external return URLs", () => {
+  const storePath = createPaymentStorePath();
+  const restoreEnv = setPaymentEnv(storePath);
+  const store = createPaymentStore(storePath);
+
+  store.save({
+    orderId: "order-1",
+    checkoutId: "checkout-1",
+    amount: 600,
+    currency: "MDL",
+    returnUrl: "https://app.sbpay.test/return?s=source",
+    cancelUrl: "https://app.sbpay.test/cancel?s=source",
+    status: "checkout_created",
+  });
+
+  try {
+    const successRes = createMockRes();
+    const failedRes = createMockRes();
+
+    maibReturnHandler(
+      {
+        method: "GET",
+        query: {
+          order_id: "order-1",
+          target: "success",
+        },
+      },
+      successRes,
+    );
+    maibReturnHandler(
+      {
+        method: "GET",
+        query: {
+          order_id: "order-1",
+          target: "fail",
+        },
+      },
+      failedRes,
+    );
+
+    assert.equal(successRes.statusCode, 302);
+    assert.equal(
+      successRes.headers.location,
+      "https://app.sbpay.test/return?s=source",
+    );
+    assert.equal(failedRes.statusCode, 302);
+    assert.equal(
+      failedRes.headers.location,
+      "https://app.sbpay.test/cancel?s=source",
+    );
+  } finally {
+    restoreEnv();
   }
 });
 

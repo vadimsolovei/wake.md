@@ -15,6 +15,23 @@
     const alertButton =
         alertPopup?.querySelector(".app-alert__button");
     const alertQueue = [];
+    const bookingPaymentAlerts = {
+        success: {
+            title: "Оплата прошла",
+            message:
+                "Бронирование создано. Ждем вас минимум за полчаса до старта.",
+        },
+        failed: {
+            title: "Оплата не завершена",
+            message:
+                "Платеж не был завершен. Попробуйте еще раз или свяжитесь с нами.",
+        },
+        error: {
+            title: "Статус оплаты не проверен",
+            message:
+                "Если оплата прошла, свяжитесь с нами, и мы проверим бронирование.",
+        },
+    };
 
     let activeAlert = null;
     let lastFocusedAlertElement = null;
@@ -37,6 +54,22 @@
         };
     };
 
+    const showBookingPaymentAlert = () => {
+        const url = new URL(window.location.href);
+        const paymentStatus = url.searchParams.get("booking_payment");
+        const alert = bookingPaymentAlerts[paymentStatus];
+
+        if (!alert) return;
+
+        url.searchParams.delete("booking_payment");
+        window.history.replaceState(
+            window.history.state,
+            "",
+            `${url.pathname}${url.search}${url.hash}`,
+        );
+        window.showAppAlert(alert);
+    };
+
     if (
         !alertPopup ||
         !alertDialog ||
@@ -47,6 +80,7 @@
             const { message } = normalizeAlertOptions(options);
             nativeAlert(message);
         };
+        showBookingPaymentAlert();
         return;
     }
 
@@ -117,4 +151,6 @@
         },
         true,
     );
+
+    showBookingPaymentAlert();
 })();

@@ -50,6 +50,36 @@ const getOrderIdFromCallback = ({ body, checkout, existingOrder }) =>
     existingOrder?.orderId ||
     "";
 
+const appendBookingPaymentStatus = (baseUrl, status) => {
+    const url = new URL(baseUrl);
+
+    url.searchParams.set("booking_payment", status);
+
+    return url.toString();
+};
+
+const isDirectMaibReturnOrder = ({ order, orderId }) =>
+    isDirectMaibPaymentOrder(order) ||
+    String(orderId || "").startsWith("simplybook-cart-");
+
+const getDirectMaibReturnStatus = ({ target, checkoutStatus, order }) => {
+    if (!order) return "error";
+
+    if (target === "fail" || target === "failed" || target === "cancel") {
+        return "failed";
+    }
+
+    if (
+        target === "success" ||
+        checkoutStatus === "completed" ||
+        order.status === "approved"
+    ) {
+        return "success";
+    }
+
+    return "error";
+};
+
 const maibCallbackHandler = async (req, res) => {
     if (!requireMethod(req, res, "POST")) return;
 
@@ -156,8 +186,13 @@ const maibReturnHandler = (req, res) => {
             target === "success" ||
             checkoutStatus === "completed" ||
             order?.status === "approved";
-        const location =
-            (success ? order?.returnUrl : order?.cancelUrl) || config.publicBaseUrl;
+        const location = isDirectMaibReturnOrder({ order, orderId })
+            ? appendBookingPaymentStatus(
+                  config.publicBaseUrl,
+                  getDirectMaibReturnStatus({ target, checkoutStatus, order }),
+              )
+            : (success ? order?.returnUrl : order?.cancelUrl) ||
+              config.publicBaseUrl;
 
         res.statusCode = 302;
         res.setHeader("Location", location);
