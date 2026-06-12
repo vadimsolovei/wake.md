@@ -260,12 +260,6 @@
   const getMinimumTimesMessage = () =>
     `Выберите минимум ${formatSlotCount(bookingState.peopleCount)} для ${bookingState.peopleCount} чел.`;
 
-  const getPaymentMode = (submitter) => {
-    const mode = submitter?.dataset?.bookingPaymentMode || "book";
-
-    return mode === "pay" ? "pay" : "book";
-  };
-
   const updatePriceSummary = () => {
     const setCount = bookingState.selectedTimes.length;
     const total = calculateBookingPrice();
@@ -329,9 +323,7 @@
       if (submitLabel) {
         submitLabel.textContent = bookingState.isSubmitting
           ? "Бронируем..."
-          : submitButton.dataset.bookingPaymentMode === "pay"
-            ? "Оплатить"
-            : "Забронировать";
+          : "Забронировать";
       }
     });
   };
@@ -875,7 +867,7 @@
       peopleCount: bookingState.peopleCount,
       date: bookingState.selectedDate,
       times: bookingState.selectedTimes,
-      paymentMode: getPaymentMode(event.submitter),
+      paymentMode: "book",
       acceptedTerms: formData.get("terms") === "on",
       source: getCookie("visitor_source") || "",
     };

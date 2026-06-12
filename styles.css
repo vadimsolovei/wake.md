@@ -2354,10 +2354,6 @@ body.has-booking-modal {
     min-width: 154px;
 }
 
-.booking-submit--payment-test {
-    display: none;
-}
-
 .booking-submit-placeholder {
     order: 2;
     display: block;
