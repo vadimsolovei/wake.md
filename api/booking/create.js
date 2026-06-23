@@ -10,6 +10,7 @@ const {
 } = require("../_simplybook");
 const { getPaymentConfig } = require("../payments/_common");
 const { createDirectMaibPayment } = require("../payments/direct");
+const { getPhoneValidationResult } = require("../phone/_phone");
 
 const readBody = async (req) => {
     if (req.body && typeof req.body === "object") return req.body;
@@ -39,6 +40,7 @@ const validatePayload = (body) => {
     const name = String(body.name || "").trim();
     const email = String(body.email || "").trim();
     const phone = String(body.phone || "").trim();
+    const comment = String(body.comment || "").trim();
     const date = String(body.date || "").trim();
     const rawTimes = Array.isArray(body.times) ? body.times : [body.time];
     if (!rawTimes.length) {
@@ -81,9 +83,11 @@ const validatePayload = (body) => {
         );
     }
 
-    if (!/^\d{8}$/.test(phone)) {
+    const phoneValidation = getPhoneValidationResult(phone);
+
+    if (!phoneValidation.valid) {
         throw new BookingError(
-            "Введите номер телефона из 8 цифр.",
+            phoneValidation.message || "Введите корректный номер телефона.",
             400,
             "INVALID_PHONE",
         );
@@ -109,11 +113,12 @@ const validatePayload = (body) => {
         clientData: {
             name,
             email,
-            phone,
+            phone: phoneValidation.e164,
         },
         date,
         times,
         peopleCount,
+        comment,
     };
 };
 
@@ -130,11 +135,15 @@ const formatSlotCount = (count) => {
     return `${count} ${slotLabel}`;
 };
 
-const buildAdditionalFields = ({ peopleCount }, config) => {
+const buildAdditionalFields = ({ peopleCount, comment }, config) => {
     const additionalFields = {};
 
     if (config.peopleFieldName) {
         additionalFields[config.peopleFieldName] = peopleCount;
+    }
+
+    if (config.commentFieldName && comment) {
+        additionalFields[config.commentFieldName] = comment;
     }
 
     return additionalFields;

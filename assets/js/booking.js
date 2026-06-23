@@ -22,6 +22,7 @@
   const submitButton = form?.querySelector("[type='submit']");
   const termsCheckbox = form?.querySelector("input[name='terms']");
   const phoneInput = form?.querySelector("input[name='phone']");
+  const phoneIndicator = form?.querySelector("[data-booking-phone-indicator]");
   const submitLabel = submitButton?.querySelector(
     "[data-booking-submit-label]",
   );
@@ -50,8 +51,14 @@
   let flatpickrAssetsPromise = null;
   let activeDatesRequest = 0;
   let activeTimesRequest = 0;
+  let activePhoneRequest = 0;
+  let phoneValidationTimer = 0;
   let isBookingReady = false;
   let lockedScrollY = 0;
+  let phoneValidation = {
+    input: "",
+    result: null,
+  };
 
   const bookingState = {
     selectedDate: "",
@@ -206,6 +213,15 @@
     return Array.isArray(data.times) ? data.times : [];
   };
 
+  const fetchPhoneValidation = async (phone) => {
+    const params = new URLSearchParams({ phone });
+    const data = await fetch(`/api/phone/validate?${params.toString()}`, {
+      cache: "no-store",
+    }).then(readJsonResponse);
+
+    return data.phone || null;
+  };
+
   const submitBooking = async (payload) => {
     const response = await fetch("/api/booking/create", {
       method: "POST",
@@ -220,6 +236,87 @@
 
   const formatPrice = (amount, unit = "лей") =>
     `${new Intl.NumberFormat("ru-RU").format(amount)} ${unit}`;
+
+  const sanitizePhoneInput = (value) => {
+    let sanitized = value.replace(/[^\d()+\-\s]/g, "");
+
+    if (sanitized.includes("+")) {
+      sanitized =
+        sanitized.slice(0, sanitized.indexOf("+") + 1) +
+        sanitized.slice(sanitized.indexOf("+") + 1).replace(/\+/g, "");
+    }
+
+    return sanitized;
+  };
+
+  const updatePhoneIndicator = (result = null) => {
+    if (!phoneIndicator) return;
+
+    phoneIndicator.textContent = result?.flag ? `${result.flag} +` : "+";
+  };
+
+  const applyPhoneValidationResult = (input, result) => {
+    phoneValidation = { input, result };
+    updatePhoneIndicator(result);
+
+    if (!phoneInput) return;
+
+    phoneInput.setCustomValidity(result?.valid ? "" : result?.message || "");
+  };
+
+  const validateCurrentPhone = async ({ report = false } = {}) => {
+    if (!phoneInput) return null;
+
+    const input = phoneInput.value.trim();
+
+    if (!input) {
+      phoneValidation = { input: "", result: null };
+      updatePhoneIndicator();
+      phoneInput.setCustomValidity("");
+      return null;
+    }
+
+    if (phoneValidation.input === input && phoneValidation.result) {
+      if (report && !phoneValidation.result.valid) {
+        phoneInput.reportValidity();
+      }
+      return phoneValidation.result;
+    }
+
+    const requestId = ++activePhoneRequest;
+
+    try {
+      const result = await fetchPhoneValidation(input);
+
+      if (requestId !== activePhoneRequest) return null;
+
+      applyPhoneValidationResult(input, result);
+
+      if (report && !result?.valid) {
+        phoneInput.reportValidity();
+      }
+
+      return result;
+    } catch (error) {
+      if (requestId !== activePhoneRequest) return null;
+
+      phoneValidation = { input, result: null };
+      phoneInput.setCustomValidity("Не удалось проверить номер телефона.");
+
+      if (report) {
+        phoneInput.reportValidity();
+      }
+
+      return null;
+    }
+  };
+
+  const schedulePhoneValidation = () => {
+    window.clearTimeout(phoneValidationTimer);
+    phoneValidationTimer = window.setTimeout(() => {
+      validateCurrentPhone();
+    }, 240);
+  };
 
   const calculateBookingPrice = () => {
     const setCount = bookingState.selectedTimes.length;
@@ -785,7 +882,11 @@
 
   termsCheckbox?.addEventListener("change", updateSubmitState);
   phoneInput?.addEventListener("input", () => {
-    phoneInput.value = phoneInput.value.replace(/\D/g, "").slice(0, 8);
+    phoneInput.value = sanitizePhoneInput(phoneInput.value);
+    phoneInput.setCustomValidity("");
+    phoneValidation = { input: "", result: null };
+    updatePhoneIndicator();
+    schedulePhoneValidation();
   });
   window.addEventListener("resize", () => {
     updatePriceSummary();
@@ -808,6 +909,10 @@
     event.preventDefault();
 
     if (!form.reportValidity()) return;
+
+    const phoneResult = await validateCurrentPhone({ report: true });
+
+    if (!phoneResult?.valid) return;
 
     if (!bookingState.selectedDate) {
       await window.showAppAlert({
@@ -847,7 +952,8 @@
     const payload = {
       name: String(formData.get("name") || "").trim(),
       email: String(formData.get("email") || "").trim(),
-      phone: String(formData.get("phone") || "").trim(),
+      phone: phoneResult.e164,
+      comment: String(formData.get("comment") || "").trim(),
       peopleCount: bookingState.peopleCount,
       date: bookingState.selectedDate,
       times: bookingState.selectedTimes,

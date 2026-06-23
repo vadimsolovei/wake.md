@@ -25,6 +25,7 @@ const {
 const datesHandler = require("../api/booking/dates");
 const timesHandler = require("../api/booking/times");
 const createHandler = require("../api/booking/create");
+const phoneValidateHandler = require("../api/phone/validate");
 const {
   resetMaibTokenCache,
   verifyMaibCallbackSignature,
@@ -176,6 +177,14 @@ test("booking contact fields are marked as required", () => {
     assert.match(input, /\srequired\b/, field);
     assert.match(input, /aria-required="true"/, field);
   }
+
+  const comment = html.match(
+    /<textarea[\s\S]*?name="comment"[\s\S]*?>/,
+  )?.[0];
+
+  assert.ok(comment, "comment");
+  assert.doesNotMatch(comment, /\srequired\b/, "comment");
+  assert.doesNotMatch(comment, /aria-required="true"/, "comment");
 });
 
 test("booking submit builds form data before payload", () => {
@@ -186,27 +195,115 @@ test("booking submit builds form data before payload", () => {
     /const formData = new FormData\(form\);\s+const getCookie = \(name\) =>/,
   );
   assert.match(bookingScript, /name: String\(formData\.get\("name"\)/);
+  assert.match(bookingScript, /comment: String\(formData\.get\("comment"\)/);
   assert.match(
     bookingScript,
     /acceptedTerms: formData\.get\("terms"\) === "on"/,
   );
 });
 
-test("booking phone field accepts exactly 8 digits", () => {
+test("booking phone field accepts international typed prefixes", () => {
   const html = fs.readFileSync("index.html", "utf8");
   const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
   const input = html.match(/<input[\s\S]*?name="phone"[\s\S]*?>/)?.[0];
+  const indicator = html.match(
+    /<span[\s\S]*?data-booking-phone-indicator[\s\S]*?>\+<\/span>/,
+  )?.[0];
 
   assert.ok(input);
+  assert.ok(indicator);
   assert.match(input, /type="tel"/);
-  assert.match(input, /inputmode="numeric"/);
-  assert.match(input, /pattern="\[0-9\]\{8\}"/);
-  assert.match(input, /minlength="8"/);
-  assert.match(input, /maxlength="8"/);
-  assert.match(
-    bookingScript,
-    /phoneInput\.value = phoneInput\.value\.replace\(\/\\D\/g, ""\)\.slice\(0, 8\);/,
-  );
+  assert.match(input, /inputmode="tel"/);
+  assert.doesNotMatch(input, /pattern="\[0-9\]\{8\}"/);
+  assert.doesNotMatch(input, /minlength="8"/);
+  assert.doesNotMatch(input, /maxlength="8"/);
+  assert.doesNotMatch(html, /🇲🇩 \+373/);
+  assert.match(bookingScript, /fetchPhoneValidation/);
+  assert.match(bookingScript, /phone: phoneResult\.e164/);
+  assert.doesNotMatch(bookingScript, /slice\(0, 8\)/);
+});
+
+test("phone validate endpoint detects and validates international numbers", async () => {
+  const cases = [
+    {
+      label: "Moldova",
+      input: "+37368884689",
+      expected: {
+        valid: true,
+        e164: "+37368884689",
+        country: "MD",
+        countryCallingCode: "373",
+        flag: "🇲🇩",
+      },
+    },
+    {
+      label: "Romania",
+      input: "+40722123456",
+      expected: {
+        valid: true,
+        e164: "+40722123456",
+        country: "RO",
+        countryCallingCode: "40",
+        flag: "🇷🇴",
+      },
+    },
+    {
+      label: "Moldova without plus",
+      input: "37368884689",
+      expected: {
+        valid: true,
+        e164: "+37368884689",
+        country: "MD",
+        countryCallingCode: "373",
+        flag: "🇲🇩",
+      },
+    },
+    {
+      label: "too short Moldova",
+      input: "+3736",
+      expected: {
+        valid: false,
+        countryCallingCode: "373",
+        flag: "🇲🇩",
+      },
+    },
+    {
+      label: "invalid prefix",
+      input: "+999123456",
+      expected: {
+        valid: false,
+        countryCallingCode: "",
+        flag: "",
+      },
+    },
+  ];
+
+  for (const testCase of cases) {
+    const req = {
+      method: "GET",
+      url: `/api/phone/validate?phone=${encodeURIComponent(testCase.input)}`,
+    };
+    const res = createMockRes();
+
+    await phoneValidateHandler(req, res);
+
+    const body = JSON.parse(res.body);
+
+    assert.equal(res.statusCode, 200, testCase.label);
+    assert.equal(body.ok, true, testCase.label);
+    assert.equal(body.phone.valid, testCase.expected.valid, testCase.label);
+    assert.equal(
+      body.phone.countryCallingCode,
+      testCase.expected.countryCallingCode,
+      testCase.label,
+    );
+    assert.equal(body.phone.flag, testCase.expected.flag, testCase.label);
+
+    if (testCase.expected.valid) {
+      assert.equal(body.phone.e164, testCase.expected.e164, testCase.label);
+      assert.equal(body.phone.country, testCase.expected.country, testCase.label);
+    }
+  }
 });
 
 test("booking calendar avoids mobile browser focus zoom traps", () => {
@@ -961,6 +1058,7 @@ test("create endpoint books each selected time", async () => {
     SIMPLYBOOK_SERVICE_ID: process.env.SIMPLYBOOK_SERVICE_ID,
     SIMPLYBOOK_PROVIDER_ID: process.env.SIMPLYBOOK_PROVIDER_ID,
     SIMPLYBOOK_PEOPLE_FIELD_NAME: process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME,
+    SIMPLYBOOK_COMMENT_FIELD_NAME: process.env.SIMPLYBOOK_COMMENT_FIELD_NAME,
     BOOKING_TIMEZONE: process.env.BOOKING_TIMEZONE,
   };
   const calls = [];
@@ -970,6 +1068,7 @@ test("create endpoint books each selected time", async () => {
   process.env.SIMPLYBOOK_SERVICE_ID = "1";
   process.env.SIMPLYBOOK_PROVIDER_ID = "2";
   process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME = "people_field_hash";
+  process.env.SIMPLYBOOK_COMMENT_FIELD_NAME = "comment_field_hash";
   process.env.BOOKING_TIMEZONE = "UTC";
 
   global.fetch = async (url, options) => {
@@ -1012,7 +1111,8 @@ test("create endpoint books each selected time", async () => {
     body: {
       name: "Wake Guest",
       email: "guest@example.com",
-      phone: "12345678",
+      phone: "37368884689",
+      comment: "  Please call before arrival.  ",
       peopleCount: 2,
       date: "2026-06-10",
       times: ["09:00", "10:30"],
@@ -1057,9 +1157,12 @@ test("create endpoint books each selected time", async () => {
         {
           name: "Wake Guest",
           email: "guest@example.com",
-          phone: "12345678",
+          phone: "+37368884689",
         },
-        { people_field_hash: 2 },
+        {
+          people_field_hash: 2,
+          comment_field_hash: "Please call before arrival.",
+        },
         1,
       ],
       [
@@ -1070,9 +1173,12 @@ test("create endpoint books each selected time", async () => {
         {
           name: "Wake Guest",
           email: "guest@example.com",
-          phone: "12345678",
+          phone: "+37368884689",
         },
-        { people_field_hash: 2 },
+        {
+          people_field_hash: 2,
+          comment_field_hash: "Please call before arrival.",
+        },
         1,
       ],
     ],
@@ -1093,6 +1199,7 @@ test("create endpoint books one selected time for one person", async () => {
     SIMPLYBOOK_SERVICE_ID: process.env.SIMPLYBOOK_SERVICE_ID,
     SIMPLYBOOK_PROVIDER_ID: process.env.SIMPLYBOOK_PROVIDER_ID,
     SIMPLYBOOK_PEOPLE_FIELD_NAME: process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME,
+    SIMPLYBOOK_COMMENT_FIELD_NAME: process.env.SIMPLYBOOK_COMMENT_FIELD_NAME,
     BOOKING_TIMEZONE: process.env.BOOKING_TIMEZONE,
   };
   const calls = [];
@@ -1102,6 +1209,7 @@ test("create endpoint books one selected time for one person", async () => {
   process.env.SIMPLYBOOK_SERVICE_ID = "1";
   process.env.SIMPLYBOOK_PROVIDER_ID = "2";
   process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME = "people_field_hash";
+  process.env.SIMPLYBOOK_COMMENT_FIELD_NAME = "comment_field_hash";
   process.env.BOOKING_TIMEZONE = "UTC";
 
   global.fetch = async (url, options) => {
@@ -1144,7 +1252,8 @@ test("create endpoint books one selected time for one person", async () => {
     body: {
       name: "Wake Guest",
       email: "guest@example.com",
-      phone: "12345678",
+      phone: "+40722123456",
+      comment: "   ",
       peopleCount: 1,
       date: "2026-06-10",
       times: ["09:00"],
@@ -1187,7 +1296,7 @@ test("create endpoint books one selected time for one person", async () => {
     {
       name: "Wake Guest",
       email: "guest@example.com",
-      phone: "12345678",
+      phone: "+40722123456",
     },
     { people_field_hash: 1 },
     1,
@@ -1321,7 +1430,7 @@ test("create endpoint returns maib checkout URL when payment is required", async
     body: {
       name: "Wake Guest",
       email: "guest@example.com",
-      phone: "12345678",
+      phone: "+37368884689",
       peopleCount: 1,
       date: "2026-06-10",
       times: ["09:00", "10:00"],
@@ -1404,14 +1513,26 @@ test("create endpoint returns maib checkout URL when payment is required", async
   assert.equal(storedOrder.nextSetCount, 1);
 });
 
-test("create endpoint requires phone to be exactly 8 digits", async () => {
+test("create endpoint requires a valid phone country prefix", async () => {
   resetTokenCache();
 
   const previousFetch = global.fetch;
   const cases = [
-    { label: "too short", phone: "1234567" },
-    { label: "too long", phone: "123456789" },
-    { label: "non-digits", phone: "1234-678" },
+    {
+      label: "too short",
+      phone: "+3736",
+      message: "Введите корректный международный номер телефона.",
+    },
+    {
+      label: "too short without plus",
+      phone: "3736",
+      message: "Введите корректный международный номер телефона.",
+    },
+    {
+      label: "invalid prefix",
+      phone: "+999123456",
+      message: "Введите корректный международный номер телефона.",
+    },
   ];
 
   global.fetch = async () => {
@@ -1449,7 +1570,7 @@ test("create endpoint requires phone to be exactly 8 digits", async () => {
       assert.equal(body.error.code, "INVALID_PHONE", testCase.label);
       assert.equal(
         body.error.message,
-        "Введите номер телефона из 8 цифр.",
+        testCase.message,
         testCase.label,
       );
     }
@@ -1494,7 +1615,7 @@ test("create endpoint requires name, email, and phone", async () => {
         body: {
           name: "Wake Guest",
           email: "guest@example.com",
-          phone: "12345678",
+          phone: "+37368884689",
           peopleCount: 1,
           date: "2026-06-10",
           times: ["09:00"],
@@ -1546,7 +1667,7 @@ test("create endpoint requires one unique selected time per person", async () =>
         body: {
           name: "Wake Guest",
           email: "guest@example.com",
-          phone: "12345678",
+          phone: "+37368884689",
           peopleCount: 2,
           date: "2026-06-10",
           times: testCase.times,
