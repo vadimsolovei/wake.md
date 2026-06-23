@@ -7,6 +7,7 @@ const path = require("node:path");
 const datesHandler = require("./api/booking/dates");
 const timesHandler = require("./api/booking/times");
 const createHandler = require("./api/booking/create");
+const phoneValidateHandler = require("./api/phone/validate");
 const {
     maibCallbackHandler,
     maibReturnHandler,
@@ -102,6 +103,7 @@ app.get("/api/health", (req, res) => {
 app.get("/api/booking/dates", datesHandler);
 app.get("/api/booking/times", timesHandler);
 app.post("/api/booking/create", createHandler);
+app.get("/api/phone/validate", phoneValidateHandler);
 app.post("/api/payments/sbpay/form", sbpayFormHandler);
 app.post("/api/payments/sbpay/refund", sbpayRefundHandler);
 app.post("/api/payments/sbpay/rebill", sbpayRebillHandler);
