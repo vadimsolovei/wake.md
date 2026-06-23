@@ -49,6 +49,10 @@ const {
   sbpayRebillHandler,
   sbpayRefundHandler,
 } = require("../api/payments/sbpay");
+const {
+  SECURITY_HEADERS,
+  applySecurityHeaders,
+} = require("../security-headers");
 
 const createMockRes = () => ({
   headers: {},
@@ -134,6 +138,21 @@ const signMaibPayload = ({
     .update(Buffer.concat([Buffer.from(rawBody), Buffer.from(`.${timestamp}`)]))
     .digest(encoding);
 
+test("applies low-risk security headers", () => {
+  const res = createMockRes();
+  let nextCalled = false;
+
+  applySecurityHeaders({}, res, () => {
+    nextCalled = true;
+  });
+
+  assert.equal(nextCalled, true);
+
+  for (const [header, value] of Object.entries(SECURITY_HEADERS)) {
+    assert.equal(res.headers[header.toLowerCase()], value, header);
+  }
+});
+
 test("booking submit state requires terms and minimum selected times", () => {
   const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
   const updateSubmitState = bookingScript.match(
@@ -183,6 +202,13 @@ test("booking contact fields are marked as required", () => {
     assert.ok(input, field);
     assert.match(input, /\srequired\b/, field);
     assert.match(input, /aria-required="true"/, field);
+
+    if (field === "name") {
+      assert.match(input, /maxlength="80"/, field);
+      assert.match(input, /title="Символы &lt; и &gt; не допускаются"/, field);
+    } else if (field === "email") {
+      assert.match(input, /maxlength="254"/, field);
+    }
   }
 
   const comment = html.match(
@@ -190,6 +216,8 @@ test("booking contact fields are marked as required", () => {
   )?.[0];
 
   assert.ok(comment, "comment");
+  assert.match(comment, /maxlength="500"/, "comment");
+  assert.match(comment, /title="Символы &lt; и &gt; не допускаются"/, "comment");
   assert.doesNotMatch(comment, /\srequired\b/, "comment");
   assert.doesNotMatch(comment, /aria-required="true"/, "comment");
 });
@@ -1172,10 +1200,10 @@ test("create endpoint books each selected time", async () => {
   const req = {
     method: "POST",
     body: {
-      name: "Wake Guest",
+      name: "O'Connor-Мария Попеску Jr.",
       email: "guest@example.com",
       phone: "37368884689",
-      comment: "  Please call before arrival.  ",
+      comment: '  Позвоните, пожалуйста! "Будем на месте" (к 09:00) - спасибо.\nДо встречи.  ',
       peopleCount: 2,
       date: "2026-06-10",
       times: ["09:00", "10:30"],
@@ -1229,13 +1257,14 @@ test("create endpoint books each selected time", async () => {
         "2026-06-10",
         "09:00:00",
         {
-          name: "Wake Guest",
+          name: "O'Connor-Мария Попеску Jr.",
           email: "guest@example.com",
           phone: "+37368884689",
         },
         {
           people_field_hash: 2,
-          comment_field_hash: "Please call before arrival.",
+          comment_field_hash:
+            'Позвоните, пожалуйста! "Будем на месте" (к 09:00) - спасибо.\nДо встречи.',
         },
         1,
       ],
@@ -1245,13 +1274,14 @@ test("create endpoint books each selected time", async () => {
         "2026-06-10",
         "10:30:00",
         {
-          name: "Wake Guest",
+          name: "O'Connor-Мария Попеску Jr.",
           email: "guest@example.com",
           phone: "+37368884689",
         },
         {
           people_field_hash: 2,
-          comment_field_hash: "Please call before arrival.",
+          comment_field_hash:
+            'Позвоните, пожалуйста! "Будем на месте" (к 09:00) - спасибо.\nДо встречи.',
         },
         1,
       ],
@@ -1746,6 +1776,107 @@ test("create endpoint requires name, email, and phone", async () => {
   } finally {
     global.fetch = previousFetch;
   }
+});
+
+test("create endpoint rejects unsafe or overlong booking text before SimplyBook", async () => {
+  resetTokenCache();
+
+  const previousFetch = global.fetch;
+  const baseBody = {
+    name: "Wake Guest",
+    email: "guest@example.com",
+    phone: "+37368884689",
+    peopleCount: 1,
+    date: "2026-06-10",
+    times: ["09:00"],
+    acceptedTerms: true,
+  };
+  const cases = [
+    {
+      label: "markup in name",
+      patch: { name: "<FFgg>" },
+      code: "INVALID_NAME",
+      message: "Имя не должно содержать символы < или >.",
+    },
+    {
+      label: "control character in name",
+      patch: { name: "Wake\u0001Guest" },
+      code: "INVALID_NAME",
+      message: "Имя содержит недопустимые служебные символы.",
+    },
+    {
+      label: "overlong name",
+      patch: { name: "a".repeat(81) },
+      code: "INVALID_NAME",
+      message: "Имя должно быть не длиннее 80 символов.",
+    },
+    {
+      label: "quote in email",
+      patch: { email: 'guest"@example.com' },
+      code: "INVALID_EMAIL",
+      message: "Введите корректный email.",
+    },
+    {
+      label: "whitespace in email",
+      patch: { email: " guest@example.com" },
+      code: "INVALID_EMAIL",
+      message: "Введите корректный email.",
+    },
+    {
+      label: "overlong email",
+      patch: { email: `${"a".repeat(249)}@e.com` },
+      code: "INVALID_EMAIL",
+      message: "Введите корректный email.",
+    },
+    {
+      label: "markup in comment",
+      patch: { comment: '<img src=x onerror="alert(1)">' },
+      code: "INVALID_COMMENT",
+      message: "Комментарий не должен содержать символы < или >.",
+    },
+    {
+      label: "control character in comment",
+      patch: { comment: "Please call\u0007before arrival." },
+      code: "INVALID_COMMENT",
+      message: "Комментарий содержит недопустимые служебные символы.",
+    },
+    {
+      label: "overlong comment",
+      patch: { comment: "a".repeat(501) },
+      code: "INVALID_COMMENT",
+      message: "Комментарий должен быть не длиннее 500 символов.",
+    },
+  ];
+  let fetchCalls = 0;
+
+  global.fetch = async () => {
+    fetchCalls += 1;
+    throw new Error("Booking validation should stop before SimplyBook.");
+  };
+
+  try {
+    for (const testCase of cases) {
+      const req = {
+        method: "POST",
+        body: {
+          ...baseBody,
+          ...testCase.patch,
+        },
+      };
+      const res = createMockRes();
+
+      await createHandler(req, res);
+
+      const body = JSON.parse(res.body);
+      assert.equal(res.statusCode, 400, testCase.label);
+      assert.equal(body.error.code, testCase.code, testCase.label);
+      assert.equal(body.error.message, testCase.message, testCase.label);
+    }
+  } finally {
+    global.fetch = previousFetch;
+  }
+
+  assert.equal(fetchCalls, 0);
 });
 
 test("create endpoint requires one unique selected time per person", async () => {

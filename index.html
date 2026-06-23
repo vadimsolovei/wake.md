@@ -1003,8 +1003,8 @@
                         <div class="booking-fields">
                             <label class="booking-field">
                                 <span>Имя</span>
-                                <input name="name" autocomplete="name" aria-required="true" placeholder="Имя *"
-                                    required />
+                                <input name="name" autocomplete="name" maxlength="80" aria-required="true"
+                                    placeholder="Имя *" title="Символы &lt; и &gt; не допускаются" required />
                             </label>
                             <label class="booking-field booking-phone">
                                 <span>Телефон</span>
@@ -1016,12 +1016,12 @@
                             </label>
                             <label class="booking-field booking-field--wide">
                                 <span>Email</span>
-                                <input name="email" type="email" autocomplete="email" aria-required="true"
+                                <input name="email" type="email" autocomplete="email" maxlength="254" aria-required="true"
                                     placeholder="Email *" required />
                             </label>
                             <label class="booking-field booking-field--wide booking-field--textarea">
                                 <span>Комментарий</span>
-                                <textarea name="comment" rows="3"
+                                <textarea name="comment" rows="3" maxlength="500" title="Символы &lt; и &gt; не допускаются"
                                     placeholder="Комментарий к бронированию"></textarea>
                             </label>
                         </div>

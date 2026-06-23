@@ -18,6 +18,7 @@ const {
     sbpayRebillHandler,
     sbpayRefundHandler,
 } = require("./api/payments/sbpay");
+const { applySecurityHeaders } = require("./security-headers");
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
@@ -83,6 +84,7 @@ function sendTaplinkIndex(req, res, next) {
 }
 
 app.disable("x-powered-by");
+app.use(applySecurityHeaders);
 app.use(
     express.json({
         limit: "32kb",
