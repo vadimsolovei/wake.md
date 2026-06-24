@@ -35,6 +35,7 @@
 
   const FIRST_SET_PRICE = 600;
   const NEXT_SET_PRICE = 400;
+  const PHONE_VALIDATION_DEBOUNCE_MS = 500;
   const BOOKING_UNAVAILABLE_MESSAGE =
     "Сервис бронирования временно недоступен.";
   const FLATPICKR_STYLE_URL =
@@ -315,7 +316,7 @@
     window.clearTimeout(phoneValidationTimer);
     phoneValidationTimer = window.setTimeout(() => {
       validateCurrentPhone();
-    }, 240);
+    }, PHONE_VALIDATION_DEBOUNCE_MS);
   };
 
   const calculateBookingPrice = () => {
@@ -901,7 +902,9 @@
     phoneInput.value = sanitizePhoneInput(phoneInput.value);
     phoneInput.setCustomValidity("");
     phoneValidation = { input: "", result: null };
-    updatePhoneIndicator();
+    if (!phoneInput.value.trim()) {
+      updatePhoneIndicator();
+    }
     schedulePhoneValidation();
   });
   window.addEventListener("resize", () => {

@@ -1,3 +1,4 @@
+const crypto = require("node:crypto");
 const {
     BookingError,
     callSimplyBook,
@@ -221,11 +222,18 @@ const buildAdditionalFields = ({ peopleCount, comment }, config) => {
     return additionalFields;
 };
 
+const createBookingSignature = ({ bookingId, bookingHash, secret }) =>
+    crypto
+        .createHash("md5")
+        .update(`${bookingId}${bookingHash}${secret}`)
+        .digest("hex");
+
 const normalizeBookingResult = (result) => {
     const bookings = Array.isArray(result?.bookings)
         ? result.bookings.map((booking) => ({
               id: booking.id,
               code: booking.code,
+              hash: booking.hash,
               startDateTime: booking.start_datetime || booking.startDateTime,
               endDateTime: booking.end_datetime || booking.endDateTime,
               isConfirmed:
@@ -285,10 +293,33 @@ const confirmRequiredBookings = async ({ responseBody, config }) => {
 
     if (!bookingIds.length) return responseBody;
 
-    for (const bookingId of bookingIds) {
+    if (!config.apiSecretKey) {
+        throw new BookingError(
+            "Missing SimplyBook configuration: SIMPLYBOOK_API_SECRET_KEY",
+            500,
+            "CONFIG_ERROR",
+        );
+    }
+
+    for (const booking of responseBody.bookings) {
+        if (!booking.id || !booking.hash) {
+            throw new BookingError(
+                "SimplyBook did not return booking confirmation data.",
+                502,
+                "UPSTREAM_CONFIRMATION_ERROR",
+            );
+        }
+
         await callSimplyBook({
             method: "confirmBooking",
-            params: [bookingId],
+            params: [
+                booking.id,
+                createBookingSignature({
+                    bookingId: booking.id,
+                    bookingHash: booking.hash,
+                    secret: config.apiSecretKey,
+                }),
+            ],
             config,
         });
     }
@@ -302,6 +333,11 @@ const confirmRequiredBookings = async ({ responseBody, config }) => {
         })),
     };
 };
+
+const sanitizeResponseBody = (responseBody) => ({
+    ...responseBody,
+    bookings: responseBody.bookings.map(({ hash, ...booking }) => booking),
+});
 
 module.exports = async function handler(req, res) {
     if (req.method !== "POST") {
@@ -385,7 +421,7 @@ module.exports = async function handler(req, res) {
         }
 
         json(res, 200, {
-            ...responseBody,
+            ...sanitizeResponseBody(responseBody),
             paymentRequired: Boolean(paymentUrl),
             paymentUrl,
         });
