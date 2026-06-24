@@ -1,3 +1,4 @@
+const crypto = require("node:crypto");
 const {
     BookingError,
     callSimplyBook,
@@ -211,11 +212,18 @@ const buildAdditionalFields = ({ peopleCount, comment }, config) => {
     return additionalFields;
 };
 
+const createBookingSignature = ({ bookingId, bookingHash, secret }) =>
+    crypto
+        .createHash("md5")
+        .update(`${bookingId}${bookingHash}${secret}`)
+        .digest("hex");
+
 const normalizeBookingResult = (result) => {
     const bookings = Array.isArray(result?.bookings)
         ? result.bookings.map((booking) => ({
               id: booking.id,
               code: booking.code,
+              hash: booking.hash,
               startDateTime: booking.start_datetime || booking.startDateTime,
               endDateTime: booking.end_datetime || booking.endDateTime,
               isConfirmed:
@@ -261,6 +269,65 @@ const findPaymentUrlForBookings = async ({
         req,
     });
 };
+
+const confirmRequiredBookings = async ({ responseBody, config }) => {
+    const needsConfirmation =
+        responseBody.requireConfirm ||
+        responseBody.bookings.some((booking) => booking.isConfirmed !== true);
+
+    if (!needsConfirmation) return responseBody;
+
+    const bookingIds = responseBody.bookings
+        .map((booking) => booking.id)
+        .filter(Boolean);
+
+    if (!bookingIds.length) return responseBody;
+
+    if (!config.apiSecretKey) {
+        throw new BookingError(
+            "Missing SimplyBook configuration: SIMPLYBOOK_API_SECRET_KEY",
+            500,
+            "CONFIG_ERROR",
+        );
+    }
+
+    for (const booking of responseBody.bookings) {
+        if (!booking.id || !booking.hash) {
+            throw new BookingError(
+                "SimplyBook did not return booking confirmation data.",
+                502,
+                "UPSTREAM_CONFIRMATION_ERROR",
+            );
+        }
+
+        await callSimplyBook({
+            method: "confirmBooking",
+            params: [
+                booking.id,
+                createBookingSignature({
+                    bookingId: booking.id,
+                    bookingHash: booking.hash,
+                    secret: config.apiSecretKey,
+                }),
+            ],
+            config,
+        });
+    }
+
+    return {
+        ...responseBody,
+        requireConfirm: false,
+        bookings: responseBody.bookings.map((booking) => ({
+            ...booking,
+            isConfirmed: true,
+        })),
+    };
+};
+
+const sanitizeResponseBody = (responseBody) => ({
+    ...responseBody,
+    bookings: responseBody.bookings.map(({ hash, ...booking }) => booking),
+});
 
 module.exports = async function handler(req, res) {
     if (req.method !== "POST") {
@@ -335,7 +402,7 @@ module.exports = async function handler(req, res) {
                       ),
                   };
 
-        const responseBody = normalizeBookingResult(result);
+        let responseBody = normalizeBookingResult(result);
         const paymentUrl =
             paymentRequired && !BYPASS_PAYMENT
                 ? await findPaymentUrlForBookings({
@@ -348,8 +415,15 @@ module.exports = async function handler(req, res) {
                   })
                 : "";
 
+        if (!paymentRequired || BYPASS_PAYMENT) {
+            responseBody = await confirmRequiredBookings({
+                responseBody,
+                config,
+            });
+        }
+
         json(res, 200, {
-            ...responseBody,
+            ...sanitizeResponseBody(responseBody),
             paymentRequired: Boolean(paymentUrl),
             paymentUrl,
         });
