@@ -1,3 +1,4 @@
+const crypto = require("node:crypto");
 const {
     BookingError,
     callSimplyBook,
@@ -10,6 +11,15 @@ const {
 } = require("../_simplybook");
 const { getPaymentConfig } = require("../payments/_common");
 const { createDirectMaibPayment } = require("../payments/direct");
+const { getPhoneValidationResult } = require("../phone/_phone");
+
+const NAME_MAX_LENGTH = 80;
+const EMAIL_MAX_LENGTH = 254;
+const COMMENT_MAX_LENGTH = 500;
+const HTML_MARKUP_PATTERN = /[<>]/;
+const CONTROL_CHARACTER_PATTERN = /[\u0000-\u001f\u007f]/;
+const COMMENT_CONTROL_CHARACTER_PATTERN = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
+const EMAIL_UNSAFE_CHARACTER_PATTERN = /[<>"'\s]/;
 
 const readBody = async (req) => {
     if (req.body && typeof req.body === "object") return req.body;
@@ -37,8 +47,10 @@ const readBody = async (req) => {
 
 const validatePayload = (body) => {
     const name = String(body.name || "").trim();
-    const email = String(body.email || "").trim();
+    const rawEmail = String(body.email || "");
+    const email = rawEmail.trim();
     const phone = String(body.phone || "").trim();
+    const comment = String(body.comment || "").trim();
     const date = String(body.date || "").trim();
     const rawTimes = Array.isArray(body.times) ? body.times : [body.time];
     if (!rawTimes.length) {
@@ -65,12 +77,65 @@ const validatePayload = (body) => {
         throw new BookingError("Введите имя.", 400, "INVALID_NAME");
     }
 
+    if (name.length > NAME_MAX_LENGTH) {
+        throw new BookingError(
+            "Имя должно быть не длиннее 80 символов.",
+            400,
+            "INVALID_NAME",
+        );
+    }
+
+    if (HTML_MARKUP_PATTERN.test(name)) {
+        throw new BookingError(
+            "Имя не должно содержать символы < или >.",
+            400,
+            "INVALID_NAME",
+        );
+    }
+
+    if (CONTROL_CHARACTER_PATTERN.test(name)) {
+        throw new BookingError(
+            "Имя содержит недопустимые служебные символы.",
+            400,
+            "INVALID_NAME",
+        );
+    }
+
     if (!email) {
         throw new BookingError("Введите email.", 400, "INVALID_EMAIL");
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (
+        rawEmail !== email ||
+        email.length > EMAIL_MAX_LENGTH ||
+        EMAIL_UNSAFE_CHARACTER_PATTERN.test(email) ||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    ) {
         throw new BookingError("Введите корректный email.", 400, "INVALID_EMAIL");
+    }
+
+    if (comment.length > COMMENT_MAX_LENGTH) {
+        throw new BookingError(
+            "Комментарий должен быть не длиннее 500 символов.",
+            400,
+            "INVALID_COMMENT",
+        );
+    }
+
+    if (HTML_MARKUP_PATTERN.test(comment)) {
+        throw new BookingError(
+            "Комментарий не должен содержать символы < или >.",
+            400,
+            "INVALID_COMMENT",
+        );
+    }
+
+    if (COMMENT_CONTROL_CHARACTER_PATTERN.test(comment)) {
+        throw new BookingError(
+            "Комментарий содержит недопустимые служебные символы.",
+            400,
+            "INVALID_COMMENT",
+        );
     }
 
     if (!phone) {
@@ -81,9 +146,11 @@ const validatePayload = (body) => {
         );
     }
 
-    if (!/^\d{8}$/.test(phone)) {
+    const phoneValidation = getPhoneValidationResult(phone);
+
+    if (!phoneValidation.valid) {
         throw new BookingError(
-            "Введите номер телефона из 8 цифр.",
+            phoneValidation.message || "Введите корректный номер телефона.",
             400,
             "INVALID_PHONE",
         );
@@ -109,11 +176,12 @@ const validatePayload = (body) => {
         clientData: {
             name,
             email,
-            phone,
+            phone: phoneValidation.e164,
         },
         date,
         times,
         peopleCount,
+        comment,
     };
 };
 
@@ -130,21 +198,32 @@ const formatSlotCount = (count) => {
     return `${count} ${slotLabel}`;
 };
 
-const buildAdditionalFields = ({ peopleCount }, config) => {
+const buildAdditionalFields = ({ peopleCount, comment }, config) => {
     const additionalFields = {};
 
     if (config.peopleFieldName) {
         additionalFields[config.peopleFieldName] = peopleCount;
     }
 
+    if (config.commentFieldName && comment) {
+        additionalFields[config.commentFieldName] = comment;
+    }
+
     return additionalFields;
 };
+
+const createBookingSignature = ({ bookingId, bookingHash, secret }) =>
+    crypto
+        .createHash("md5")
+        .update(`${bookingId}${bookingHash}${secret}`)
+        .digest("hex");
 
 const normalizeBookingResult = (result) => {
     const bookings = Array.isArray(result?.bookings)
         ? result.bookings.map((booking) => ({
               id: booking.id,
               code: booking.code,
+              hash: booking.hash,
               startDateTime: booking.start_datetime || booking.startDateTime,
               endDateTime: booking.end_datetime || booking.endDateTime,
               isConfirmed:
@@ -190,6 +269,65 @@ const findPaymentUrlForBookings = async ({
         req,
     });
 };
+
+const confirmRequiredBookings = async ({ responseBody, config }) => {
+    const needsConfirmation =
+        responseBody.requireConfirm ||
+        responseBody.bookings.some((booking) => booking.isConfirmed !== true);
+
+    if (!needsConfirmation) return responseBody;
+
+    const bookingIds = responseBody.bookings
+        .map((booking) => booking.id)
+        .filter(Boolean);
+
+    if (!bookingIds.length) return responseBody;
+
+    if (!config.apiSecretKey) {
+        throw new BookingError(
+            "Missing SimplyBook configuration: SIMPLYBOOK_API_SECRET_KEY",
+            500,
+            "CONFIG_ERROR",
+        );
+    }
+
+    for (const booking of responseBody.bookings) {
+        if (!booking.id || !booking.hash) {
+            throw new BookingError(
+                "SimplyBook did not return booking confirmation data.",
+                502,
+                "UPSTREAM_CONFIRMATION_ERROR",
+            );
+        }
+
+        await callSimplyBook({
+            method: "confirmBooking",
+            params: [
+                booking.id,
+                createBookingSignature({
+                    bookingId: booking.id,
+                    bookingHash: booking.hash,
+                    secret: config.apiSecretKey,
+                }),
+            ],
+            config,
+        });
+    }
+
+    return {
+        ...responseBody,
+        requireConfirm: false,
+        bookings: responseBody.bookings.map((booking) => ({
+            ...booking,
+            isConfirmed: true,
+        })),
+    };
+};
+
+const sanitizeResponseBody = (responseBody) => ({
+    ...responseBody,
+    bookings: responseBody.bookings.map(({ hash, ...booking }) => booking),
+});
 
 module.exports = async function handler(req, res) {
     if (req.method !== "POST") {
@@ -264,7 +402,7 @@ module.exports = async function handler(req, res) {
                       ),
                   };
 
-        const responseBody = normalizeBookingResult(result);
+        let responseBody = normalizeBookingResult(result);
         const paymentUrl =
             paymentRequired && !BYPASS_PAYMENT
                 ? await findPaymentUrlForBookings({
@@ -277,8 +415,15 @@ module.exports = async function handler(req, res) {
                   })
                 : "";
 
+        if (!paymentRequired || BYPASS_PAYMENT) {
+            responseBody = await confirmRequiredBookings({
+                responseBody,
+                config,
+            });
+        }
+
         json(res, 200, {
-            ...responseBody,
+            ...sanitizeResponseBody(responseBody),
             paymentRequired: Boolean(paymentUrl),
             paymentUrl,
         });

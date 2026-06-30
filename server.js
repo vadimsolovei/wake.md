@@ -7,6 +7,7 @@ const path = require("node:path");
 const datesHandler = require("./api/booking/dates");
 const timesHandler = require("./api/booking/times");
 const createHandler = require("./api/booking/create");
+const phoneValidateHandler = require("./api/phone/validate");
 const {
     maibCallbackHandler,
     maibReturnHandler,
@@ -17,6 +18,7 @@ const {
     sbpayRebillHandler,
     sbpayRefundHandler,
 } = require("./api/payments/sbpay");
+const { applySecurityHeaders } = require("./security-headers");
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
@@ -82,6 +84,7 @@ function sendTaplinkIndex(req, res, next) {
 }
 
 app.disable("x-powered-by");
+app.use(applySecurityHeaders);
 app.use(
     express.json({
         limit: "32kb",
@@ -102,6 +105,7 @@ app.get("/api/health", (req, res) => {
 app.get("/api/booking/dates", datesHandler);
 app.get("/api/booking/times", timesHandler);
 app.post("/api/booking/create", createHandler);
+app.get("/api/phone/validate", phoneValidateHandler);
 app.post("/api/payments/sbpay/form", sbpayFormHandler);
 app.post("/api/payments/sbpay/refund", sbpayRefundHandler);
 app.post("/api/payments/sbpay/rebill", sbpayRebillHandler);

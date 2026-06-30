@@ -995,25 +995,34 @@
                                     время.
                                 </p>
                             </div>
+                            <p class="booking-time-card__note">
+                                На сет закладывается 15 минут, с учетом старта и возврата на причал.
+                            </p>
                         </section>
 
                         <div class="booking-fields">
                             <label class="booking-field">
                                 <span>Имя</span>
-                                <input name="name" autocomplete="name" aria-required="true" placeholder="Имя *"
-                                    required />
+                                <input name="name" autocomplete="name" maxlength="80" aria-required="true"
+                                    placeholder="Имя *" title="Символы &lt; и &gt; не допускаются" required />
                             </label>
                             <label class="booking-field booking-phone">
                                 <span>Телефон</span>
-                                <span class="booking-phone__code">🇲🇩 +373</span>
-                                <input name="phone" type="tel" autocomplete="tel" inputmode="numeric" pattern="[0-9]{8}"
-                                    minlength="8" maxlength="8" aria-required="true" placeholder="Телефон *"
-                                    title="Введите 8 цифр" required />
+                                <span class="booking-phone__code" data-booking-phone-indicator
+                                    aria-hidden="true">🇲🇩 +</span>
+                                <input name="phone" type="tel" autocomplete="tel" inputmode="tel" aria-required="true"
+                                    value="373" placeholder="373 68 884 689 *" title="Введите номер с кодом страны"
+                                    required />
                             </label>
                             <label class="booking-field booking-field--wide">
                                 <span>Email</span>
-                                <input name="email" type="email" autocomplete="email" aria-required="true"
+                                <input name="email" type="email" autocomplete="email" maxlength="254" aria-required="true"
                                     placeholder="Email *" required />
+                            </label>
+                            <label class="booking-field booking-field--wide booking-field--textarea">
+                                <span>Комментарий</span>
+                                <textarea name="comment" rows="3" maxlength="500" title="Символы &lt; и &gt; не допускаются"
+                                    placeholder="Комментарий к бронированию"></textarea>
                             </label>
                         </div>
 

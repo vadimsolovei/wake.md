@@ -2035,7 +2035,8 @@ body.has-booking-modal {
     grid-column: 1 / -1;
 }
 
-.booking-field input {
+.booking-field input,
+.booking-field textarea {
     min-width: 0;
     width: 100%;
     border: 0;
@@ -2043,6 +2044,15 @@ body.has-booking-modal {
     background: transparent;
     color: #0f1b2e;
     font: inherit;
+}
+
+.booking-field textarea {
+    min-height: 96px;
+    resize: vertical;
+}
+
+.booking-field--textarea {
+    align-items: flex-start;
 }
 
 .booking-field span {
@@ -2054,7 +2064,8 @@ body.has-booking-modal {
     clip: rect(0 0 0 0);
 }
 
-.booking-field input::placeholder {
+.booking-field input::placeholder,
+.booking-field textarea::placeholder {
     color: rgba(15, 27, 46, 0.6);
 }
 
@@ -2221,7 +2232,7 @@ body.has-booking-modal {
 }
 
 .booking-time-card__note {
-    margin-top: 24px !important;
+    margin-top: 30px !important;
 }
 
 .booking-terms {

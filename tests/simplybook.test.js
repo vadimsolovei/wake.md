@@ -25,6 +25,7 @@ const {
 const datesHandler = require("../api/booking/dates");
 const timesHandler = require("../api/booking/times");
 const createHandler = require("../api/booking/create");
+const phoneValidateHandler = require("../api/phone/validate");
 const {
   resetMaibTokenCache,
   verifyMaibCallbackSignature,
@@ -45,6 +46,10 @@ const {
   sbpayRebillHandler,
   sbpayRefundHandler,
 } = require("../api/payments/sbpay");
+const {
+  SECURITY_HEADERS,
+  applySecurityHeaders,
+} = require("../security-headers");
 
 const createMockRes = () => ({
   headers: {},
@@ -130,6 +135,21 @@ const signMaibPayload = ({
     .update(Buffer.concat([Buffer.from(rawBody), Buffer.from(`.${timestamp}`)]))
     .digest(encoding);
 
+test("applies low-risk security headers", () => {
+  const res = createMockRes();
+  let nextCalled = false;
+
+  applySecurityHeaders({}, res, () => {
+    nextCalled = true;
+  });
+
+  assert.equal(nextCalled, true);
+
+  for (const [header, value] of Object.entries(SECURITY_HEADERS)) {
+    assert.equal(res.headers[header.toLowerCase()], value, header);
+  }
+});
+
 test("booking submit state requires terms and minimum selected times", () => {
   const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
   const updateSubmitState = bookingScript.match(
@@ -175,7 +195,24 @@ test("booking contact fields are marked as required", () => {
     assert.ok(input, field);
     assert.match(input, /\srequired\b/, field);
     assert.match(input, /aria-required="true"/, field);
+
+    if (field === "name") {
+      assert.match(input, /maxlength="80"/, field);
+      assert.match(input, /title="Символы &lt; и &gt; не допускаются"/, field);
+    } else if (field === "email") {
+      assert.match(input, /maxlength="254"/, field);
+    }
   }
+
+  const comment = html.match(
+    /<textarea[\s\S]*?name="comment"[\s\S]*?>/,
+  )?.[0];
+
+  assert.ok(comment, "comment");
+  assert.match(comment, /maxlength="500"/, "comment");
+  assert.match(comment, /title="Символы &lt; и &gt; не допускаются"/, "comment");
+  assert.doesNotMatch(comment, /\srequired\b/, "comment");
+  assert.doesNotMatch(comment, /aria-required="true"/, "comment");
 });
 
 test("booking submit builds form data before payload", () => {
@@ -186,27 +223,129 @@ test("booking submit builds form data before payload", () => {
     /const formData = new FormData\(form\);\s+const getCookie = \(name\) =>/,
   );
   assert.match(bookingScript, /name: String\(formData\.get\("name"\)/);
+  assert.match(bookingScript, /comment: String\(formData\.get\("comment"\)/);
   assert.match(
     bookingScript,
     /acceptedTerms: formData\.get\("terms"\) === "on"/,
   );
 });
 
-test("booking phone field accepts exactly 8 digits", () => {
+test("booking phone field accepts international typed prefixes", () => {
   const html = fs.readFileSync("index.html", "utf8");
   const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
   const input = html.match(/<input[\s\S]*?name="phone"[\s\S]*?>/)?.[0];
+  const indicator = html.match(
+    /<span[\s\S]*?data-booking-phone-indicator[\s\S]*?>🇲🇩 \+<\/span>/,
+  )?.[0];
 
   assert.ok(input);
+  assert.ok(indicator);
   assert.match(input, /type="tel"/);
-  assert.match(input, /inputmode="numeric"/);
-  assert.match(input, /pattern="\[0-9\]\{8\}"/);
-  assert.match(input, /minlength="8"/);
-  assert.match(input, /maxlength="8"/);
+  assert.match(input, /inputmode="tel"/);
+  assert.match(input, /value="373"/);
+  assert.match(input, /placeholder="373 68 884 689 \*"/);
+  assert.doesNotMatch(input, /pattern="\[0-9\]\{8\}"/);
+  assert.doesNotMatch(input, /minlength="8"/);
+  assert.doesNotMatch(input, /maxlength="8"/);
+  assert.doesNotMatch(html, /🇲🇩 \+373/);
+  assert.match(bookingScript, /fetchPhoneValidation/);
+  assert.match(bookingScript, /fetchPhoneValidation\(input\)/);
+  assert.doesNotMatch(bookingScript, /getPhoneValidationInput/);
+  assert.doesNotMatch(bookingScript, /return `373\$\{digits\}`/);
+  assert.match(bookingScript, /const PHONE_VALIDATION_DEBOUNCE_MS = 500;/);
   assert.match(
     bookingScript,
-    /phoneInput\.value = phoneInput\.value\.replace\(\/\\D\/g, ""\)\.slice\(0, 8\);/,
+    /window\.setTimeout\(\(\) => \{\s*validateCurrentPhone\(\);\s*\}, PHONE_VALIDATION_DEBOUNCE_MS\)/,
   );
+  assert.match(
+    bookingScript,
+    /if \(!phoneInput\.value\.trim\(\)\) \{\s*updatePhoneIndicator\(\);\s*\}/,
+  );
+  assert.match(bookingScript, /phone: phoneResult\.e164/);
+  assert.doesNotMatch(bookingScript, /slice\(0, 8\)/);
+});
+
+test("phone validate endpoint detects and validates international numbers", async () => {
+  const cases = [
+    {
+      label: "Moldova",
+      input: "+37368884689",
+      expected: {
+        valid: true,
+        e164: "+37368884689",
+        country: "MD",
+        countryCallingCode: "373",
+        flag: "🇲🇩",
+      },
+    },
+    {
+      label: "Romania",
+      input: "+40722123456",
+      expected: {
+        valid: true,
+        e164: "+40722123456",
+        country: "RO",
+        countryCallingCode: "40",
+        flag: "🇷🇴",
+      },
+    },
+    {
+      label: "Moldova without plus",
+      input: "37368884689",
+      expected: {
+        valid: true,
+        e164: "+37368884689",
+        country: "MD",
+        countryCallingCode: "373",
+        flag: "🇲🇩",
+      },
+    },
+    {
+      label: "too short Moldova",
+      input: "+3736",
+      expected: {
+        valid: false,
+        countryCallingCode: "373",
+        flag: "🇲🇩",
+      },
+    },
+    {
+      label: "invalid prefix",
+      input: "+999123456",
+      expected: {
+        valid: false,
+        countryCallingCode: "",
+        flag: "",
+      },
+    },
+  ];
+
+  for (const testCase of cases) {
+    const req = {
+      method: "GET",
+      url: `/api/phone/validate?phone=${encodeURIComponent(testCase.input)}`,
+    };
+    const res = createMockRes();
+
+    await phoneValidateHandler(req, res);
+
+    const body = JSON.parse(res.body);
+
+    assert.equal(res.statusCode, 200, testCase.label);
+    assert.equal(body.ok, true, testCase.label);
+    assert.equal(body.phone.valid, testCase.expected.valid, testCase.label);
+    assert.equal(
+      body.phone.countryCallingCode,
+      testCase.expected.countryCallingCode,
+      testCase.label,
+    );
+    assert.equal(body.phone.flag, testCase.expected.flag, testCase.label);
+
+    if (testCase.expected.valid) {
+      assert.equal(body.phone.e164, testCase.expected.e164, testCase.label);
+      assert.equal(body.phone.country, testCase.expected.country, testCase.label);
+    }
+  }
 });
 
 test("booking calendar avoids mobile browser focus zoom traps", () => {
@@ -958,18 +1097,22 @@ test("create endpoint books each selected time", async () => {
   const previousEnv = {
     SIMPLYBOOK_COMPANY_LOGIN: process.env.SIMPLYBOOK_COMPANY_LOGIN,
     SIMPLYBOOK_API_KEY: process.env.SIMPLYBOOK_API_KEY,
+    SIMPLYBOOK_API_SECRET_KEY: process.env.SIMPLYBOOK_API_SECRET_KEY,
     SIMPLYBOOK_SERVICE_ID: process.env.SIMPLYBOOK_SERVICE_ID,
     SIMPLYBOOK_PROVIDER_ID: process.env.SIMPLYBOOK_PROVIDER_ID,
     SIMPLYBOOK_PEOPLE_FIELD_NAME: process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME,
+    SIMPLYBOOK_COMMENT_FIELD_NAME: process.env.SIMPLYBOOK_COMMENT_FIELD_NAME,
     BOOKING_TIMEZONE: process.env.BOOKING_TIMEZONE,
   };
   const calls = [];
 
   process.env.SIMPLYBOOK_COMPANY_LOGIN = "wake";
   process.env.SIMPLYBOOK_API_KEY = "key";
+  process.env.SIMPLYBOOK_API_SECRET_KEY = "secret";
   process.env.SIMPLYBOOK_SERVICE_ID = "1";
   process.env.SIMPLYBOOK_PROVIDER_ID = "2";
   process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME = "people_field_hash";
+  process.env.SIMPLYBOOK_COMMENT_FIELD_NAME = "comment_field_hash";
   process.env.BOOKING_TIMEZONE = "UTC";
 
   global.fetch = async (url, options) => {
@@ -983,10 +1126,10 @@ test("create endpoint books each selected time", async () => {
       };
     }
 
-    if (body.method === "isPaymentRequired") {
+    if (body.method === "confirmBooking") {
       return {
         ok: true,
-        json: async () => ({ result: false }),
+        json: async () => ({ result: true }),
       };
     }
 
@@ -998,10 +1141,12 @@ test("create endpoint books each selected time", async () => {
             {
               id: body.params[3],
               code: `code-${body.params[3]}`,
+              hash: `hash-${body.params[3]}`,
               start_datetime: `${body.params[2]} ${body.params[3]}`,
-              is_confirmed: true,
+              is_confirmed: false,
             },
           ],
+          require_confirm: true,
         },
       }),
     };
@@ -1010,9 +1155,10 @@ test("create endpoint books each selected time", async () => {
   const req = {
     method: "POST",
     body: {
-      name: "Wake Guest",
+      name: "O'Connor-Мария Попеску Jr.",
       email: "guest@example.com",
-      phone: "12345678",
+      phone: "37368884689",
+      comment: '  Позвоните, пожалуйста! "Будем на месте" (к 09:00) - спасибо.\nДо встречи.  ',
       peopleCount: 2,
       date: "2026-06-10",
       times: ["09:00", "10:30"],
@@ -1044,8 +1190,19 @@ test("create endpoint books each selected time", async () => {
   }
 
   const bookCalls = calls.filter((call) => call.body.method === "book");
+  const confirmCalls = calls.filter(
+    (call) => call.body.method === "confirmBooking",
+  );
 
   assert.equal(res.statusCode, 200);
+  assert.equal(
+    calls.some((call) => call.body.method === "isPaymentRequired"),
+    false,
+  );
+  assert.equal(
+    calls.some((call) => call.body.method === "getBookingCart"),
+    false,
+  );
   assert.deepEqual(
     bookCalls.map((call) => call.body.params),
     [
@@ -1055,11 +1212,15 @@ test("create endpoint books each selected time", async () => {
         "2026-06-10",
         "09:00:00",
         {
-          name: "Wake Guest",
+          name: "O'Connor-Мария Попеску Jr.",
           email: "guest@example.com",
-          phone: "12345678",
+          phone: "+37368884689",
         },
-        { people_field_hash: 2 },
+        {
+          people_field_hash: 2,
+          comment_field_hash:
+            'Позвоните, пожалуйста! "Будем на месте" (к 09:00) - спасибо.\nДо встречи.',
+        },
         1,
       ],
       [
@@ -1068,18 +1229,52 @@ test("create endpoint books each selected time", async () => {
         "2026-06-10",
         "10:30:00",
         {
-          name: "Wake Guest",
+          name: "O'Connor-Мария Попеску Jr.",
           email: "guest@example.com",
-          phone: "12345678",
+          phone: "+37368884689",
         },
-        { people_field_hash: 2 },
+        {
+          people_field_hash: 2,
+          comment_field_hash:
+            'Позвоните, пожалуйста! "Будем на месте" (к 09:00) - спасибо.\nДо встречи.',
+        },
         1,
       ],
     ],
   );
+  const body = JSON.parse(res.body);
+
+  assert.equal(body.requireConfirm, false);
   assert.deepEqual(
-    JSON.parse(res.body).bookings.map((booking) => booking.code),
+    body.bookings.map((booking) => booking.code),
     ["code-09:00:00", "code-10:30:00"],
+  );
+  assert.deepEqual(
+    body.bookings.map((booking) => booking.isConfirmed),
+    [true, true],
+  );
+  assert.deepEqual(
+    confirmCalls.map((call) => call.body.params),
+    [
+      [
+        "09:00:00",
+        crypto
+          .createHash("md5")
+          .update("09:00:00hash-09:00:00secret")
+          .digest("hex"),
+      ],
+      [
+        "10:30:00",
+        crypto
+          .createHash("md5")
+          .update("10:30:00hash-10:30:00secret")
+          .digest("hex"),
+      ],
+    ],
+  );
+  assert.equal(
+    Object.hasOwn(JSON.parse(res.body).bookings[0], "hash"),
+    false,
   );
 });
 
@@ -1090,18 +1285,22 @@ test("create endpoint books one selected time for one person", async () => {
   const previousEnv = {
     SIMPLYBOOK_COMPANY_LOGIN: process.env.SIMPLYBOOK_COMPANY_LOGIN,
     SIMPLYBOOK_API_KEY: process.env.SIMPLYBOOK_API_KEY,
+    SIMPLYBOOK_API_SECRET_KEY: process.env.SIMPLYBOOK_API_SECRET_KEY,
     SIMPLYBOOK_SERVICE_ID: process.env.SIMPLYBOOK_SERVICE_ID,
     SIMPLYBOOK_PROVIDER_ID: process.env.SIMPLYBOOK_PROVIDER_ID,
     SIMPLYBOOK_PEOPLE_FIELD_NAME: process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME,
+    SIMPLYBOOK_COMMENT_FIELD_NAME: process.env.SIMPLYBOOK_COMMENT_FIELD_NAME,
     BOOKING_TIMEZONE: process.env.BOOKING_TIMEZONE,
   };
   const calls = [];
 
   process.env.SIMPLYBOOK_COMPANY_LOGIN = "wake";
   process.env.SIMPLYBOOK_API_KEY = "key";
+  process.env.SIMPLYBOOK_API_SECRET_KEY = "secret";
   process.env.SIMPLYBOOK_SERVICE_ID = "1";
   process.env.SIMPLYBOOK_PROVIDER_ID = "2";
   process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME = "people_field_hash";
+  process.env.SIMPLYBOOK_COMMENT_FIELD_NAME = "comment_field_hash";
   process.env.BOOKING_TIMEZONE = "UTC";
 
   global.fetch = async (url, options) => {
@@ -1115,10 +1314,10 @@ test("create endpoint books one selected time for one person", async () => {
       };
     }
 
-    if (body.method === "isPaymentRequired") {
+    if (body.method === "confirmBooking") {
       return {
         ok: true,
-        json: async () => ({ result: false }),
+        json: async () => ({ result: true }),
       };
     }
 
@@ -1130,10 +1329,12 @@ test("create endpoint books one selected time for one person", async () => {
             {
               id: body.params[3],
               code: `code-${body.params[3]}`,
+              hash: `hash-${body.params[3]}`,
               start_datetime: `${body.params[2]} ${body.params[3]}`,
-              is_confirmed: true,
+              is_confirmed: false,
             },
           ],
+          require_confirm: true,
         },
       }),
     };
@@ -1144,7 +1345,8 @@ test("create endpoint books one selected time for one person", async () => {
     body: {
       name: "Wake Guest",
       email: "guest@example.com",
-      phone: "12345678",
+      phone: "+40722123456",
+      comment: "   ",
       peopleCount: 1,
       date: "2026-06-10",
       times: ["09:00"],
@@ -1176,8 +1378,19 @@ test("create endpoint books one selected time for one person", async () => {
   }
 
   const bookCalls = calls.filter((call) => call.body.method === "book");
+  const confirmCalls = calls.filter(
+    (call) => call.body.method === "confirmBooking",
+  );
 
   assert.equal(res.statusCode, 200);
+  assert.equal(
+    calls.some((call) => call.body.method === "isPaymentRequired"),
+    false,
+  );
+  assert.equal(
+    calls.some((call) => call.body.method === "getBookingCart"),
+    false,
+  );
   assert.equal(bookCalls.length, 1);
   assert.deepEqual(bookCalls[0].body.params, [
     1,
@@ -1187,68 +1400,69 @@ test("create endpoint books one selected time for one person", async () => {
     {
       name: "Wake Guest",
       email: "guest@example.com",
-      phone: "12345678",
+      phone: "+40722123456",
     },
     { people_field_hash: 1 },
     1,
   ]);
+  const body = JSON.parse(res.body);
+
+  assert.equal(body.requireConfirm, false);
   assert.deepEqual(
-    JSON.parse(res.body).bookings.map((booking) => booking.code),
+    body.bookings.map((booking) => booking.code),
     ["code-09:00:00"],
   );
+  assert.deepEqual(body.bookings.map((booking) => booking.isConfirmed), [true]);
+  assert.deepEqual(
+    confirmCalls.map((call) => call.body.params),
+    [
+      [
+        "09:00:00",
+        crypto
+          .createHash("md5")
+          .update("09:00:00hash-09:00:00secret")
+          .digest("hex"),
+      ],
+    ],
+  );
+  assert.equal(Object.hasOwn(body.bookings[0], "hash"), false);
 });
 
-test("create endpoint returns maib checkout URL when payment is required", async () => {
+test("create endpoint keeps payment bypassed and confirms bookings", async () => {
   resetTokenCache();
-  resetMaibTokenCache();
 
   const previousFetch = global.fetch;
   const previousEnv = {
     SIMPLYBOOK_COMPANY_LOGIN: process.env.SIMPLYBOOK_COMPANY_LOGIN,
     SIMPLYBOOK_API_KEY: process.env.SIMPLYBOOK_API_KEY,
+    SIMPLYBOOK_API_SECRET_KEY: process.env.SIMPLYBOOK_API_SECRET_KEY,
     SIMPLYBOOK_SERVICE_ID: process.env.SIMPLYBOOK_SERVICE_ID,
     SIMPLYBOOK_PROVIDER_ID: process.env.SIMPLYBOOK_PROVIDER_ID,
     SIMPLYBOOK_PEOPLE_FIELD_NAME: process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME,
     BOOKING_TIMEZONE: process.env.BOOKING_TIMEZONE,
   };
-  const storePath = createPaymentStorePath();
-  const restorePaymentEnv = setPaymentEnv(storePath);
   const calls = [];
 
   process.env.SIMPLYBOOK_COMPANY_LOGIN = "wake";
   process.env.SIMPLYBOOK_API_KEY = "key";
+  process.env.SIMPLYBOOK_API_SECRET_KEY = "secret";
   process.env.SIMPLYBOOK_SERVICE_ID = "1";
   process.env.SIMPLYBOOK_PROVIDER_ID = "2";
   process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME = "people_field_hash";
   process.env.BOOKING_TIMEZONE = "UTC";
 
   global.fetch = async (url, options) => {
+    if (url.endsWith("/v2/checkouts")) {
+      throw new Error(
+        "maib checkout should not be created while bypassing payment",
+      );
+    }
+
     calls.push({
       url,
       options,
       body: options.body ? JSON.parse(options.body) : null,
     });
-
-    if (url.endsWith("/v2/auth/token")) {
-      return jsonFetchResponse({
-        ok: true,
-        result: {
-          accessToken: "maib-token",
-          expiresIn: 300,
-          tokenType: "Bearer",
-        },
-      });
-    }
-
-    if (url.endsWith("/v2/checkouts")) {
-      return jsonFetchResponse({
-        ok: true,
-        result: {
-          checkoutId: "checkout-cart-3",
-          checkoutUrl: "https://checkout.maib.test/checkout-cart-3",
-        },
-      });
-    }
 
     if (options.body) {
       const body = JSON.parse(options.body);
@@ -1267,31 +1481,10 @@ test("create endpoint returns maib checkout URL when payment is required", async
         };
       }
 
-      if (body.method === "getBookingCart") {
+      if (body.method === "confirmBooking") {
         return {
           ok: true,
-          json: async () => ({
-            result: {
-              cart_id: 3,
-              cart_hash: "cart-hash-3",
-              amount: 1200,
-              currency: "MDL",
-              cart: [
-                {
-                  id: "booking-09:00:00",
-                  name: "Wakeboarding 09:00",
-                  price: 600,
-                  qty: 1,
-                },
-                {
-                  id: "booking-10:00:00",
-                  name: "Wakeboarding 10:00",
-                  price: 600,
-                  qty: 1,
-                },
-              ],
-            },
-          }),
+          json: async () => ({ result: true }),
         };
       }
 
@@ -1303,6 +1496,7 @@ test("create endpoint returns maib checkout URL when payment is required", async
               {
                 id: `booking-${body.params[3]}`,
                 code: `code-${body.params[3]}`,
+                hash: `hash-${body.params[3]}`,
                 start_datetime: `${body.params[2]} ${body.params[3]}`,
                 is_confirmed: false,
               },
@@ -1321,7 +1515,7 @@ test("create endpoint returns maib checkout URL when payment is required", async
     body: {
       name: "Wake Guest",
       email: "guest@example.com",
-      phone: "12345678",
+      phone: "+37368884689",
       peopleCount: 1,
       date: "2026-06-10",
       times: ["09:00", "10:00"],
@@ -1342,8 +1536,6 @@ test("create endpoint returns maib checkout URL when payment is required", async
     await createHandler(req, res);
   } finally {
     global.fetch = previousFetch;
-    restorePaymentEnv();
-    resetMaibTokenCache();
 
     for (const [key, value] of Object.entries(previousEnv)) {
       if (value === undefined) {
@@ -1355,63 +1547,76 @@ test("create endpoint returns maib checkout URL when payment is required", async
   }
 
   const body = JSON.parse(res.body);
-  const checkoutBody = calls.find((call) =>
-    call.url.endsWith("/v2/checkouts"),
-  ).body;
-  const storedOrder = createPaymentStore(storePath).get("simplybook-cart-3");
+  const confirmCalls = calls.filter(
+    (call) => call.body?.method === "confirmBooking",
+  );
 
   assert.equal(res.statusCode, 200);
-  assert.equal(body.paymentRequired, true);
-  assert.equal(body.paymentUrl, "https://checkout.maib.test/checkout-cart-3");
+  assert.equal(body.paymentRequired, false);
+  assert.equal(body.paymentUrl, "");
+  assert.equal(body.requireConfirm, false);
   assert.deepEqual(
-    calls.find((call) => call.body?.method === "isPaymentRequired").body.params,
-    [1],
+    body.bookings.map((booking) => booking.isConfirmed),
+    [true, true],
   );
   assert.deepEqual(
-    calls.find((call) => call.body?.method === "getBookingCart").body.params,
-    [["booking-09:00:00", "booking-10:00:00"]],
+    confirmCalls.map((call) => call.body.params),
+    [
+      [
+        "booking-09:00:00",
+        crypto
+          .createHash("md5")
+          .update("booking-09:00:00hash-09:00:00secret")
+          .digest("hex"),
+      ],
+      [
+        "booking-10:00:00",
+        crypto
+          .createHash("md5")
+          .update("booking-10:00:00hash-10:00:00secret")
+          .digest("hex"),
+      ],
+    ],
+  );
+  assert.equal(Object.hasOwn(body.bookings[0], "hash"), false);
+  assert.equal(
+    calls.some((call) => call.body?.method === "isPaymentRequired"),
+    false,
+  );
+  assert.equal(
+    calls.some((call) => call.body?.method === "getBookingCart"),
+    false,
   );
   assert.equal(
     calls.some((call) => call.body?.method === "getBookingCartPaymentPageUrl"),
     false,
   );
-  assert.equal(checkoutBody.amount, 1000);
-  assert.equal(checkoutBody.orderInfo.id, "simplybook-cart-3");
-  assert.equal(checkoutBody.orderInfo.orderAmount, 1000);
-  assert.deepEqual(checkoutBody.orderInfo.items, [
-    {
-      externalId: "first-sets",
-      title: "Wake.md first sets",
-      amount: 600,
-      currency: "MDL",
-      quantity: 1,
-    },
-    {
-      externalId: "repeat-sets",
-      title: "Wake.md repeat sets",
-      amount: 400,
-      currency: "MDL",
-      quantity: 1,
-    },
-  ]);
-  assert.equal(storedOrder.cartHash, "cart-hash-3");
-  assert.equal(storedOrder.amount, 1000);
-  assert.equal(storedOrder.simplybookAmount, 1200);
-  assert.equal(storedOrder.pricingSource, "wakemd_formula");
-  assert.equal(storedOrder.peopleCount, 1);
-  assert.equal(storedOrder.setCount, 2);
-  assert.equal(storedOrder.firstSetCount, 1);
-  assert.equal(storedOrder.nextSetCount, 1);
+  assert.equal(
+    calls.some((call) => String(call.url).endsWith("/v2/checkouts")),
+    false,
+  );
 });
 
-test("create endpoint requires phone to be exactly 8 digits", async () => {
+test("create endpoint requires a valid phone country prefix", async () => {
   resetTokenCache();
 
   const previousFetch = global.fetch;
   const cases = [
-    { label: "too short", phone: "1234567" },
-    { label: "too long", phone: "123456789" },
-    { label: "non-digits", phone: "1234-678" },
+    {
+      label: "too short",
+      phone: "+3736",
+      message: "Введите корректный международный номер телефона.",
+    },
+    {
+      label: "too short without plus",
+      phone: "3736",
+      message: "Введите корректный международный номер телефона.",
+    },
+    {
+      label: "invalid prefix",
+      phone: "+999123456",
+      message: "Введите корректный международный номер телефона.",
+    },
   ];
 
   global.fetch = async () => {
@@ -1449,7 +1654,7 @@ test("create endpoint requires phone to be exactly 8 digits", async () => {
       assert.equal(body.error.code, "INVALID_PHONE", testCase.label);
       assert.equal(
         body.error.message,
-        "Введите номер телефона из 8 цифр.",
+        testCase.message,
         testCase.label,
       );
     }
@@ -1494,7 +1699,7 @@ test("create endpoint requires name, email, and phone", async () => {
         body: {
           name: "Wake Guest",
           email: "guest@example.com",
-          phone: "12345678",
+          phone: "+37368884689",
           peopleCount: 1,
           date: "2026-06-10",
           times: ["09:00"],
@@ -1524,6 +1729,107 @@ test("create endpoint requires name, email, and phone", async () => {
   }
 });
 
+test("create endpoint rejects unsafe or overlong booking text before SimplyBook", async () => {
+  resetTokenCache();
+
+  const previousFetch = global.fetch;
+  const baseBody = {
+    name: "Wake Guest",
+    email: "guest@example.com",
+    phone: "+37368884689",
+    peopleCount: 1,
+    date: "2026-06-10",
+    times: ["09:00"],
+    acceptedTerms: true,
+  };
+  const cases = [
+    {
+      label: "markup in name",
+      patch: { name: "<FFgg>" },
+      code: "INVALID_NAME",
+      message: "Имя не должно содержать символы < или >.",
+    },
+    {
+      label: "control character in name",
+      patch: { name: "Wake\u0001Guest" },
+      code: "INVALID_NAME",
+      message: "Имя содержит недопустимые служебные символы.",
+    },
+    {
+      label: "overlong name",
+      patch: { name: "a".repeat(81) },
+      code: "INVALID_NAME",
+      message: "Имя должно быть не длиннее 80 символов.",
+    },
+    {
+      label: "quote in email",
+      patch: { email: 'guest"@example.com' },
+      code: "INVALID_EMAIL",
+      message: "Введите корректный email.",
+    },
+    {
+      label: "whitespace in email",
+      patch: { email: " guest@example.com" },
+      code: "INVALID_EMAIL",
+      message: "Введите корректный email.",
+    },
+    {
+      label: "overlong email",
+      patch: { email: `${"a".repeat(249)}@e.com` },
+      code: "INVALID_EMAIL",
+      message: "Введите корректный email.",
+    },
+    {
+      label: "markup in comment",
+      patch: { comment: '<img src=x onerror="alert(1)">' },
+      code: "INVALID_COMMENT",
+      message: "Комментарий не должен содержать символы < или >.",
+    },
+    {
+      label: "control character in comment",
+      patch: { comment: "Please call\u0007before arrival." },
+      code: "INVALID_COMMENT",
+      message: "Комментарий содержит недопустимые служебные символы.",
+    },
+    {
+      label: "overlong comment",
+      patch: { comment: "a".repeat(501) },
+      code: "INVALID_COMMENT",
+      message: "Комментарий должен быть не длиннее 500 символов.",
+    },
+  ];
+  let fetchCalls = 0;
+
+  global.fetch = async () => {
+    fetchCalls += 1;
+    throw new Error("Booking validation should stop before SimplyBook.");
+  };
+
+  try {
+    for (const testCase of cases) {
+      const req = {
+        method: "POST",
+        body: {
+          ...baseBody,
+          ...testCase.patch,
+        },
+      };
+      const res = createMockRes();
+
+      await createHandler(req, res);
+
+      const body = JSON.parse(res.body);
+      assert.equal(res.statusCode, 400, testCase.label);
+      assert.equal(body.error.code, testCase.code, testCase.label);
+      assert.equal(body.error.message, testCase.message, testCase.label);
+    }
+  } finally {
+    global.fetch = previousFetch;
+  }
+
+  assert.equal(fetchCalls, 0);
+});
+
 test("create endpoint requires one unique selected time per person", async () => {
   resetTokenCache();
 
@@ -1546,7 +1852,7 @@ test("create endpoint requires one unique selected time per person", async () =>
         body: {
           name: "Wake Guest",
           email: "guest@example.com",
-          phone: "12345678",
+          phone: "+37368884689",
           peopleCount: 2,
           date: "2026-06-10",
           times: testCase.times,

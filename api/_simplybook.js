@@ -31,6 +31,7 @@ const getConfig = (env = process.env) => {
         serviceId: Number(env.SIMPLYBOOK_SERVICE_ID),
         providerId: Number(env.SIMPLYBOOK_PROVIDER_ID),
         peopleFieldName: env.SIMPLYBOOK_PEOPLE_FIELD_NAME || "",
+        commentFieldName: env.SIMPLYBOOK_COMMENT_FIELD_NAME || "",
         timezone: env.BOOKING_TIMEZONE || "Europe/Chisinau",
     };
 
