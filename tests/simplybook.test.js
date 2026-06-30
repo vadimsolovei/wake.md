@@ -292,7 +292,7 @@ test("booking phone field accepts international typed prefixes", () => {
   const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
   const input = html.match(/<input[\s\S]*?name="phone"[\s\S]*?>/)?.[0];
   const indicator = html.match(
-    /<span[\s\S]*?data-booking-phone-indicator[\s\S]*?>🇲🇩 \+<\/span>/,
+    /<span[\s\S]*?data-booking-phone-indicator[\s\S]*?>🇲🇩\s*\+<\/span>/,
   )?.[0];
 
   assert.ok(input);
@@ -436,11 +436,11 @@ test("booking price counts first sets per selected slot before repeat sets", () 
   assert.ok(calculateBookingPrice);
   assert.match(
     calculateBookingPrice,
-    /const firstSetCount = Math\.min\(\s*bookingState\.peopleCount,\s*setCount\s*\);/,
+    /const firstSetCount = Math\.min\(\s*bookingState\.peopleCount,?\s*setCount,?\s*\);/,
   );
   assert.match(
     calculateBookingPrice,
-    /const nextSetCount = Math\.max\(\s*setCount - bookingState\.peopleCount,\s*0\s*\);/,
+    /const nextSetCount = Math\.max\(\s*setCount - bookingState\.peopleCount,?\s*0,?\s*\);/,
   );
   assert.match(
     calculateBookingPrice,
