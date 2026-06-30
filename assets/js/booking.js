@@ -191,16 +191,15 @@
     return data;
   };
 
-  const fetchAvailableDates = async ({ year, month }) => {
-    const params = new URLSearchParams({
-      year: String(year),
-      month: String(month),
-    });
+  const fetchAvailableDates = async ({ year, month } = {}) => {
+    const params = new URLSearchParams();
+    if (year !== undefined) params.append("year", String(year));
+    if (month !== undefined) params.append("month", String(month));
     const data = await fetch(`/api/booking/dates?${params.toString()}`, {
       cache: "no-store",
     }).then(readJsonResponse);
 
-    return Array.isArray(data.dates) ? data.dates : [];
+    return data;
   };
 
   const fetchAvailableTimes = async ({ date }) => {
@@ -591,10 +590,11 @@
 
     try {
       bookingState.availabilityError = "";
-      availableDates = await fetchAvailableDates({
+      const response = await fetchAvailableDates({
         year: datepicker.currentYear,
         month: datepicker.currentMonth + 1,
       });
+      availableDates = Array.isArray(response?.dates) ? response.dates : [];
     } catch (error) {
       if (requestId !== activeDatesRequest) return;
 
@@ -792,7 +792,39 @@
     if (!initBookingDatepicker()) return;
 
     isBookingReady = false;
-    await loadDatesForVisibleMonth();
+    try {
+      bookingState.availabilityError = "";
+      const response = await fetchAvailableDates(); // initial fetch without params gets closest month
+      const dates = Array.isArray(response?.dates) ? response.dates : [];
+      const year = response?.year;
+      const month = response?.month;
+
+      bookingState.availableDates = new Set(dates);
+
+      if (year && month) {
+        const targetDate = new Date(year, month - 1, 1);
+        datepicker.jumpToDate(targetDate, false);
+        if (monthLabel) {
+          monthLabel.textContent = getMonthName(targetDate);
+        }
+      }
+
+      bookingState.isLoadingDates = false;
+      updateDatesLoader();
+      updateMonthControls();
+      applyDateAvailability();
+    } catch (error) {
+      bookingState.availableDates = new Set();
+      bookingState.availableTimes = [];
+      bookingState.selectedDate = "";
+      bookingState.selectedTimes = [];
+      bookingState.isLoadingDates = false;
+      bookingState.availabilityError = error.message;
+      updateDatesLoader();
+      updateMonthControls();
+      applyDateAvailability();
+      renderTimes();
+    }
     isBookingReady = true;
   };
 
