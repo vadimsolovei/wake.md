@@ -27,14 +27,62 @@ module.exports = async function handler(req, res) {
 
     try {
         const config = getConfig();
+        let year = req.query.year;
+        let month = req.query.month;
+
+        if (year === undefined || month === undefined) {
+            try {
+                const firstWorkingDate = await callSimplyBook({
+                    method: "getFirstWorkingDay",
+                    params: [config.providerId],
+                    config,
+                });
+
+                if (firstWorkingDate && typeof firstWorkingDate === "string") {
+                    const parts = firstWorkingDate.split("-");
+                    if (parts.length === 3) {
+                        year = parts[0];
+                        month = parts[1];
+                    }
+                }
+            } catch (err) {
+                // Fallback to current month if SimplyBook query fails
+            }
+        }
+
+        let resolvedYear = year;
+        let resolvedMonth = month;
+        if (resolvedYear === undefined || resolvedMonth === undefined) {
+            const timeZone = config.timezone || "Europe/Chisinau";
+            const parts = new Intl.DateTimeFormat("en", {
+                timeZone,
+                year: "numeric",
+                month: "2-digit",
+            }).formatToParts(new Date());
+            const values = Object.fromEntries(
+                parts
+                    .filter((part) => part.type !== "literal")
+                    .map((part) => [part.type, part.value]),
+            );
+            resolvedYear = Number(values.year);
+            resolvedMonth = Number(values.month);
+        } else {
+            resolvedYear = Number(resolvedYear);
+            resolvedMonth = Number(resolvedMonth);
+        }
+
         const range = getAvailabilityMonthRange({
-            year: req.query.year,
-            month: req.query.month,
+            year: resolvedYear,
+            month: resolvedMonth,
             timezone: config.timezone,
         });
 
         if (!range) {
-            json(res, 200, { dates: [] });
+            json(res, 200, {
+                dates: [],
+                year: resolvedYear,
+                month: resolvedMonth,
+            });
             return;
         }
 
@@ -50,7 +98,11 @@ module.exports = async function handler(req, res) {
         const cached = datesCache.get(cacheKey);
 
         if (cached && cached.until > Date.now()) {
-            json(res, 200, { dates: cached.dates });
+            json(res, 200, {
+                dates: cached.dates,
+                year: resolvedYear,
+                month: resolvedMonth,
+            });
             return;
         }
 
@@ -74,6 +126,8 @@ module.exports = async function handler(req, res) {
 
         json(res, 200, {
             dates,
+            year: resolvedYear,
+            month: resolvedMonth,
         });
     } catch (error) {
         handleError(res, error);

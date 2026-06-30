@@ -37,43 +37,44 @@ module.exports = async function handler(req, res) {
 
         const config = getConfig();
         const { year, month } = getDateParts(date);
-        const matrix = await callSimplyBook({
-            method: "getStartTimeMatrix",
-            params: [
-                date,
-                date,
-                config.serviceId,
-                config.providerId,
-            ],
-            config,
-        });
-        const workCalendar = await callSimplyBook({
-            method: "getWorkCalendar",
-            params: [year, month, config.providerId],
-            config,
-        });
-        const reservedIntervals = await callSimplyBook({
-            method: "getReservedTimeIntervals",
-            params: [
-                date,
-                date,
-                config.serviceId,
-                config.providerId,
-            ],
-            config,
-        });
-        const events = await callSimplyBook({
-            method: "getEventList",
-            params: [],
-            config,
-        });
-        const timeframe = normalizeTimeframe(
-            await callSimplyBook({
+        const [matrix, workCalendar, reservedIntervals, events, timeframeRaw] = await Promise.all([
+            callSimplyBook({
+                method: "getStartTimeMatrix",
+                params: [
+                    date,
+                    date,
+                    config.serviceId,
+                    config.providerId,
+                ],
+                config,
+            }),
+            callSimplyBook({
+                method: "getWorkCalendar",
+                params: [year, month, config.providerId],
+                config,
+            }),
+            callSimplyBook({
+                method: "getReservedTimeIntervals",
+                params: [
+                    date,
+                    date,
+                    config.serviceId,
+                    config.providerId,
+                ],
+                config,
+            }),
+            callSimplyBook({
+                method: "getEventList",
+                params: [],
+                config,
+            }),
+            callSimplyBook({
                 method: "getTimeframe",
                 params: [],
                 config,
             }),
-        );
+        ]);
+        const timeframe = normalizeTimeframe(timeframeRaw);
 
         json(res, 200, {
             times: normalizeSlotMatrixTimes(matrix, date, {

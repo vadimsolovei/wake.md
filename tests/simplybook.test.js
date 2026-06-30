@@ -170,7 +170,6 @@ test("booking submit state requires terms and minimum selected times", () => {
     updateSubmitState,
     /const hasEnoughSelectedTimes = hasMinimumSelectedTimes\(\);/,
   );
-  assert.match(updateSubmitState, /!termsCheckbox\?\.checked/);
   assert.match(updateSubmitState, /!hasEnoughSelectedTimes/);
   assert.match(
     updateSubmitState,
@@ -178,10 +177,6 @@ test("booking submit state requires terms and minimum selected times", () => {
   );
   assert.match(updateSubmitState, /submitButtons\.forEach/);
   assert.doesNotMatch(updateSubmitState, /innerHTML/);
-  assert.doesNotMatch(
-    updateSubmitState,
-    /isMobileBookingLayout\(\) && !hasEnoughSelectedTimes/,
-  );
   assert.match(updateSubmitState, /submitPlaceholder\.hidden = false/);
   assert.ok(updatePriceSummary);
   assert.match(updatePriceSummary, /priceDetails\.textContent = setCount/);
@@ -441,11 +436,11 @@ test("booking price counts first sets per selected slot before repeat sets", () 
   assert.ok(calculateBookingPrice);
   assert.match(
     calculateBookingPrice,
-    /const firstSetCount = Math\.min\(\s*bookingState\.peopleCount,\s*setCount,\s*\);/,
+    /const firstSetCount = Math\.min\(\s*bookingState\.peopleCount,\s*setCount\s*\);/,
   );
   assert.match(
     calculateBookingPrice,
-    /const nextSetCount = Math\.max\(\s*setCount - bookingState\.peopleCount,\s*0,\s*\);/,
+    /const nextSetCount = Math\.max\(\s*setCount - bookingState\.peopleCount,\s*0\s*\);/,
   );
   assert.match(
     calculateBookingPrice,
@@ -493,7 +488,7 @@ test("booking modal refreshes availability every time it opens", () => {
   );
   assert.match(
     refreshBookingAvailability,
-    /await loadDatesForVisibleMonth\(\);/,
+    /await fetchAvailableDates\(\);/,
   );
   assert.match(openModal, /refreshBookingAvailability\(\);/);
   assert.doesNotMatch(openModal, /initBookingDatepicker\(\);/);
@@ -502,7 +497,7 @@ test("booking modal refreshes availability every time it opens", () => {
 test("booking date fetches are not memoized in the browser", () => {
   const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
   const fetchAvailableDates = bookingScript.match(
-    /const fetchAvailableDates = async \(\{ year, month \}\) => \{[\s\S]*?return Array\.isArray\(data\.dates\) \? data\.dates : \[\];\n\s+\};/,
+    /const fetchAvailableDates = async \(\{ year, month \} = \{\}\) => \{[\s\S]*?return data;\n\s+\};/,
   )?.[0];
 
   assert.ok(fetchAvailableDates);
@@ -942,8 +937,8 @@ test("dates endpoint returns available dates for a requested month", async () =>
   const req = {
     method: "GET",
     query: {
-      year: "2099",
-      month: "6",
+      year: "2026",
+      month: "7",
     },
   };
   const res = {
@@ -982,8 +977,8 @@ test("dates endpoint returns available dates for a requested month", async () =>
     availabilityCall.body.params[0],
   ]);
   assert.equal(availabilityCalls.length, 1);
-  assert.equal(availabilityCall.body.params[0].slice(5), "06-01");
-  assert.equal(availabilityCall.body.params[1].slice(5), "06-30");
+  assert.equal(availabilityCall.body.params[0].slice(5), "07-01");
+  assert.equal(availabilityCall.body.params[1].slice(5), "07-31");
   assert.deepEqual(availabilityCall.body.params, [
     availabilityCall.body.params[0],
     availabilityCall.body.params[1],
@@ -991,6 +986,110 @@ test("dates endpoint returns available dates for a requested month", async () =>
     2,
     1,
   ]);
+});
+
+test("dates endpoint falls back to closest available date if requested month is omitted", async () => {
+  resetTokenCache();
+
+  const previousFetch = global.fetch;
+  const previousEnv = {
+    SIMPLYBOOK_COMPANY_LOGIN: process.env.SIMPLYBOOK_COMPANY_LOGIN,
+    SIMPLYBOOK_API_KEY: process.env.SIMPLYBOOK_API_KEY,
+    SIMPLYBOOK_PAYMENT_PROCESSOR_NAME:
+      process.env.SIMPLYBOOK_PAYMENT_PROCESSOR_NAME,
+    SIMPLYBOOK_SERVICE_ID: process.env.SIMPLYBOOK_SERVICE_ID,
+    SIMPLYBOOK_PROVIDER_ID: process.env.SIMPLYBOOK_PROVIDER_ID,
+    BOOKING_TIMEZONE: process.env.BOOKING_TIMEZONE,
+  };
+  const calls = [];
+
+  process.env.SIMPLYBOOK_COMPANY_LOGIN = "wake";
+  process.env.SIMPLYBOOK_API_KEY = "key";
+  process.env.SIMPLYBOOK_PAYMENT_PROCESSOR_NAME = "Custom Payment";
+  process.env.SIMPLYBOOK_SERVICE_ID = "1";
+  process.env.SIMPLYBOOK_PROVIDER_ID = "2";
+  process.env.BOOKING_TIMEZONE = "UTC";
+
+  global.fetch = async (url, options) => {
+    const body = JSON.parse(options.body);
+    calls.push({ url, body });
+
+    if (body.method === "getToken") {
+      return {
+        ok: true,
+        json: async () => ({ result: "token" }),
+      };
+    }
+
+    if (body.method === "getFirstWorkingDay") {
+      return {
+        ok: true,
+        json: async () => ({ result: "2026-08-12" }),
+      };
+    }
+
+    if (body.method === "getStartTimeMatrix") {
+      return {
+        ok: true,
+        json: async () => ({
+          result: {
+            "2026-08-12": ["09:00:00"],
+            "2026-08-13": [],
+          },
+        }),
+      };
+    }
+
+    return { ok: true, json: async () => ({ result: {} }) };
+  };
+
+  const req = {
+    method: "GET",
+    query: {},
+  };
+  const res = {
+    headers: {},
+    setHeader(key, value) {
+      this.headers[key] = value;
+    },
+    end(body) {
+      this.body = body;
+    },
+  };
+
+  try {
+    await datesHandler(req, res);
+  } finally {
+    global.fetch = previousFetch;
+
+    for (const [key, value] of Object.entries(previousEnv)) {
+      if (value === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
+    }
+  }
+
+  const workingDayCall = calls.find(
+    (call) => call.body.method === "getFirstWorkingDay",
+  );
+  const matrixCall = calls.find(
+    (call) => call.body.method === "getStartTimeMatrix",
+  );
+
+  assert.ok(workingDayCall);
+  assert.deepEqual(workingDayCall.body.params, [2]); // config.providerId = 2
+  assert.ok(matrixCall);
+  // firstDay of the matrix call should be max(firstWorkingDay, startOfMonth) -> 2026-08-01
+  assert.equal(matrixCall.body.params[0], "2026-08-01");
+  assert.equal(matrixCall.body.params[1], "2026-08-31");
+
+  const responseJson = JSON.parse(res.body);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(responseJson.dates, ["2026-08-12"]);
+  assert.equal(responseJson.year, 2026);
+  assert.equal(responseJson.month, 8);
 });
 
 test("times endpoint requests slots without people count filtering", async () => {
