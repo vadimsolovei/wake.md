@@ -232,14 +232,21 @@ test("booking submit builds form data before payload", () => {
   );
   assert.match(
     bookingScript,
-    /paymentMode: "book"/,
+    /paymentMode: getPaymentMode\(event\.submitter\)/,
   );
-  assert.doesNotMatch(bookingScript, /getPaymentMode/);
-  assert.doesNotMatch(bookingScript, /bookingPaymentMode/);
+  assert.match(
+    bookingScript,
+    /submitter\?\.dataset\?\.bookingPaymentMode \|\| "book"/,
+  );
+  assert.match(
+    bookingScript,
+    /return mode === "pay" \? "pay" : "book"/,
+  );
 });
 
-test("booking modal has one visible booking button and no payment button", () => {
+test("booking modal has visible booking button and hidden payment test button", () => {
   const html = fs.readFileSync("index.html", "utf8");
+  const css = fs.readFileSync("styles.css", "utf8");
   const submitActions = html.match(
     /<div class="booking-submit-actions"[\s\S]*?<\/div>/,
   )?.[0];
@@ -248,13 +255,14 @@ test("booking modal has one visible booking button and no payment button", () =>
   assert.match(html, /data-booking-submit-actions/);
   assert.match(submitActions, /data-booking-submit/);
   assert.match(submitActions, /Забронировать/);
+  assert.match(submitActions, /Оплатить/);
+  assert.match(submitActions, /data-booking-payment-mode="book"/);
+  assert.match(submitActions, /data-booking-payment-mode="pay"/);
   assert.equal(
     (submitActions.match(/data-booking-submit(?=[\s>])/g) || []).length,
-    1,
+    2,
   );
-  assert.doesNotMatch(submitActions, /Оплатить/);
-  assert.doesNotMatch(submitActions, /data-booking-payment-mode="pay"/);
-  assert.doesNotMatch(html, /booking-submit--payment-test/);
+  assert.match(css, /\.booking-submit--payment-test \{[\s\S]*?display: none;/);
 });
 
 test("app alert shows maib booking payment return messages once", () => {

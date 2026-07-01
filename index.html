@@ -1088,9 +1088,15 @@
                             </svg>
                         </button>
                         <div class="booking-submit-actions" data-booking-submit-actions>
-                            <button class="btn btn--primary booking-submit" type="submit" data-booking-submit>
+                            <button class="btn btn--primary booking-submit" type="submit" data-booking-submit
+                                data-booking-payment-mode="book">
                                 <span class="booking-submit__spinner" aria-hidden="true"></span>
                                 <span data-booking-submit-label>Забронировать</span>
+                            </button>
+                            <button class="btn btn--primary booking-submit booking-submit--payment-test" type="submit"
+                                data-booking-submit data-booking-payment-mode="pay">
+                                <span class="booking-submit__spinner" aria-hidden="true"></span>
+                                <span data-booking-submit-label>Оплатить</span>
                             </button>
                         </div>
                         <span class="booking-submit-placeholder" data-booking-submit-placeholder
