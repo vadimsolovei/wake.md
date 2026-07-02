@@ -35,6 +35,8 @@
 
   const FIRST_SET_PRICE = 600;
   const NEXT_SET_PRICE = 400;
+  const DEFAULT_PHONE_PREFIX = "373";
+  const PHONE_REQUIRED_MESSAGE = "Введите номер телефона.";
   const PHONE_VALIDATION_DEBOUNCE_MS = 500;
   const BOOKING_UNAVAILABLE_MESSAGE =
     "Сервис бронирования временно недоступен.";
@@ -249,6 +251,21 @@
     return sanitized;
   };
 
+  const isPhoneMissing = (value) =>
+    !value.trim() || value.replace(/\D/g, "") === DEFAULT_PHONE_PREFIX;
+
+  const updatePhoneRequiredValidity = () => {
+    if (!phoneInput) return true;
+
+    if (isPhoneMissing(phoneInput.value)) {
+      phoneInput.setCustomValidity(PHONE_REQUIRED_MESSAGE);
+      return false;
+    }
+
+    phoneInput.setCustomValidity("");
+    return true;
+  };
+
   const updatePhoneIndicator = (result = null) => {
     if (!phoneIndicator) return;
 
@@ -269,10 +286,15 @@
 
     const input = phoneInput.value.trim();
 
-    if (!input) {
+    if (isPhoneMissing(input)) {
       phoneValidation = { input: "", result: null };
-      updatePhoneIndicator();
-      phoneInput.setCustomValidity("");
+      phoneInput.setCustomValidity(PHONE_REQUIRED_MESSAGE);
+      if (!input) {
+        updatePhoneIndicator();
+      }
+      if (report) {
+        phoneInput.reportValidity();
+      }
       return null;
     }
 
@@ -384,7 +406,6 @@
   const updateSubmitState = () => {
     if (!submitButtons.length) return;
 
-    const hasEnoughSelectedTimes = hasMinimumSelectedTimes();
     const isMobileLayout = isMobileBookingLayout();
     const hasSelectedDateAndTime =
       Boolean(bookingState.selectedDate) &&
@@ -416,9 +437,7 @@
 
       submitButton.toggleAttribute(
         "disabled",
-        bookingState.isSubmitting ||
-          !termsCheckbox?.checked ||
-          !hasEnoughSelectedTimes,
+        bookingState.isSubmitting || !hasSelectedDateAndTime,
       );
       submitButton.classList.toggle("is-loading", bookingState.isSubmitting);
       submitButton.setAttribute("aria-busy", String(bookingState.isSubmitting));
@@ -966,6 +985,8 @@
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
+
+    updatePhoneRequiredValidity();
 
     if (!form.reportValidity()) return;
 

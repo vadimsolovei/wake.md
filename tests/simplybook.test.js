@@ -153,7 +153,7 @@ test("applies low-risk security headers", () => {
   }
 });
 
-test("booking submit state requires terms and minimum selected times", () => {
+test("booking submit state disables only until date and time are selected", () => {
   const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
   const updateSubmitState = bookingScript.match(
     /const updateSubmitState = \(\) => \{[\s\S]*?if \(submitLabel\)/,
@@ -168,9 +168,14 @@ test("booking submit state requires terms and minimum selected times", () => {
   assert.ok(updateSubmitState);
   assert.match(
     updateSubmitState,
-    /const hasEnoughSelectedTimes = hasMinimumSelectedTimes\(\);/,
+    /const hasSelectedDateAndTime =\s+Boolean\(bookingState\.selectedDate\) &&\s+bookingState\.selectedTimes\.length > 0;/,
   );
-  assert.match(updateSubmitState, /!hasEnoughSelectedTimes/);
+  assert.match(
+    updateSubmitState,
+    /bookingState\.isSubmitting \|\| !hasSelectedDateAndTime/,
+  );
+  assert.doesNotMatch(updateSubmitState, /termsCheckbox\?\.checked/);
+  assert.doesNotMatch(updateSubmitState, /hasMinimumSelectedTimes\(\)/);
   assert.match(
     updateSubmitState,
     /submitActions\.hidden = shouldShowMobilePlaceholder/,
@@ -215,6 +220,31 @@ test("booking contact fields are marked as required", () => {
   assert.match(comment, /title="Символы &lt; и &gt; не допускаются"/, "comment");
   assert.doesNotMatch(comment, /\srequired\b/, "comment");
   assert.doesNotMatch(comment, /aria-required="true"/, "comment");
+});
+
+test("booking phone prefix alone does not satisfy mandatory phone validation", () => {
+  const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
+
+  assert.match(
+    bookingScript,
+    /const DEFAULT_PHONE_PREFIX = "373";/,
+  );
+  assert.match(
+    bookingScript,
+    /const PHONE_REQUIRED_MESSAGE = "Введите номер телефона\.";/,
+  );
+  assert.match(
+    bookingScript,
+    /const isPhoneMissing = \(value\) =>\s+!value\.trim\(\) \|\| value\.replace\(\/\\D\/g, ""\) === DEFAULT_PHONE_PREFIX;/,
+  );
+  assert.match(
+    bookingScript,
+    /phoneInput\.setCustomValidity\(PHONE_REQUIRED_MESSAGE\);/,
+  );
+  assert.match(
+    bookingScript,
+    /updatePhoneRequiredValidity\(\);\s+if \(!form\.reportValidity\(\)\) return;/,
+  );
 });
 
 test("booking submit builds form data before payload", () => {
