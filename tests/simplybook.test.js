@@ -1289,7 +1289,7 @@ test("times endpoint requests slots without people count filtering", async () =>
   );
 });
 
-test("create endpoint books each selected time", async () => {
+test("create endpoint books selected times in a SimplyBook batch", async () => {
   resetTokenCache();
 
   const previousFetch = global.fetch;
@@ -1301,6 +1301,9 @@ test("create endpoint books each selected time", async () => {
     SIMPLYBOOK_PROVIDER_ID: process.env.SIMPLYBOOK_PROVIDER_ID,
     SIMPLYBOOK_PEOPLE_FIELD_NAME: process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME,
     SIMPLYBOOK_COMMENT_FIELD_NAME: process.env.SIMPLYBOOK_COMMENT_FIELD_NAME,
+    SIMPLYBOOK_BOOKING_BATCH_TYPE: process.env.SIMPLYBOOK_BOOKING_BATCH_TYPE,
+    SIMPLYBOOK_API_USER_LOGIN: process.env.SIMPLYBOOK_API_USER_LOGIN,
+    SIMPLYBOOK_API_USER_KEY: process.env.SIMPLYBOOK_API_USER_KEY,
     BOOKING_TIMEZONE: process.env.BOOKING_TIMEZONE,
   };
   const calls = [];
@@ -1312,6 +1315,212 @@ test("create endpoint books each selected time", async () => {
   process.env.SIMPLYBOOK_PROVIDER_ID = "2";
   process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME = "people_field_hash";
   process.env.SIMPLYBOOK_COMMENT_FIELD_NAME = "comment_field_hash";
+  process.env.SIMPLYBOOK_BOOKING_BATCH_TYPE = "batch";
+  process.env.SIMPLYBOOK_API_USER_LOGIN = "admin";
+  process.env.SIMPLYBOOK_API_USER_KEY = "api_user_key_test";
+  process.env.BOOKING_TIMEZONE = "UTC";
+
+  global.fetch = async (url, options) => {
+    const body = JSON.parse(options.body);
+    calls.push({ url, body });
+
+    if (body.method === "getToken") {
+      return {
+        ok: true,
+        json: async () => ({ result: "token" }),
+      };
+    }
+
+    if (body.method === "confirmBookingBatch") {
+      return {
+        ok: true,
+        json: async () => ({ result: true }),
+      };
+    }
+
+    if (body.method === "getTimeframe") {
+      return {
+        ok: true,
+        json: async () => ({ result: 15 }),
+      };
+    }
+
+    return {
+      ok: true,
+      json: async () => ({
+        result: {
+          bookings: Array.from({ length: body.params[6] }, (_, index) => {
+            const minutes = 9 * 60 + index * 15;
+            const time = `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}:00`;
+
+            return {
+              id: time,
+              code: `code-${time}`,
+              hash: `hash-${time}`,
+              start_datetime: `${body.params[2]} ${time}`,
+              is_confirmed: false,
+            };
+          }),
+          batch: {
+            id: 77,
+            hash: "batch-hash-77",
+            type: "batch",
+          },
+          require_confirm: true,
+        },
+      }),
+    };
+  };
+
+  const req = {
+    method: "POST",
+    body: {
+      name: "O'Connor-Мария Попеску Jr.",
+      email: "guest@example.com",
+      phone: "37368884689",
+      comment: '  Позвоните, пожалуйста! "Будем на месте" (к 09:00) - спасибо.\nДо встречи.  ',
+      peopleCount: 2,
+      date: "2026-06-10",
+      times: ["09:00", "09:15"],
+      acceptedTerms: true,
+    },
+  };
+  const res = {
+    headers: {},
+    setHeader(key, value) {
+      this.headers[key] = value;
+    },
+    end(body) {
+      this.body = body;
+    },
+  };
+
+  try {
+    await createHandler(req, res);
+  } finally {
+    global.fetch = previousFetch;
+
+    for (const [key, value] of Object.entries(previousEnv)) {
+      if (value === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
+    }
+  }
+
+  const bookCalls = calls.filter((call) => call.body.method === "book");
+  const confirmCalls = calls.filter(
+    (call) => call.body.method === "confirmBooking",
+  );
+  const confirmBatchCalls = calls.filter(
+    (call) => call.body.method === "confirmBookingBatch",
+  );
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(
+    calls.some((call) => call.body.method === "isPaymentRequired"),
+    false,
+  );
+  assert.equal(
+    calls.some((call) => call.body.method === "getBookingCart"),
+    false,
+  );
+  assert.deepEqual(
+    calls
+      .filter((call) => call.body.method !== "getToken")
+      .map((call) => call.body.method),
+    ["getTimeframe", "book", "confirmBookingBatch"],
+  );
+  assert.equal(bookCalls.length, 1);
+  assert.deepEqual(
+    bookCalls.map((call) => call.body.params),
+    [
+      [
+        1,
+        2,
+        "2026-06-10",
+        "09:00:00",
+        {
+          name: "O'Connor-Мария Попеску Jr.",
+          email: "guest@example.com",
+          phone: "+37368884689",
+        },
+        {
+          people_field_hash: 2,
+          comment_field_hash:
+            'Позвоните, пожалуйста! "Будем на месте" (к 09:00) - спасибо.\nДо встречи.',
+        },
+        2,
+      ],
+    ],
+  );
+  const body = JSON.parse(res.body);
+
+  assert.equal(body.requireConfirm, false);
+  assert.deepEqual(
+    body.bookings.map((booking) => booking.code),
+    ["code-09:00:00", "code-09:15:00"],
+  );
+  assert.deepEqual(
+    body.bookings.map((booking) => booking.isConfirmed),
+    [true, true],
+  );
+  assert.equal(body.batchId, 77);
+  assert.equal(body.batchType, "batch");
+  assert.equal(body.batchBookingUsed, true);
+  assert.equal(body.batchNotificationFallback, false);
+  assert.equal(Object.hasOwn(body, "batchHash"), false);
+  assert.equal(confirmCalls.length, 0);
+  assert.deepEqual(
+    confirmBatchCalls.map((call) => call.body.params),
+    [
+      [
+        77,
+        "batch",
+        crypto
+          .createHash("md5")
+          .update("77batch-hash-77secret")
+          .digest("hex"),
+      ],
+    ],
+  );
+  assert.equal(
+    Object.hasOwn(JSON.parse(res.body).bookings[0], "hash"),
+    false,
+  );
+});
+
+test("create endpoint falls back to per-booking confirmation without batch metadata", async () => {
+  resetTokenCache();
+
+  const previousFetch = global.fetch;
+  const previousEnv = {
+    SIMPLYBOOK_COMPANY_LOGIN: process.env.SIMPLYBOOK_COMPANY_LOGIN,
+    SIMPLYBOOK_API_KEY: process.env.SIMPLYBOOK_API_KEY,
+    SIMPLYBOOK_API_SECRET_KEY: process.env.SIMPLYBOOK_API_SECRET_KEY,
+    SIMPLYBOOK_SERVICE_ID: process.env.SIMPLYBOOK_SERVICE_ID,
+    SIMPLYBOOK_PROVIDER_ID: process.env.SIMPLYBOOK_PROVIDER_ID,
+    SIMPLYBOOK_PEOPLE_FIELD_NAME: process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME,
+    SIMPLYBOOK_API_USER_LOGIN: process.env.SIMPLYBOOK_API_USER_LOGIN,
+    SIMPLYBOOK_API_USER_KEY: process.env.SIMPLYBOOK_API_USER_KEY,
+    SIMPLYBOOK_ADMIN_USER_LOGIN: process.env.SIMPLYBOOK_ADMIN_USER_LOGIN,
+    SIMPLYBOOK_ADMIN_USER_PASSWORD:
+      process.env.SIMPLYBOOK_ADMIN_USER_PASSWORD,
+    BOOKING_TIMEZONE: process.env.BOOKING_TIMEZONE,
+  };
+  const calls = [];
+
+  process.env.SIMPLYBOOK_COMPANY_LOGIN = "wake";
+  process.env.SIMPLYBOOK_API_KEY = "key";
+  process.env.SIMPLYBOOK_API_SECRET_KEY = "secret";
+  process.env.SIMPLYBOOK_SERVICE_ID = "1";
+  process.env.SIMPLYBOOK_PROVIDER_ID = "2";
+  process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME = "people_field_hash";
+  delete process.env.SIMPLYBOOK_API_USER_LOGIN;
+  delete process.env.SIMPLYBOOK_API_USER_KEY;
+  delete process.env.SIMPLYBOOK_ADMIN_USER_LOGIN;
+  delete process.env.SIMPLYBOOK_ADMIN_USER_PASSWORD;
   process.env.BOOKING_TIMEZONE = "UTC";
 
   global.fetch = async (url, options) => {
@@ -1329,6 +1538,13 @@ test("create endpoint books each selected time", async () => {
       return {
         ok: true,
         json: async () => ({ result: true }),
+      };
+    }
+
+    if (body.method === "getTimeframe") {
+      return {
+        ok: true,
+        json: async () => ({ result: 15 }),
       };
     }
 
@@ -1354,10 +1570,9 @@ test("create endpoint books each selected time", async () => {
   const req = {
     method: "POST",
     body: {
-      name: "O'Connor-Мария Попеску Jr.",
+      name: "Wake Guest",
       email: "guest@example.com",
       phone: "37368884689",
-      comment: '  Позвоните, пожалуйста! "Будем на месте" (к 09:00) - спасибо.\nДо встречи.  ',
       peopleCount: 2,
       date: "2026-06-10",
       times: ["09:00", "10:30"],
@@ -1395,62 +1610,15 @@ test("create endpoint books each selected time", async () => {
 
   assert.equal(res.statusCode, 200);
   assert.equal(
-    calls.some((call) => call.body.method === "isPaymentRequired"),
-    false,
+    calls.filter((call) => call.body.method === "getTimeframe").length,
+    1,
   );
+  assert.equal(bookCalls.length, 2);
+  assert.equal(bookCalls[0].body.params.length, 7);
+  assert.equal(bookCalls[1].body.params.length, 7);
   assert.equal(
-    calls.some((call) => call.body.method === "getBookingCart"),
+    calls.some((call) => call.body.method === "confirmBookingBatch"),
     false,
-  );
-  assert.deepEqual(
-    bookCalls.map((call) => call.body.params),
-    [
-      [
-        1,
-        2,
-        "2026-06-10",
-        "09:00:00",
-        {
-          name: "O'Connor-Мария Попеску Jr.",
-          email: "guest@example.com",
-          phone: "+37368884689",
-        },
-        {
-          people_field_hash: 2,
-          comment_field_hash:
-            'Позвоните, пожалуйста! "Будем на месте" (к 09:00) - спасибо.\nДо встречи.',
-        },
-        1,
-      ],
-      [
-        1,
-        2,
-        "2026-06-10",
-        "10:30:00",
-        {
-          name: "O'Connor-Мария Попеску Jr.",
-          email: "guest@example.com",
-          phone: "+37368884689",
-        },
-        {
-          people_field_hash: 2,
-          comment_field_hash:
-            'Позвоните, пожалуйста! "Будем на месте" (к 09:00) - спасибо.\nДо встречи.',
-        },
-        1,
-      ],
-    ],
-  );
-  const body = JSON.parse(res.body);
-
-  assert.equal(body.requireConfirm, false);
-  assert.deepEqual(
-    body.bookings.map((booking) => booking.code),
-    ["code-09:00:00", "code-10:30:00"],
-  );
-  assert.deepEqual(
-    body.bookings.map((booking) => booking.isConfirmed),
-    [true, true],
   );
   assert.deepEqual(
     confirmCalls.map((call) => call.body.params),
@@ -1471,10 +1639,276 @@ test("create endpoint books each selected time", async () => {
       ],
     ],
   );
-  assert.equal(
-    Object.hasOwn(JSON.parse(res.body).bookings[0], "hash"),
-    false,
+  assert.equal(JSON.parse(res.body).batchBookingUsed, false);
+  assert.equal(JSON.parse(res.body).batchNotificationFallback, true);
+});
+
+test("create endpoint books non-consecutive slots in an admin SimplyBook batch when configured", async () => {
+  resetTokenCache();
+
+  const previousFetch = global.fetch;
+  const previousEnv = {
+    SIMPLYBOOK_COMPANY_LOGIN: process.env.SIMPLYBOOK_COMPANY_LOGIN,
+    SIMPLYBOOK_API_KEY: process.env.SIMPLYBOOK_API_KEY,
+    SIMPLYBOOK_API_SECRET_KEY: process.env.SIMPLYBOOK_API_SECRET_KEY,
+    SIMPLYBOOK_SERVICE_ID: process.env.SIMPLYBOOK_SERVICE_ID,
+    SIMPLYBOOK_PROVIDER_ID: process.env.SIMPLYBOOK_PROVIDER_ID,
+    SIMPLYBOOK_PEOPLE_FIELD_NAME: process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME,
+    SIMPLYBOOK_API_USER_LOGIN: process.env.SIMPLYBOOK_API_USER_LOGIN,
+    SIMPLYBOOK_API_USER_KEY: process.env.SIMPLYBOOK_API_USER_KEY,
+    BOOKING_TIMEZONE: process.env.BOOKING_TIMEZONE,
+  };
+  const calls = [];
+
+  process.env.SIMPLYBOOK_COMPANY_LOGIN = "wake";
+  process.env.SIMPLYBOOK_API_KEY = "key";
+  process.env.SIMPLYBOOK_API_SECRET_KEY = "secret";
+  process.env.SIMPLYBOOK_SERVICE_ID = "1";
+  process.env.SIMPLYBOOK_PROVIDER_ID = "2";
+  process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME = "people_field_hash";
+  process.env.SIMPLYBOOK_API_USER_LOGIN = "admin";
+  process.env.SIMPLYBOOK_API_USER_KEY = "api_user_key_test";
+  process.env.BOOKING_TIMEZONE = "UTC";
+
+  global.fetch = async (url, options) => {
+    const body = JSON.parse(options.body);
+    calls.push({ url, body, headers: options.headers });
+
+    if (body.method === "getToken") {
+      return {
+        ok: true,
+        json: async () => ({ result: "token" }),
+      };
+    }
+
+    if (body.method === "getUserToken") {
+      return {
+        ok: true,
+        json: async () => ({ result: "user-token" }),
+      };
+    }
+
+    if (body.method === "getTimeframe") {
+      return {
+        ok: true,
+        json: async () => ({ result: 15 }),
+      };
+    }
+
+    if (body.method === "getClientList") {
+      return {
+        ok: true,
+        json: async () => ({
+          result: [
+            {
+              id: 55,
+              email: "guest@example.com",
+              phone: "+37368884689",
+            },
+          ],
+        }),
+      };
+    }
+
+    if (body.method === "editClient") {
+      return {
+        ok: true,
+        json: async () => ({ result: true }),
+      };
+    }
+
+    if (body.method === "getEventList") {
+      return {
+        ok: true,
+        json: async () => ({ result: [{ id: 1, duration: 15 }] }),
+      };
+    }
+
+    if (body.method === "createBatch") {
+      return {
+        ok: true,
+        json: async () => ({ result: 88 }),
+      };
+    }
+
+    if (body.method === "confirmBookingBatch") {
+      return {
+        ok: true,
+        json: async () => ({ result: true }),
+      };
+    }
+
+    return {
+      ok: true,
+      json: async () => ({
+        result: {
+          bookings: [
+            ...(body.params[4] === "10:30:00"
+              ? [
+                  {
+                    id: "09:00:00",
+                    code: "code-09:00:00",
+                    hash: "hash-09:00:00",
+                    start_datetime: "2026-06-10 09:00:00",
+                    is_confirmed: false,
+                  },
+                ]
+              : []),
+            {
+              id: body.params[4],
+              code: `code-${body.params[4]}`,
+              hash: `hash-${body.params[4]}`,
+              start_datetime: `${body.params[3]} ${body.params[4]}`,
+              is_confirmed: false,
+            },
+          ],
+          batch: {
+            hash: "batch-hash-88",
+            type: "batch_multiple_booking",
+          },
+          require_confirm: true,
+        },
+      }),
+    };
+  };
+
+  const req = {
+    method: "POST",
+    body: {
+      name: "Wake Guest",
+      email: "guest@example.com",
+      phone: "37368884689",
+      peopleCount: 2,
+      date: "2026-06-10",
+      times: ["09:00", "10:30"],
+      acceptedTerms: true,
+    },
+  };
+  const res = {
+    headers: {},
+    setHeader(key, value) {
+      this.headers[key] = value;
+    },
+    end(body) {
+      this.body = body;
+    },
+  };
+
+  try {
+    await createHandler(req, res);
+  } finally {
+    global.fetch = previousFetch;
+
+    for (const [key, value] of Object.entries(previousEnv)) {
+      if (value === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
+    }
+  }
+
+  const adminBookCalls = calls.filter(
+    (call) =>
+      String(call.url).endsWith("/admin") && call.body.method === "book",
   );
+  const publicBookCalls = calls.filter(
+    (call) =>
+      !String(call.url).endsWith("/admin") && call.body.method === "book",
+  );
+  const confirmBatchCalls = calls.filter(
+    (call) => call.body.method === "confirmBookingBatch",
+  );
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(publicBookCalls.length, 0);
+  assert.deepEqual(
+    calls
+      .filter((call) => !["getToken", "getUserToken"].includes(call.body.method))
+      .map((call) => call.body.method),
+    [
+      "getTimeframe",
+      "getClientList",
+      "editClient",
+      "getEventList",
+      "createBatch",
+      "book",
+      "book",
+      "confirmBookingBatch",
+    ],
+  );
+  assert.equal(
+    calls.find((call) => call.body.method === "getClientList").headers[
+      "X-User-Token"
+    ],
+    "user-token",
+  );
+  assert.deepEqual(
+    calls.find((call) => call.body.method === "editClient").body.params,
+    [
+      55,
+      {
+        name: "Wake Guest",
+        email: "guest@example.com",
+        phone: "+37368884689",
+      },
+    ],
+  );
+  assert.deepEqual(
+    adminBookCalls.map((call) => call.body.params),
+    [
+      [
+        1,
+        2,
+        55,
+        "2026-06-10",
+        "09:00:00",
+        "2026-06-10",
+        "09:15:00",
+        0,
+        { people_field_hash: 2 },
+        1,
+        88,
+      ],
+      [
+        1,
+        2,
+        55,
+        "2026-06-10",
+        "10:30:00",
+        "2026-06-10",
+        "10:45:00",
+        0,
+        { people_field_hash: 2 },
+        1,
+        88,
+      ],
+    ],
+  );
+  assert.deepEqual(
+    confirmBatchCalls.map((call) => call.body.params),
+    [
+      [
+        88,
+        "batch_multiple_booking",
+        crypto
+          .createHash("md5")
+          .update("88batch-hash-88secret")
+          .digest("hex"),
+      ],
+    ],
+  );
+
+  const body = JSON.parse(res.body);
+
+  assert.deepEqual(
+    body.bookings.map((booking) => booking.code),
+    ["code-09:00:00", "code-10:30:00"],
+  );
+  assert.equal(body.batchId, 88);
+  assert.equal(body.batchType, "batch_multiple_booking");
+  assert.equal(body.batchBookingUsed, true);
+  assert.equal(body.batchNotificationFallback, false);
 });
 
 test("create endpoint books one selected time for one person", async () => {

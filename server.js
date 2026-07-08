@@ -104,7 +104,20 @@ app.get("/api/health", (req, res) => {
 
 app.get("/api/booking/dates", datesHandler);
 app.get("/api/booking/times", timesHandler);
-app.post("/api/booking/create", createHandler);
+app.post("/api/booking/create", (req, res) => {
+    const times = Array.isArray(req.body?.times)
+        ? req.body.times
+        : [req.body?.time].filter(Boolean);
+
+    console.log("[booking:create] request received", {
+        date: req.body?.date || "",
+        timesCount: times.length,
+        paymentMode: req.body?.paymentMode || "book",
+        peopleCount: req.body?.peopleCount || null,
+    });
+
+    return createHandler(req, res);
+});
 app.get("/api/phone/validate", phoneValidateHandler);
 app.post("/api/payments/sbpay/form", sbpayFormHandler);
 app.post("/api/payments/sbpay/refund", sbpayRefundHandler);

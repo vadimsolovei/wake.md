@@ -1046,10 +1046,29 @@
     updateSubmitState();
 
     try {
+      console.info("[booking] create request", {
+        date: payload.date,
+        times: payload.times,
+        timesCount: payload.times.length,
+        peopleCount: payload.peopleCount,
+        paymentMode: payload.paymentMode,
+      });
+
       const result = await submitBooking(payload);
       const codes = Array.isArray(result?.bookings)
         ? result.bookings.map((booking) => booking.code).filter(Boolean)
         : [];
+
+      console.info("[booking] create response", {
+        bookingsCount: Array.isArray(result?.bookings)
+          ? result.bookings.length
+          : 0,
+        batchId: result?.batchId || null,
+        batchType: result?.batchType || null,
+        batchBookingUsed: Boolean(result?.batchBookingUsed),
+        batchNotificationFallback: Boolean(result?.batchNotificationFallback),
+        paymentRequired: Boolean(result?.paymentRequired),
+      });
 
       if (result?.paymentUrl) {
         window.location.assign(result.paymentUrl);
