@@ -122,7 +122,13 @@
                 "--hero-bg-mobile",
                 `url("${mobile}")`,
             );
-            window.__wakeHeroAssets = { desktop, mobile };
+            window.__wakeHeroAssets = {
+                desktop,
+                mobile,
+                selectedIndex,
+                heroIndexes,
+                heroBaseUrl: heroBaseUrl.href,
+            };
 
             preload.rel = "preload";
             preload.as = "image";
@@ -168,6 +174,7 @@
         <main class="page">
             <!-- HERO -->
             <section class="hero">
+                <div class="hero__bg is-active"></div>
                 <div class="hero__bg"></div>
                 <div class="hero__shadow"></div>
 
@@ -333,70 +340,70 @@
                     <div class="swiper-wrapper">
                         <div class="swiper-slide">
                             <figure class="video-tile video-tile--image">
-                                <img src="assets/content/video-slider/video1.jpg" alt="Wakeboarding on the water"
+                                <img src="assets/content/video-slider/video1.webp" alt="Wakeboarding on the water"
                                     loading="lazy" decoding="async" />
                                 <!-- <span class="play-circle" aria-hidden="true"></span> -->
                             </figure>
                         </div>
                         <div class="swiper-slide">
                             <figure class="video-tile video-tile--image">
-                                <img src="assets/content/video-slider/video2.jpg" alt="Wake session near the boat"
+                                <img src="assets/content/video-slider/video2.webp" alt="Wake session near the boat"
                                     loading="lazy" decoding="async" />
                                 <!-- <span class="play-circle" aria-hidden="true"></span> -->
                             </figure>
                         </div>
                         <div class="swiper-slide">
                             <figure class="video-tile video-tile--image">
-                                <img src="assets/content/video-slider/video3.jpg" alt="Rider carving across the wake"
+                                <img src="assets/content/video-slider/video3.webp" alt="Rider carving across the wake"
                                     loading="lazy" decoding="async" />
                                 <!-- <span class="play-circle" aria-hidden="true"></span> -->
                             </figure>
                         </div>
                         <div class="swiper-slide">
                             <figure class="video-tile video-tile--image">
-                                <img src="assets/content/video-slider/video4.jpg" alt="Watersport ride at speed"
+                                <img src="assets/content/video-slider/video4.webp" alt="Watersport ride at speed"
                                     loading="lazy" decoding="async" />
                                 <!-- <span class="play-circle" aria-hidden="true"></span> -->
                             </figure>
                         </div>
                         <div class="swiper-slide">
                             <figure class="video-tile video-tile--image">
-                                <img src="assets/content/video-slider/video5.jpg" alt="Wakeboarding turn on open water"
+                                <img src="assets/content/video-slider/video5.webp" alt="Wakeboarding turn on open water"
                                     loading="lazy" decoding="async" />
                                 <!-- <span class="play-circle" aria-hidden="true"></span> -->
                             </figure>
                         </div>
                         <div class="swiper-slide">
                             <figure class="video-tile video-tile--image">
-                                <img src="assets/content/video-slider/video6.jpg" alt="Wake ride with spray"
+                                <img src="assets/content/video-slider/video6.webp" alt="Wake ride with spray"
                                     loading="lazy" decoding="async" />
                                 <!-- <span class="play-circle" aria-hidden="true"></span> -->
                             </figure>
                         </div>
                         <div class="swiper-slide">
                             <figure class="video-tile video-tile--image">
-                                <img src="assets/content/video-slider/video1.jpg"
+                                <img src="assets/content/video-slider/video1.webp"
                                     alt="Wakeboarding practice on the water" loading="lazy" decoding="async" />
                                 <!-- <span class="play-circle" aria-hidden="true"></span> -->
                             </figure>
                         </div>
                         <div class="swiper-slide">
                             <figure class="video-tile video-tile--image">
-                                <img src="assets/content/video-slider/video3.jpg"
+                                <img src="assets/content/video-slider/video3.webp"
                                     alt="Wake rider crossing the boat wake" loading="lazy" decoding="async" />
                                 <!-- <span class="play-circle" aria-hidden="true"></span> -->
                             </figure>
                         </div>
                         <div class="swiper-slide">
                             <figure class="video-tile video-tile--image">
-                                <img src="assets/content/video-slider/video5.jpg"
+                                <img src="assets/content/video-slider/video5.webp"
                                     alt="Wakeboarding session with water spray" loading="lazy" decoding="async" />
                                 <!-- <span class="play-circle" aria-hidden="true"></span> -->
                             </figure>
                         </div>
                         <div class="swiper-slide">
                             <figure class="video-tile video-tile--image">
-                                <img src="assets/content/video-slider/video2.jpg" alt="Wake session test slide"
+                                <img src="assets/content/video-slider/video2.webp" alt="Wake session test slide"
                                     loading="lazy" decoding="async" />
                                 <!-- <span class="play-circle" aria-hidden="true"></span> -->
                             </figure>
@@ -405,7 +412,7 @@
                         <!-- Local video slide example:
           <div class="swiper-slide">
             <figure class="video-tile video-tile--video">
-              <video controls playsinline preload="metadata" poster="assets/content/video-slider/video1.jpg">
+              <video controls playsinline preload="metadata" poster="assets/content/video-slider/video1.webp">
                 <source src="assets/content/video-slider/wake-session.mp4" type="video/mp4" />
               </video>
             </figure>
@@ -832,33 +839,33 @@
                 <div class="gallery-carousel" aria-label="Wake.md gallery">
                     <div class="gallery-track gallery-track--top">
                         <div class="gallery-row">
-                            <img src="assets/content/gallery-slider/gallery1.jpg" alt=""
+                            <img src="assets/content/gallery-slider/gallery1.webp" alt=""
                                 class="gallery-img gallery-img--square" loading="lazy" decoding="async" />
-                            <img src="assets/content/gallery-slider/gallery2.jpg" alt=""
+                            <img src="assets/content/gallery-slider/gallery2.webp" alt=""
                                 class="gallery-img gallery-img--wide" loading="lazy" decoding="async" />
-                            <img src="assets/content/gallery-slider/gallery4.jpg" alt=""
+                            <img src="assets/content/gallery-slider/gallery4.webp" alt=""
                                 class="gallery-img gallery-img--square" loading="lazy" decoding="async" />
-                            <img src="assets/content/gallery-slider/gallery1.jpg" alt=""
+                            <img src="assets/content/gallery-slider/gallery1.webp" alt=""
                                 class="gallery-img gallery-img--square" loading="lazy" decoding="async" />
-                            <img src="assets/content/gallery-slider/gallery2.jpg" alt=""
+                            <img src="assets/content/gallery-slider/gallery2.webp" alt=""
                                 class="gallery-img gallery-img--wide" loading="lazy" decoding="async" />
-                            <img src="assets/content/gallery-slider/gallery4.jpg" alt=""
+                            <img src="assets/content/gallery-slider/gallery4.webp" alt=""
                                 class="gallery-img gallery-img--square" loading="lazy" decoding="async" />
                         </div>
                     </div>
                     <div class="gallery-track gallery-track--bottom">
                         <div class="gallery-row">
-                            <img src="assets/content/gallery-slider/gallery5.jpg" alt=""
+                            <img src="assets/content/gallery-slider/gallery5.webp" alt=""
                                 class="gallery-img gallery-img--wide" loading="lazy" decoding="async" />
-                            <img src="assets/content/gallery-slider/gallery3.jpg" alt=""
+                            <img src="assets/content/gallery-slider/gallery3.webp" alt=""
                                 class="gallery-img gallery-img--wide" loading="lazy" decoding="async" />
-                            <img src="assets/content/gallery-slider/gallery4.jpg" alt=""
+                            <img src="assets/content/gallery-slider/gallery4.webp" alt=""
                                 class="gallery-img gallery-img--square" loading="lazy" decoding="async" />
-                            <img src="assets/content/gallery-slider/gallery5.jpg" alt=""
+                            <img src="assets/content/gallery-slider/gallery5.webp" alt=""
                                 class="gallery-img gallery-img--wide" loading="lazy" decoding="async" />
-                            <img src="assets/content/gallery-slider/gallery3.jpg" alt=""
+                            <img src="assets/content/gallery-slider/gallery3.webp" alt=""
                                 class="gallery-img gallery-img--wide" loading="lazy" decoding="async" />
-                            <img src="assets/content/gallery-slider/gallery4.jpg" alt=""
+                            <img src="assets/content/gallery-slider/gallery4.webp" alt=""
                                 class="gallery-img gallery-img--square" loading="lazy" decoding="async" />
                         </div>
                     </div>
@@ -1033,9 +1040,9 @@
                                 </span>
                                 <b>
                                     Я соглашаюсь c
-                                    <a href="#">условиями использования</a>
+                                    <a href="#" data-booking-terms-open>условиями использования</a>
                                     и
-                                    <a href="#">политикой конфиденциальности</a>
+                                    <a href="#" data-booking-privacy-open>политикой конфиденциальности</a>
                                 </b>
                             </label>
                             <div class="booking-terms__rules">
@@ -1142,6 +1149,117 @@
                 <button class="booking-info-popup__button btn btn--primary" type="button" data-booking-info-close>
                     Ok
                 </button>
+            </section>
+        </div>
+        <div class="booking-terms-popup" data-booking-terms-popup aria-hidden="true" hidden>
+            <div class="booking-terms-popup__backdrop" data-booking-terms-close></div>
+            <section class="booking-terms-popup__dialog" role="dialog" aria-modal="true"
+                aria-labelledby="booking-terms-title" tabindex="-1">
+                <header class="booking-terms-popup__header">
+                    <button class="booking-terms-popup__brand" type="button" data-booking-terms-close aria-label="Закрыть">
+                        <img src="assets/design/brand/logo.webp" alt="" loading="lazy" decoding="async" />
+                    </button>
+                    <h2 id="booking-terms-title">Условия<br />использования</h2>
+                    <div class="booking-terms-popup__actions">
+                        <a class="booking-terms-popup__icon-btn btn--ghost" href="tel:+37368884689" aria-label="Позвонить">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z" /></svg>
+                        </a>
+                        <button class="booking-terms-popup__icon-btn btn--ghost" type="button" data-booking-terms-close
+                            aria-label="Закрыть">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                        </button>
+                    </div>
+                </header>
+                <div class="booking-terms-popup__content">
+                    <ol class="booking-terms-popup__toc">
+                        <li><a href="#terms-about">Кто мы? Цели</a></li><li><a href="#terms-service">Описание услуги</a></li>
+                        <li><a href="#terms-booking">Бронирование</a></li><li><a href="#terms-payment">Оплата</a></li>
+                        <li><a href="#terms-cancellation">Отмена и возвраты</a></li><li><a href="#terms-participant">Требования к участнику</a></li>
+                        <li><a href="#terms-safety">Техника безопасности</a></li><li><a href="#terms-liability">Ограничение ответственности и отказ от претензий</a></li>
+                        <li><a href="#terms-age">Возрастные ограничения</a></li><li><a href="#terms-media">Фото и видео</a></li>
+                        <li><a href="#terms-ip">Интеллектуальная собственность</a></li><li><a href="#terms-changes">Изменение условий</a></li>
+                        <li><a href="#terms-contacts">Контакты</a></li>
+                    </ol>
+                    <div class="booking-terms-popup__sections">
+                        <section id="terms-about"><h3>1. Кто мы?</h3><p>Wake.md — проект, созданный для развития водных видов спорта, активного образа жизни и отдыха на воде. Мы организуем катание на вейкборде и других водных снарядах на Днестре с буксировкой за гидроцикл.</p><p>Наша цель — дарить участникам яркие эмоции, драйв, безопасный экстрим и возможность попробовать новый спортивный опыт в дружелюбной атмосфере.</p></section>
+                        <section id="terms-service"><h3>2. Описание услуги и стоимость</h3><p>Wake.md предоставляет услуги катания на воде с буксировкой за гидроцикл, включая:</p><ul><li>wakeboard (вейкборд),</li><li>водные лыжи,</li><li>wakeskate,</li><li>и другие водные снаряды.</li></ul><h4>В стоимость катания входит необходимая экипировка:</h4><ul><li>спасательный жилет,</li><li>шлем,</li><li>гидрокостюм (при необходимости),</li><li>обучение и сопровождение инструктора,</li><li>специальные водонепроницаемые наушники BBTalkin для связи с инструктором во время первого заезда.</li></ul><h4>К началу своего времени участник должен:</h4><ul><li>прибыть заранее (минимум за 30 минут до начала своего сета),</li><li>переодеться,</li><li>подобрать оборудование,</li><li>быть полностью готовым к выходу на воду,</li><li>получить инструктаж по технике безопасности и правилам поведения.</li></ul><h4>Продолжительность</h4><p>Один сет длится 10 минут.</p><p>Сет начинается строго в забронированное время.</p><h4>Стоимость</h4><p>Стоимость первого сета в один день катания для одного человека — 600 леев.</p><p>Стоимость последующих сетов для одного человека в этот день катания — 400 леев.</p></section>
+                        <section id="terms-booking"><h3>3. Бронирование</h3><p>Бронирование осуществляется через сайт Wake.md или через согласованные каналы связи.</p><h4>Для новичков</h4><p>Для участников без опыта минимальное количество бронирования — 2 сета. Это связано с тем, что большинству новичков требуется первый сет для адаптации и освоения базовых навыков, а уверенное катание чаще получается во втором сете.</p><h4>Подтверждение брони</h4><p>Бронь считается подтвержденной после:</p><ul><li>получения подтверждения от Wake.md,</li><li>и/или внесения предоплаты, если она требуется.</li></ul></section>
+                        <section id="terms-payment"><h3>4. Оплата</h3><p>Оплата может производиться:</p><ul><li>онлайн через сайт,</li><li>переводом,</li><li>наличными или другими доступными способами оплаты.</li></ul><p>Все цены указываются в молдавских леях (MDL), если не указано иное.</p></section>
+                        <section id="terms-cancellation"><h3>5. Отмена и возвраты</h3><h4>Отмена участником</h4><ul><li>Более чем за 24 часа до катания — возможен полный перенос или возврат.</li><li>Менее чем за 24 часа — возврат не осуществляется.</li></ul><h4>Неявка</h4><p>При неявке без предупреждения более чем за 24 часа до катания услуга считается оказанной, оплата не возвращается.</p><h4>Опоздание</h4><p>При опоздании продолжительность сета может быть сокращена без компенсации стоимости.</p><h4>Погодные условия</h4><p>Wake.md оставляет за собой право перенести катание при неблагоприятных погодных условиях, включая:</p><ul><li>сильный ветер,</li><li>шторм,</li><li>высокие волны,</li><li>плохую видимость,</li><li>другие условия, влияющие на безопасность.</li></ul><p>В таком случае участнику предлагается перенос записи, ваучер либо возврат средств.</p><h4>Технические неисправности</h4><p>При невозможности проведения катания по техническим причинам со стороны Wake.md участнику предлагается перенос записи либо возврат средств за неоказанную услугу.</p><h4>Срок возврата</h4><p>Возврат средств может занимать до 5–10 банковских дней в зависимости от способа оплаты и банка.</p></section>
+                        <section id="terms-participant"><h3>6. Требования к участнику</h3><p>Участвуя в катании, участник подтверждает, что:</p><ul><li>находится в трезвом состоянии,</li><li>не находится под воздействием наркотических веществ или медикаментов, ухудшающих реакцию,</li><li>не имеет медицинских противопоказаний к физической активности,</li><li>способен адекватно оценивать свои действия и состояние,</li><li>обязуется соблюдать инструкции инструктора и правила безопасности.</li></ul></section>
+                        <section id="terms-safety"><h3>7. Техника безопасности</h3><p>Перед катанием каждый участник обязан пройти инструктаж и внимательно выслушать рекомендации инструктора.</p><p>Во время катания участник обязан:</p><ul><li>находиться в застегнутом спасательном жилете,</li><li>соблюдать указания инструктора,</li><li>не создавать опасных ситуаций для себя и окружающих,</li><li>отпускать фал при падении,</li><li>соблюдать правила поведения на воде.</li></ul><p>Катание в состоянии алкогольного или наркотического опьянения запрещено.</p><p>Инструктор имеет право прекратить катание в любой момент, если действия участника создают угрозу безопасности.</p><p>Дополнительные правила безопасности могут предоставляться участнику отдельно перед катанием.</p></section>
+                        <section id="terms-liability"><h3>8. Ограничение ответственности и отказ от претензий</h3><p>Участник осознает и принимает, что катание на вейкборде и других водных снарядах является активным и потенциально травмоопасным видом спорта.</p><p>Участвуя в катании, участник подтверждает, что:</p><ul><li>принимает участие добровольно,</li><li>понимает риски, связанные со скоростью, водой, падениями и столкновениями,</li><li>самостоятельно несет ответственность за свои действия и решения во время катания,</li><li>принимает на себя риски получения травм различной степени тяжести.</li></ul><p>Wake.md, его владельцы, сотрудники, инструкторы и партнеры не несут ответственности за:</p><ul><li>травмы, полученные во время катания,</li><li>последствия несоблюдения инструкций,</li><li>действия самого участника,</li><li>потерю или повреждение личных вещей,</li><li>косвенные или случайные убытки.</li></ul><p>Участник обязуется не предъявлять претензии и не требовать компенсации ущерба, если ущерб возник в результате рисков, связанных с участием в катании, за исключением случаев, прямо предусмотренных законодательством.</p></section>
+                        <section id="terms-age"><h3>9. Возрастные ограничения</h3><p>К участию допускаются лица старше 18 лет.</p><p>Несовершеннолетние могут кататься только:</p><ul><li>с письменного согласия родителей или законных представителей,</li><li>в сопровождении ответственного взрослого, если это требуется организатором.</li></ul></section>
+                        <section id="terms-media"><h3>10. Фото и видео</h3><p>Во время катания Wake.md может производить фото- и видеосъемку.</p><p>Материалы могут использоваться для:</p><ul><li>социальных сетей,</li><li>сайта,</li><li>рекламы и продвижения проекта.</li></ul><p>Если участник не хочет попадать в публикации, он должен сообщить об этом заранее до начала катания.</p></section>
+                        <section id="terms-ip"><h3>11. Интеллектуальная собственность</h3><p>Все материалы сайта, включая логотипы, фото, видео, дизайн и тексты, являются собственностью Wake.md или используются на законных основаниях.</p><p>Копирование и использование материалов без разрешения запрещено.</p></section>
+                        <section id="terms-changes"><h3>12. Изменение условий</h3><p>Wake.md оставляет за собой право изменять настоящие условия без предварительного уведомления.</p><p>Актуальная версия всегда публикуется на сайте.</p></section>
+                        <section id="terms-contacts"><h3>13. Контакты</h3><p>По всем вопросам можно связаться через сайт: Wake.md.</p></section>
+                    </div>
+                </div>
+                <footer class="booking-terms-popup__footer">
+                    <span>© 2026 Wake.md 😎</span>
+                    <div class="booking-payments" aria-label="Способы оплаты">
+                        <img src="assets/design/payments/visa.webp" alt="Visa" loading="lazy" decoding="async" />
+                        <img src="assets/design/payments/mastercard.webp" alt="Mastercard" loading="lazy" decoding="async" />
+                        <img src="assets/design/payments/amex.webp" alt="American Express" loading="lazy" decoding="async" />
+                    </div>
+                </footer>
+            </section>
+        </div>
+        <div class="booking-terms-popup" data-booking-privacy-popup aria-hidden="true" hidden>
+            <div class="booking-terms-popup__backdrop" data-booking-privacy-close></div>
+            <section class="booking-terms-popup__dialog" role="dialog" aria-modal="true"
+                aria-labelledby="booking-privacy-title" tabindex="-1">
+                <header class="booking-terms-popup__header booking-terms-popup__header--privacy">
+                    <button class="booking-terms-popup__brand" type="button" data-booking-privacy-close
+                        aria-label="Закрыть">
+                        <img src="assets/design/brand/logo.webp" alt="" loading="lazy" decoding="async" />
+                    </button>
+                    <h2 id="booking-privacy-title">Политика<br />конфиденциальности</h2>
+                    <div class="booking-terms-popup__actions">
+                        <a class="booking-terms-popup__icon-btn btn--ghost" href="tel:+37368884689"
+                            aria-label="Позвонить">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z" /></svg>
+                        </a>
+                        <button class="booking-terms-popup__icon-btn btn--ghost" type="button"
+                            data-booking-privacy-close aria-label="Закрыть">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                        </button>
+                    </div>
+                </header>
+                <div class="booking-terms-popup__content">
+                    <ol class="booking-terms-popup__toc">
+                        <li><a href="#privacy-general">Общие положения</a></li><li><a href="#privacy-data">Какие данные мы собираем</a></li>
+                        <li><a href="#privacy-purpose">Как мы используем данные</a></li><li><a href="#privacy-sharing">Передача данных</a></li>
+                        <li><a href="#privacy-storage">Хранение и защита</a></li><li><a href="#privacy-rights">Ваши права</a></li>
+                        <li><a href="#privacy-technical">Технические данные</a></li><li><a href="#privacy-children">Данные несовершеннолетних</a></li>
+                        <li><a href="#privacy-changes">Изменения политики</a></li><li><a href="#privacy-contacts">Контакты</a></li>
+                    </ol>
+                    <div class="booking-terms-popup__sections">
+                        <section id="privacy-general"><h3>1. Общие положения</h3><p>Wake.md уважает вашу конфиденциальность и использует персональные данные только для организации бронирования, оплаты и проведения катаний.</p><p>Отправляя форму бронирования, вы подтверждаете, что ознакомились с настоящей политикой и предоставляете достоверные данные.</p></section>
+                        <section id="privacy-data"><h3>2. Какие данные мы собираем</h3><p>При бронировании мы можем получать:</p><ul><li>имя, номер телефона и адрес электронной почты;</li><li>выбранную дату и время, количество участников и сетов;</li><li>комментарий, который вы добровольно оставляете в форме;</li><li>информацию о статусе бронирования и оплаты.</li></ul><p>Wake.md не получает и не хранит полные данные банковской карты. Они вводятся на защищенной странице платежного провайдера.</p></section>
+                        <section id="privacy-purpose"><h3>3. Как мы используем данные</h3><p>Данные необходимы, чтобы:</p><ul><li>создать, подтвердить, изменить или отменить бронирование;</li><li>связаться с вами по вопросам катания;</li><li>принять оплату и обработать возврат, если это применимо;</li><li>ответить на обращение и решить спорную ситуацию;</li><li>обеспечить стабильную и безопасную работу сайта.</li></ul><p>Мы не продаем персональные данные и не используем их для сторонней рекламы.</p></section>
+                        <section id="privacy-sharing"><h3>4. Передача данных</h3><p>Для работы бронирования и оплаты необходимые данные могут передаваться сервису SimplyBook.me, платежному провайдеру maib и техническим подрядчикам, которые помогают поддерживать сайт.</p><p>Каждому получателю передается только тот объем данных, который нужен для выполнения соответствующей услуги. Данные также могут быть раскрыты, если этого требует применимое законодательство.</p></section>
+                        <section id="privacy-storage"><h3>5. Хранение и защита</h3><p>Мы храним данные столько, сколько необходимо для обработки бронирования, платежей, обращений и выполнения требований законодательства.</p><p>Wake.md и используемые нами сервисы применяют разумные организационные и технические меры защиты. При этом ни один способ передачи или хранения данных в интернете не может гарантировать абсолютную безопасность.</p></section>
+                        <section id="privacy-rights"><h3>6. Ваши права</h3><p>Вы можете запросить информацию о своих данных, их исправление или удаление, а также отозвать согласие на обработку, если это допускается законодательством.</p><p>Некоторые данные могут сохраняться после такого запроса, когда это необходимо для выполнения юридических, бухгалтерских или договорных обязанностей.</p></section>
+                        <section id="privacy-technical"><h3>7. Технические данные</h3><p>При использовании сайта могут автоматически обрабатываться IP-адрес, тип браузера, сведения об устройстве, время запроса и технические журналы. Эти данные используются для безопасности, диагностики ошибок и поддержания работы сайта.</p></section>
+                        <section id="privacy-children"><h3>8. Данные несовершеннолетних</h3><p>Если бронирование оформляется для несовершеннолетнего, необходимые данные должен предоставить его родитель или законный представитель. Не указывайте в комментарии лишние сведения о здоровье или другую чувствительную информацию.</p></section>
+                        <section id="privacy-changes"><h3>9. Изменения политики</h3><p>Wake.md может обновлять настоящую политику при изменении сайта, используемых сервисов или требований законодательства. Актуальная версия всегда публикуется на сайте.</p><p>Дата последнего обновления: 10 июля 2026 года.</p></section>
+                        <section id="privacy-contacts"><h3>10. Контакты</h3><p>По вопросам обработки персональных данных свяжитесь с Wake.md по телефону <a href="tel:+37368884689">+373 68 884 689</a>.</p></section>
+                    </div>
+                </div>
+                <footer class="booking-terms-popup__footer">
+                    <span>© 2026 Wake.md 😎</span>
+                    <div class="booking-payments" aria-label="Способы оплаты">
+                        <img src="assets/design/payments/visa.webp" alt="Visa" loading="lazy" decoding="async" />
+                        <img src="assets/design/payments/mastercard.webp" alt="Mastercard" loading="lazy" decoding="async" />
+                        <img src="assets/design/payments/amex.webp" alt="American Express" loading="lazy" decoding="async" />
+                    </div>
+                </footer>
             </section>
         </div>
     </div>

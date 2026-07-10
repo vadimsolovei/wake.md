@@ -19,6 +19,24 @@
   const infoCloseButtons = infoPopup?.querySelectorAll(
     "[data-booking-info-close]",
   );
+  const termsOpenButton = modal?.querySelector("[data-booking-terms-open]");
+  const termsPopup = modal?.querySelector("[data-booking-terms-popup]");
+  const termsDialog = termsPopup?.querySelector(
+    ".booking-terms-popup__dialog",
+  );
+  const termsCloseButtons = termsPopup?.querySelectorAll(
+    "[data-booking-terms-close]",
+  );
+  const privacyOpenButton = modal?.querySelector(
+    "[data-booking-privacy-open]",
+  );
+  const privacyPopup = modal?.querySelector("[data-booking-privacy-popup]");
+  const privacyDialog = privacyPopup?.querySelector(
+    ".booking-terms-popup__dialog",
+  );
+  const privacyCloseButtons = privacyPopup?.querySelectorAll(
+    "[data-booking-privacy-close]",
+  );
   const submitActions = form?.querySelector("[data-booking-submit-actions]");
   const submitButtons = Array.from(
     form?.querySelectorAll("[data-booking-submit]") || [],
@@ -50,6 +68,8 @@
 
   let lastFocusedElement = null;
   let lastFocusedInfoElement = null;
+  let lastFocusedTermsElement = null;
+  let lastFocusedPrivacyElement = null;
   let datepicker = null;
   let flatpickrAssetsPromise = null;
   let activeDatesRequest = 0;
@@ -908,6 +928,61 @@
     lastFocusedInfoElement = null;
   };
 
+  const isTermsPopupOpen = () => Boolean(termsPopup && !termsPopup.hidden);
+
+  const openTermsPopup = (event) => {
+    event?.preventDefault();
+
+    if (!termsPopup || !termsDialog) return;
+
+    lastFocusedTermsElement = document.activeElement;
+    termsPopup.hidden = false;
+    termsPopup.setAttribute("aria-hidden", "false");
+    termsDialog.scrollTop = 0;
+    window.requestAnimationFrame(() => termsDialog.focus());
+  };
+
+  const closeTermsPopup = ({ restoreFocus = true } = {}) => {
+    if (!termsPopup || termsPopup.hidden) return;
+
+    termsPopup.setAttribute("aria-hidden", "true");
+    termsPopup.hidden = true;
+
+    if (restoreFocus && lastFocusedTermsElement instanceof HTMLElement) {
+      lastFocusedTermsElement.focus();
+    }
+
+    lastFocusedTermsElement = null;
+  };
+
+  const isPrivacyPopupOpen = () =>
+    Boolean(privacyPopup && !privacyPopup.hidden);
+
+  const openPrivacyPopup = (event) => {
+    event?.preventDefault();
+
+    if (!privacyPopup || !privacyDialog) return;
+
+    lastFocusedPrivacyElement = document.activeElement;
+    privacyPopup.hidden = false;
+    privacyPopup.setAttribute("aria-hidden", "false");
+    privacyDialog.scrollTop = 0;
+    window.requestAnimationFrame(() => privacyDialog.focus());
+  };
+
+  const closePrivacyPopup = ({ restoreFocus = true } = {}) => {
+    if (!privacyPopup || privacyPopup.hidden) return;
+
+    privacyPopup.setAttribute("aria-hidden", "true");
+    privacyPopup.hidden = true;
+
+    if (restoreFocus && lastFocusedPrivacyElement instanceof HTMLElement) {
+      lastFocusedPrivacyElement.focus();
+    }
+
+    lastFocusedPrivacyElement = null;
+  };
+
   const openModal = () => {
     lastFocusedElement = document.activeElement;
     lockedScrollY = window.scrollY;
@@ -922,6 +997,8 @@
 
   const closeModal = () => {
     closeInfoPopup({ restoreFocus: false });
+    closeTermsPopup({ restoreFocus: false });
+    closePrivacyPopup({ restoreFocus: false });
     modal.setAttribute("aria-hidden", "true");
     modal.hidden = true;
     document.documentElement.classList.remove("has-booking-modal");
@@ -946,6 +1023,18 @@
 
   infoCloseButtons?.forEach((button) => {
     button.addEventListener("click", () => closeInfoPopup());
+  });
+
+  termsOpenButton?.addEventListener("click", openTermsPopup);
+
+  termsCloseButtons?.forEach((button) => {
+    button.addEventListener("click", () => closeTermsPopup());
+  });
+
+  privacyOpenButton?.addEventListener("click", openPrivacyPopup);
+
+  privacyCloseButtons?.forEach((button) => {
+    button.addEventListener("click", () => closePrivacyPopup());
   });
 
   peopleMinus?.addEventListener("click", () => {
@@ -973,6 +1062,18 @@
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !modal.hidden) {
+      if (isPrivacyPopupOpen()) {
+        event.preventDefault();
+        closePrivacyPopup();
+        return;
+      }
+
+      if (isTermsPopupOpen()) {
+        event.preventDefault();
+        closeTermsPopup();
+        return;
+      }
+
       if (isInfoPopupOpen()) {
         event.preventDefault();
         closeInfoPopup();

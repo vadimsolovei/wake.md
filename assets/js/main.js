@@ -1,4 +1,93 @@
 (() => {
+    const heroLayers = Array.from(document.querySelectorAll(".hero__bg"));
+    const heroAssets = window.__wakeHeroAssets;
+
+    if (heroLayers.length !== 2 || !heroAssets) return;
+
+    const { heroIndexes, heroBaseUrl } = heroAssets;
+    let currentIndex = heroAssets.selectedIndex;
+    let activeLayerIndex = 0;
+    let rotationTimer;
+
+    const isOverlayOpen = () =>
+        document.documentElement.classList.contains("has-booking-modal") ||
+        document.documentElement.classList.contains("has-app-alert");
+
+    const getAssets = (index) => ({
+        desktop: new URL(
+            `hero-desktop-${index}.webp`,
+            heroBaseUrl,
+        ).href,
+        mobile: new URL(
+            `hero-mobile-${index}.webp`,
+            heroBaseUrl,
+        ).href,
+    });
+
+    const preloadImage = (src) =>
+        new Promise((resolve) => {
+            const image = new Image();
+            image.onload = resolve;
+            image.onerror = resolve;
+            image.src = src;
+        });
+
+    const scheduleRotation = () => {
+        window.clearTimeout(rotationTimer);
+
+        if (!document.hidden && !isOverlayOpen()) {
+            rotationTimer = window.setTimeout(rotateHero, 5000);
+        }
+    };
+
+    const rotateHero = async () => {
+        const currentPosition = heroIndexes.indexOf(currentIndex);
+        const nextIndex =
+            heroIndexes[(currentPosition + 1) % heroIndexes.length];
+        const nextAssets = getAssets(nextIndex);
+
+        await Promise.all([
+            preloadImage(nextAssets.desktop),
+            preloadImage(nextAssets.mobile),
+        ]);
+
+        if (document.hidden || isOverlayOpen()) {
+            scheduleRotation();
+            return;
+        }
+
+        const nextLayerIndex = activeLayerIndex === 0 ? 1 : 0;
+        const activeLayer = heroLayers[activeLayerIndex];
+        const nextLayer = heroLayers[nextLayerIndex];
+
+        nextLayer.style.setProperty(
+            "--hero-bg-desktop",
+            `url("${nextAssets.desktop}")`,
+        );
+        nextLayer.style.setProperty(
+            "--hero-bg-mobile",
+            `url("${nextAssets.mobile}")`,
+        );
+
+        window.requestAnimationFrame(() => {
+            activeLayer.classList.remove("is-active");
+            nextLayer.classList.add("is-active");
+        });
+
+        currentIndex = nextIndex;
+        activeLayerIndex = nextLayerIndex;
+        scheduleRotation();
+    };
+
+    document.addEventListener("visibilitychange", scheduleRotation);
+    new MutationObserver(scheduleRotation).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["class"],
+    });
+    scheduleRotation();
+})();
+
+(() => {
     const lazyMediaElements = document.querySelectorAll(
         "[data-bg], [data-poster]",
     );

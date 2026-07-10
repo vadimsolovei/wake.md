@@ -141,7 +141,24 @@ a {
     background-image: var(--hero-bg-desktop);
     background-size: 100% auto;
     background-repeat: no-repeat;
+    opacity: 0;
+    transition: opacity 0.8s ease;
     z-index: 0;
+}
+
+.hero__bg.is-active {
+    opacity: 1;
+}
+
+html.has-booking-modal .hero__bg,
+html.has-app-alert .hero__bg {
+    transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero__bg {
+        transition: none;
+    }
 }
 
 .hero__shadow {
@@ -1619,6 +1636,278 @@ body.has-booking-modal {
     line-height: 1;
 }
 
+.booking-terms-popup[hidden] {
+    display: none;
+}
+
+.booking-terms-popup {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink);
+}
+
+.booking-terms-popup__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 27, 46, 0.42);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.booking-terms-popup__dialog {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 1440px);
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scroll-behavior: smooth;
+    border-radius: 40px;
+    background: var(--bg);
+    box-shadow: 0 28px 90px rgba(17, 27, 45, 0.28);
+    outline: none;
+}
+
+.booking-terms-popup__header {
+    display: grid;
+    grid-template-columns: 100px minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 48px;
+    padding: 40px 40px 40px 160px;
+}
+
+.booking-terms-popup__brand {
+    position: fixed;
+    top: 40px;
+    left: max(40px, calc((100vw - 1440px) / 2 + 40px));
+    z-index: 4;
+    width: 100px;
+    height: 100px;
+    margin: -14px 0 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.booking-terms-popup__brand img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.booking-terms-popup__actions {
+    position: fixed;
+    top: 40px;
+    right: max(40px, calc((100vw - 1440px) / 2 + 40px));
+    z-index: 4;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.booking-terms-popup__icon-btn {
+    width: 72px;
+    height: 72px;
+    border: 1px solid #cee1f4;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+    transition:
+        transform 0.18s ease,
+        background-color 0.18s ease;
+}
+
+.booking-terms-popup__icon-btn:hover,
+.booking-terms-popup__icon-btn:focus-visible {
+    background: #f2f7fc;
+    transform: translateY(-2px);
+    outline: none;
+}
+
+.booking-terms-popup__icon-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+.booking-terms-popup__header h2 {
+    margin: -2px 0 0;
+    font-family: "Montserrat Alternates", sans-serif;
+    font-size: 72px;
+    font-weight: 500;
+    line-height: 1;
+}
+
+.booking-terms-popup__header--privacy h2 {
+    font-size: 60px;
+}
+
+.booking-terms-popup__content,
+.booking-terms-popup__footer {
+    padding-right: 160px;
+    padding-left: 160px;
+}
+
+.booking-terms-popup__toc {
+    margin: 0 0 40px;
+    padding-left: 30px;
+    color: #1d70f1;
+    font-size: 20px;
+    line-height: 32px;
+}
+
+.booking-terms-popup__toc a {
+    color: inherit;
+    text-decoration: underline;
+}
+
+.booking-terms-popup__sections section {
+    scroll-margin-top: 28px;
+    padding-bottom: 40px;
+}
+
+.booking-terms-popup__sections h3 {
+    margin: 0 0 20px;
+    font-size: 40px;
+    font-weight: 500;
+    line-height: 56px;
+}
+
+.booking-terms-popup__sections h4 {
+    margin: 20px 0 8px;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 32px;
+}
+
+.booking-terms-popup__sections p,
+.booking-terms-popup__sections ul {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 20px;
+    line-height: 32px;
+}
+
+.booking-terms-popup__sections ul {
+    padding-left: 30px;
+}
+
+.booking-terms-popup__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 40px;
+    padding-bottom: 40px;
+    border-top: 1px solid rgba(27, 26, 86, 0.18);
+    font-size: 16px;
+    line-height: 20px;
+}
+
+.booking-terms-popup__footer .booking-payments {
+    margin: 0;
+}
+
+@media (max-width: 767px) {
+    .booking-terms-popup__dialog {
+        width: 100%;
+        height: 100%;
+        max-height: none;
+        border-radius: 0;
+    }
+
+    .booking-terms-popup__header {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+        padding: 20px;
+    }
+
+    .booking-terms-popup__brand {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 3;
+        width: 64px;
+        height: 64px;
+        margin: -8px;
+    }
+
+    .booking-terms-popup__header h2 {
+        padding-left: 60px;
+        font-size: clamp(28px, 8.5vw, 40px);
+        line-height: 0.95;
+    }
+
+    .booking-terms-popup__header--privacy h2 {
+        font-size: clamp(20px, 6vw, 28px);
+    }
+
+    .booking-terms-popup__actions {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 3;
+        gap: 6px;
+    }
+
+    .booking-terms-popup__icon-btn {
+        width: 44px;
+        height: 44px;
+    }
+
+    .booking-terms-popup__content,
+    .booking-terms-popup__footer {
+        padding-right: 80px;
+        padding-left: 80px;
+    }
+
+    .booking-terms-popup__toc {
+        margin-bottom: 32px;
+        padding-left: 22px;
+        font-size: 14px;
+        line-height: 22px;
+    }
+
+    .booking-terms-popup__sections section {
+        padding-bottom: 32px;
+    }
+
+    .booking-terms-popup__sections h3 {
+        margin-bottom: 14px;
+        font-size: 26px;
+        line-height: 34px;
+    }
+
+    .booking-terms-popup__sections h4 {
+        margin-top: 16px;
+        font-size: 18px;
+        line-height: 26px;
+    }
+
+    .booking-terms-popup__sections p,
+    .booking-terms-popup__sections ul {
+        margin-bottom: 10px;
+        font-size: 15px;
+        line-height: 23px;
+    }
+
+    .booking-terms-popup__sections ul {
+        padding-left: 22px;
+    }
+
+    .booking-terms-popup__footer {
+        gap: 16px;
+        padding-top: 24px;
+        padding-bottom: 24px;
+        font-size: 13px;
+    }
+}
+
 .app-alert[hidden] {
     display: none;
 }
@@ -2441,6 +2730,8 @@ body.has-booking-modal {
         right: max(40px, calc((100vw - 1440px) / 2 + 40px));
         z-index: 4;
     }
+
+
 
     .booking-modal__content {
         overflow: visible;

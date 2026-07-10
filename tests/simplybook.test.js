@@ -295,6 +295,28 @@ test("booking modal has visible booking button and hidden payment test button", 
   assert.match(css, /\.booking-submit--payment-test \{[\s\S]*?display: none;/);
 });
 
+test("booking privacy link opens a Russian privacy policy modal", () => {
+  const html = fs.readFileSync("index.html", "utf8");
+  const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
+
+  assert.match(html, /data-booking-privacy-open/);
+  assert.match(html, /data-booking-privacy-popup/);
+  assert.match(html, /data-booking-privacy-close/);
+  assert.match(html, /Политика<br \/>конфиденциальности/);
+  assert.match(html, /Какие данные мы собираем/);
+  assert.match(html, /SimplyBook\.me/);
+  assert.match(html, /платежному провайдеру maib/);
+  assert.match(
+    bookingScript,
+    /privacyOpenButton\?\.addEventListener\("click", openPrivacyPopup\)/,
+  );
+  assert.match(bookingScript, /if \(isPrivacyPopupOpen\(\)\)/);
+  assert.match(
+    bookingScript,
+    /closePrivacyPopup\(\{ restoreFocus: false \}\)/,
+  );
+});
+
 test("app alert shows maib booking payment return messages once", () => {
   const alertScript = fs.readFileSync("assets/js/app-alert.js", "utf8");
 
