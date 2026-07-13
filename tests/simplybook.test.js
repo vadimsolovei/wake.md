@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const { spawnSync } = require("node:child_process");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const os = require("node:os");
@@ -53,6 +54,16 @@ const {
   SECURITY_HEADERS,
   applySecurityHeaders,
 } = require("../security-headers");
+const {
+  BOOKING_SUBMIT_ACTIONS_TOKEN,
+  getBookingPaymentRequired,
+  renderBookingSubmitActions,
+  renderBookingSubmitActionsIfNeeded,
+  resolveBookingPaymentMode,
+} = require("../booking-payment");
+const { renderHtmlForBuild } = require("../scripts/build");
+
+process.env.BOOKING_PAYMENT_REQUIRED = "false";
 
 const createMockRes = () => ({
   headers: {},
@@ -151,6 +162,59 @@ test("applies low-risk security headers", () => {
   for (const [header, value] of Object.entries(SECURITY_HEADERS)) {
     assert.equal(res.headers[header.toLowerCase()], value, header);
   }
+});
+
+test("booking payment flag requires an explicit boolean value", () => {
+  assert.equal(
+    getBookingPaymentRequired({ BOOKING_PAYMENT_REQUIRED: " true " }),
+    true,
+  );
+  assert.equal(
+    getBookingPaymentRequired({ BOOKING_PAYMENT_REQUIRED: "FALSE" }),
+    false,
+  );
+  assert.throws(
+    () => getBookingPaymentRequired({}),
+    /BOOKING_PAYMENT_REQUIRED must be explicitly set to true or false/,
+  );
+  assert.throws(
+    () =>
+      getBookingPaymentRequired({ BOOKING_PAYMENT_REQUIRED: "enabled" }),
+    /BOOKING_PAYMENT_REQUIRED must be explicitly set to true or false/,
+  );
+});
+
+test("server fails startup when booking payment flag is missing or invalid", () => {
+  for (const value of [undefined, "enabled"]) {
+    const env = { ...process.env };
+
+    if (value === undefined) {
+      delete env.BOOKING_PAYMENT_REQUIRED;
+    } else {
+      env.BOOKING_PAYMENT_REQUIRED = value;
+    }
+
+    const result = spawnSync(process.execPath, [path.resolve("server.js")], {
+      cwd: os.tmpdir(),
+      encoding: "utf8",
+      env,
+    });
+
+    assert.notEqual(result.status, 0);
+    assert.match(
+      result.stderr,
+      /BOOKING_PAYMENT_REQUIRED must be explicitly set to true or false/,
+    );
+  }
+});
+
+test("payment-required mode overrides every client-selected mode", () => {
+  assert.equal(resolveBookingPaymentMode("book", true), "pay");
+  assert.equal(resolveBookingPaymentMode("pay", true), "pay");
+  assert.equal(resolveBookingPaymentMode(undefined, true), "pay");
+  assert.equal(resolveBookingPaymentMode("manipulated", true), "pay");
+  assert.equal(resolveBookingPaymentMode(undefined, false), "book");
+  assert.equal(resolveBookingPaymentMode("pay", false), "pay");
 });
 
 test("booking submit state disables only until date and time are selected", () => {
@@ -274,25 +338,59 @@ test("booking submit builds form data before payload", () => {
   );
 });
 
-test("booking modal has visible booking button and hidden payment test button", () => {
-  const html = fs.readFileSync("index.html", "utf8");
+test("booking modal renders submit actions for the configured payment mode", () => {
+  const template = fs.readFileSync("index.html", "utf8");
   const css = fs.readFileSync("styles.css", "utf8");
-  const submitActions = html.match(
+  const bookingHtml = renderBookingSubmitActions(template, false);
+  const paymentHtml = renderBookingSubmitActions(template, true);
+  const bookingActions = bookingHtml.match(
+    /<div class="booking-submit-actions"[\s\S]*?<\/div>/,
+  )?.[0];
+  const paymentActions = paymentHtml.match(
     /<div class="booking-submit-actions"[\s\S]*?<\/div>/,
   )?.[0];
 
-  assert.ok(submitActions);
-  assert.match(html, /data-booking-submit-actions/);
-  assert.match(submitActions, /data-booking-submit/);
-  assert.match(submitActions, /Забронировать/);
-  assert.match(submitActions, /Оплатить/);
-  assert.match(submitActions, /data-booking-payment-mode="book"/);
-  assert.match(submitActions, /data-booking-payment-mode="pay"/);
+  assert.match(template, new RegExp(BOOKING_SUBMIT_ACTIONS_TOKEN));
+  assert.ok(bookingActions);
+  assert.match(bookingActions, /Забронировать/);
+  assert.match(bookingActions, /Оплатить/);
+  assert.match(bookingActions, /data-booking-payment-mode="book"/);
+  assert.match(bookingActions, /data-booking-payment-mode="pay"/);
+  assert.match(bookingActions, /booking-submit--payment-test/);
   assert.equal(
-    (submitActions.match(/data-booking-submit(?=[\s>])/g) || []).length,
+    (bookingActions.match(/data-booking-submit(?=[\s>])/g) || []).length,
     2,
   );
+
+  assert.ok(paymentActions);
+  assert.match(paymentActions, /Оплатить/);
+  assert.match(paymentActions, /data-booking-payment-mode="pay"/);
+  assert.doesNotMatch(paymentActions, /Забронировать/);
+  assert.doesNotMatch(paymentActions, /data-booking-payment-mode="book"/);
+  assert.doesNotMatch(paymentActions, /booking-submit--payment-test/);
+  assert.equal(
+    (paymentActions.match(/data-booking-submit(?=[\s>])/g) || []).length,
+    1,
+  );
   assert.match(css, /\.booking-submit--payment-test \{[\s\S]*?display: none;/);
+});
+
+test("production build resolves booking submit actions before writing HTML", () => {
+  const template = fs.readFileSync("index.html", "utf8");
+  const taplinkTemplate = fs.readFileSync("taplink/index.html", "utf8");
+  const paymentHtml = renderHtmlForBuild("index.html", template, true);
+
+  assert.doesNotMatch(paymentHtml, new RegExp(BOOKING_SUBMIT_ACTIONS_TOKEN));
+  assert.match(paymentHtml, /data-booking-payment-mode="pay"/);
+  assert.doesNotMatch(paymentHtml, /data-booking-payment-mode="book"/);
+  assert.equal(
+    renderHtmlForBuild("taplink/index.html", taplinkTemplate, true),
+    taplinkTemplate,
+  );
+  assert.equal(
+    renderBookingSubmitActionsIfNeeded(paymentHtml, true),
+    paymentHtml,
+  );
 });
 
 test("booking privacy link opens a Russian privacy policy modal", () => {
@@ -1650,7 +1748,7 @@ test("create endpoint books one selected time for one person", async () => {
   assert.equal(Object.hasOwn(body.bookings[0], "hash"), false);
 });
 
-test("create endpoint returns maib checkout URL when payment is required", async () => {
+test("payment-required mode forces a forged booking request through maib", async () => {
   resetTokenCache();
   resetMaibTokenCache();
 
@@ -1663,6 +1761,7 @@ test("create endpoint returns maib checkout URL when payment is required", async
     SIMPLYBOOK_PROVIDER_ID: process.env.SIMPLYBOOK_PROVIDER_ID,
     SIMPLYBOOK_PEOPLE_FIELD_NAME: process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME,
     BOOKING_TIMEZONE: process.env.BOOKING_TIMEZONE,
+    BOOKING_PAYMENT_REQUIRED: process.env.BOOKING_PAYMENT_REQUIRED,
   };
   const storePath = createPaymentStorePath();
   const restorePaymentEnv = setPaymentEnv(storePath);
@@ -1675,6 +1774,7 @@ test("create endpoint returns maib checkout URL when payment is required", async
   process.env.SIMPLYBOOK_PROVIDER_ID = "2";
   process.env.SIMPLYBOOK_PEOPLE_FIELD_NAME = "people_field_hash";
   process.env.BOOKING_TIMEZONE = "UTC";
+  process.env.BOOKING_PAYMENT_REQUIRED = "true";
 
   global.fetch = async (url, options) => {
     calls.push({
@@ -1773,7 +1873,7 @@ test("create endpoint returns maib checkout URL when payment is required", async
       peopleCount: 1,
       date: "2026-06-10",
       times: ["09:00", "10:00"],
-      paymentMode: "pay",
+      paymentMode: "book",
       acceptedTerms: true,
     },
   };

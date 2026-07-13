@@ -12,6 +12,10 @@ const {
 const { getPaymentConfig } = require("../payments/_common");
 const { createDirectMaibPayment } = require("../payments/direct");
 const { getPhoneValidationResult } = require("../phone/_phone");
+const {
+    getBookingPaymentRequired,
+    resolveBookingPaymentMode,
+} = require("../../booking-payment");
 
 const NAME_MAX_LENGTH = 80;
 const EMAIL_MAX_LENGTH = 254;
@@ -45,14 +49,17 @@ const readBody = async (req) => {
     }
 };
 
-const validatePayload = (body) => {
+const validatePayload = (body, paymentRequired) => {
     const name = String(body.name || "").trim();
     const rawEmail = String(body.email || "");
     const email = rawEmail.trim();
     const phone = String(body.phone || "").trim();
     const comment = String(body.comment || "").trim();
     const date = String(body.date || "").trim();
-    const paymentMode = String(body.paymentMode || "book").trim();
+    const paymentMode = resolveBookingPaymentMode(
+        body.paymentMode,
+        paymentRequired,
+    );
     const rawTimes = Array.isArray(body.times) ? body.times : [body.time];
     if (!rawTimes.length) {
         throw new BookingError(
@@ -353,7 +360,8 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        const payload = validatePayload(await readBody(req));
+        const paymentRequired = getBookingPaymentRequired();
+        const payload = validatePayload(await readBody(req), paymentRequired);
         const config = getConfig();
         const shouldCreatePayment = payload.paymentMode === "pay";
         const paymentConfig = shouldCreatePayment

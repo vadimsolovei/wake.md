@@ -4,6 +4,10 @@ const path = require("node:path");
 const CleanCSS = require("clean-css");
 const { minify: minifyHtml } = require("html-minifier-terser");
 const { minify: minifyJs } = require("terser");
+const {
+    getBookingPaymentRequired,
+    renderBookingSubmitActions,
+} = require("../booking-payment");
 
 const rootDir = path.resolve(__dirname, "..");
 const distDir = path.join(rootDir, "dist");
@@ -105,11 +109,18 @@ function rewriteHtmlReferences(html, assetManifest) {
     );
 }
 
-async function writeHtml(sourcePath, outputPath, assetManifest) {
+function renderHtmlForBuild(sourcePath, html, paymentRequired) {
+    if (sourcePath !== "index.html") return html;
+
+    return renderBookingSubmitActions(html, paymentRequired);
+}
+
+async function writeHtml(sourcePath, outputPath, assetManifest, paymentRequired) {
     const absoluteSourcePath = path.join(rootDir, sourcePath);
     const absoluteOutputPath = path.join(distDir, outputPath);
     const source = await fs.readFile(absoluteSourcePath, "utf8");
-    const rewritten = rewriteHtmlReferences(source, assetManifest);
+    const rendered = renderHtmlForBuild(sourcePath, source, paymentRequired);
+    const rewritten = rewriteHtmlReferences(rendered, assetManifest);
     const minified = await minifyHtml(rewritten, htmlOptions);
 
     await fs.mkdir(path.dirname(absoluteOutputPath), { recursive: true });
@@ -117,6 +128,8 @@ async function writeHtml(sourcePath, outputPath, assetManifest) {
 }
 
 async function build() {
+    const paymentRequired = getBookingPaymentRequired();
+
     await fs.rm(distDir, { recursive: true, force: true });
     await fs.mkdir(distDir, { recursive: true });
     await copyPublicAssets();
@@ -127,13 +140,24 @@ async function build() {
         assetManifest[sourcePath] = await writeHashedAsset(sourcePath, outputPath);
     }
 
-    await writeHtml("index.html", "index.html", assetManifest);
-    await writeHtml("taplink/index.html", "taplink/index.html", assetManifest);
+    await writeHtml("index.html", "index.html", assetManifest, paymentRequired);
+    await writeHtml(
+        "taplink/index.html",
+        "taplink/index.html",
+        assetManifest,
+        paymentRequired,
+    );
 
     console.log(`Built ${path.relative(rootDir, distDir)}`);
 }
 
-build().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-});
+if (require.main === module) {
+    require("dotenv").config({ path: path.join(rootDir, ".env") });
+
+    build().catch((error) => {
+        console.error(error);
+        process.exitCode = 1;
+    });
+}
+
+module.exports = { renderHtmlForBuild };

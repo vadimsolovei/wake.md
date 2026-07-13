@@ -110,7 +110,7 @@ const getPaymentConfig = (env = process.env, options = {}) => {
         sbpaySecret: env.SBPAY_SECRET || "",
         sbpayMerchant: env.SBPAY_MERCHANT || "",
         maibBaseUrl: trimTrailingSlash(
-            env.MAIB_BASE_URL || "https://sandbox.maibmerchants.md",
+            env.MAIB_BASE_URL || "https://api.maibmerchants.md",
         ),
         maibClientId: env.MAIB_CLIENT_ID || "",
         maibClientSecret: env.MAIB_CLIENT_SECRET || "",

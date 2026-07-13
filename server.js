@@ -18,11 +18,16 @@ const {
     sbpayRebillHandler,
     sbpayRefundHandler,
 } = require("./api/payments/sbpay");
+const {
+    getBookingPaymentRequired,
+    renderBookingSubmitActionsIfNeeded,
+} = require("./booking-payment");
 const { applySecurityHeaders } = require("./security-headers");
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
 const isProduction = process.env.NODE_ENV === "production";
+const bookingPaymentRequired = getBookingPaymentRequired();
 const publicDir = isProduction ? path.join(__dirname, "dist") : __dirname;
 const indexPath = path.join(publicDir, "index.html");
 const taplinkIndexPath = path.join(publicDir, "taplink", "index.html");
@@ -67,7 +72,14 @@ function sendIndex(req, res, next) {
 
         try {
             setNoStoreHeaders(res);
-            res.type("html").send(addAssetVersions(html));
+            res.type("html").send(
+                addAssetVersions(
+                    renderBookingSubmitActionsIfNeeded(
+                        html,
+                        bookingPaymentRequired,
+                    ),
+                ),
+            );
         } catch (assetError) {
             next(assetError);
         }
