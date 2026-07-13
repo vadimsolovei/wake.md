@@ -992,6 +992,11 @@
     document.documentElement.classList.add("has-booking-modal");
     document.body.classList.add("has-booking-modal");
     refreshBookingAvailability();
+
+    if (window.location.hash !== "#booking") {
+      history.pushState(null, null, "#booking");
+    }
+
     window.requestAnimationFrame(() => dialog.focus());
   };
 
@@ -1005,6 +1010,10 @@
     document.body.classList.remove("has-booking-modal");
     document.body.style.top = "";
     window.scrollTo(0, lockedScrollY);
+
+    if (window.location.hash === "#booking") {
+      history.replaceState(null, null, window.location.pathname + window.location.search);
+    }
 
     if (lastFocusedElement instanceof HTMLElement) {
       lastFocusedElement.focus();
@@ -1176,6 +1185,21 @@
       updateSubmitState();
     }
   });
+
+  const checkHashAndOpenModal = () => {
+    if (window.location.hash === "#booking") {
+      if (modal.hidden) {
+        openModal();
+      }
+    } else {
+      if (!modal.hidden) {
+        closeModal();
+      }
+    }
+  };
+
+  window.addEventListener("hashchange", checkHashAndOpenModal);
+  checkHashAndOpenModal();
 
   updatePeopleOutput();
   updatePriceSummary();

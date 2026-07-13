@@ -998,7 +998,7 @@ test("dates endpoint returns available dates for a requested month", async () =>
     method: "GET",
     query: {
       year: "2026",
-      month: "7",
+      month: "8",
     },
   };
   const res = {
@@ -1037,8 +1037,8 @@ test("dates endpoint returns available dates for a requested month", async () =>
     availabilityCall.body.params[0],
   ]);
   assert.equal(availabilityCalls.length, 1);
-  assert.equal(availabilityCall.body.params[0].slice(5), "07-01");
-  assert.equal(availabilityCall.body.params[1].slice(5), "07-31");
+  assert.equal(availabilityCall.body.params[0].slice(5), "08-01");
+  assert.equal(availabilityCall.body.params[1].slice(5), "08-31");
   assert.deepEqual(availabilityCall.body.params, [
     availabilityCall.body.params[0],
     availabilityCall.body.params[1],
@@ -1084,7 +1084,7 @@ test("dates endpoint falls back to closest available date if requested month is 
     if (body.method === "getFirstWorkingDay") {
       return {
         ok: true,
-        json: async () => ({ result: "2026-08-12" }),
+        json: async () => ({ result: "2026-09-12" }),
       };
     }
 
@@ -1093,8 +1093,8 @@ test("dates endpoint falls back to closest available date if requested month is 
         ok: true,
         json: async () => ({
           result: {
-            "2026-08-12": ["09:00:00"],
-            "2026-08-13": [],
+            "2026-09-12": ["09:00:00"],
+            "2026-09-13": [],
           },
         }),
       };
@@ -1141,15 +1141,15 @@ test("dates endpoint falls back to closest available date if requested month is 
   assert.ok(workingDayCall);
   assert.deepEqual(workingDayCall.body.params, [2]); // config.providerId = 2
   assert.ok(matrixCall);
-  // firstDay of the matrix call should be max(firstWorkingDay, startOfMonth) -> 2026-08-01
-  assert.equal(matrixCall.body.params[0], "2026-08-01");
-  assert.equal(matrixCall.body.params[1], "2026-08-31");
+  // firstDay of the matrix call should be max(firstWorkingDay, startOfMonth) -> 2026-09-01
+  assert.equal(matrixCall.body.params[0], "2026-09-01");
+  assert.equal(matrixCall.body.params[1], "2026-09-30");
 
   const responseJson = JSON.parse(res.body);
   assert.equal(res.statusCode, 200);
-  assert.deepEqual(responseJson.dates, ["2026-08-12"]);
+  assert.deepEqual(responseJson.dates, ["2026-09-12"]);
   assert.equal(responseJson.year, 2026);
-  assert.equal(responseJson.month, 8);
+  assert.equal(responseJson.month, 9);
 });
 
 test("times endpoint requests slots without people count filtering", async () => {
