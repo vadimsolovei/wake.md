@@ -286,28 +286,24 @@ test("booking contact fields are marked as required", () => {
   assert.doesNotMatch(comment, /aria-required="true"/, "comment");
 });
 
-test("booking phone prefix alone does not satisfy mandatory phone validation", () => {
+test("booking phone requires at least 8 digits", () => {
   const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
 
-  assert.match(
-    bookingScript,
-    /const DEFAULT_PHONE_PREFIX = "373";/,
-  );
   assert.match(
     bookingScript,
     /const PHONE_REQUIRED_MESSAGE = "Введите номер телефона\.";/,
   );
   assert.match(
     bookingScript,
-    /const isPhoneMissing = \(value\) =>\s+!value\.trim\(\) \|\| value\.replace\(\/\\D\/g, ""\) === DEFAULT_PHONE_PREFIX;/,
+    /const PHONE_MIN_DIGITS_MESSAGE = "Введите минимум 8 цифр\.";/,
   );
   assert.match(
     bookingScript,
-    /phoneInput\.setCustomValidity\(PHONE_REQUIRED_MESSAGE\);/,
+    /if \(digits\.length < 8\) \{\s+phoneInput\.setCustomValidity\(PHONE_MIN_DIGITS_MESSAGE\);/,
   );
   assert.match(
     bookingScript,
-    /updatePhoneRequiredValidity\(\);\s+if \(!form\.reportValidity\(\)\) return;/,
+    /updatePhoneValidity\(\);\s+if \(!form\.reportValidity\(\)\) return;/,
   );
 });
 
@@ -398,6 +394,8 @@ test("booking privacy link opens a Russian privacy policy modal", () => {
   const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
 
   assert.match(html, /data-booking-privacy-open/);
+  assert.match(html, /data-footer-privacy-open/);
+  assert.match(html, /data-footer-terms-open/);
   assert.match(html, /data-booking-privacy-popup/);
   assert.match(html, /data-booking-privacy-close/);
   assert.match(html, /Политика<br \/>конфиденциальности/);
@@ -412,6 +410,26 @@ test("booking privacy link opens a Russian privacy policy modal", () => {
   assert.match(
     bookingScript,
     /closePrivacyPopup\(\{ restoreFocus: false \}\)/,
+  );
+  assert.match(
+    bookingScript,
+    /setupPopupTableOfContents\(termsPopup\)/,
+  );
+  assert.match(
+    bookingScript,
+    /setupPopupTableOfContents\(privacyPopup\)/,
+  );
+  assert.match(
+    bookingScript,
+    /footerTermsOpenButton\?\.addEventListener\("click"/,
+  );
+  assert.match(
+    bookingScript,
+    /footerPrivacyOpenButton\?\.addEventListener\("click"/,
+  );
+  assert.match(
+    bookingScript,
+    /event\.preventDefault\(\);[\s\S]*?target\.scrollIntoView/,
   );
 });
 
@@ -445,42 +463,23 @@ test("app alert shows maib booking payment return messages once", () => {
   assert.doesNotMatch(alertScript, /window\.location\.search\s*=/);
 });
 
-test("booking phone field accepts international typed prefixes", () => {
+test("booking phone field is a simple number input", () => {
   const html = fs.readFileSync("index.html", "utf8");
   const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
   const input = html.match(/<input[\s\S]*?name="phone"[\s\S]*?>/)?.[0];
-  const indicator = html.match(
-    /<span[\s\S]*?data-booking-phone-indicator[\s\S]*?>🇲🇩\s*\+<\/span>/,
-  )?.[0];
 
   assert.ok(input);
-  assert.ok(indicator);
-  assert.match(input, /type="tel"/);
-  assert.match(input, /inputmode="tel"/);
-  assert.match(input, /value="373"/);
-  assert.match(input, /placeholder="373 68 884 689 \*"/);
-  assert.doesNotMatch(input, /pattern="\[0-9\]\{8\}"/);
-  assert.doesNotMatch(input, /minlength="8"/);
-  assert.doesNotMatch(input, /maxlength="8"/);
-  assert.doesNotMatch(html, /🇲🇩 \+373/);
-  assert.match(bookingScript, /fetchPhoneValidation/);
-  assert.match(bookingScript, /fetchPhoneValidation\(input\)/);
-  assert.doesNotMatch(bookingScript, /getPhoneValidationInput/);
-  assert.doesNotMatch(bookingScript, /return `373\$\{digits\}`/);
-  assert.match(bookingScript, /const PHONE_VALIDATION_DEBOUNCE_MS = 500;/);
-  assert.match(
-    bookingScript,
-    /window\.setTimeout\(\(\) => \{\s*validateCurrentPhone\(\);\s*\}, PHONE_VALIDATION_DEBOUNCE_MS\)/,
-  );
-  assert.match(
-    bookingScript,
-    /if \(!phoneInput\.value\.trim\(\)\) \{\s*updatePhoneIndicator\(\);\s*\}/,
-  );
-  assert.match(bookingScript, /phone: phoneResult\.e164/);
-  assert.doesNotMatch(bookingScript, /slice\(0, 8\)/);
+  assert.match(input, /type="number"/);
+  assert.match(input, /inputmode="numeric"/);
+  assert.match(input, /placeholder="Номер телефона \*"/);
+  assert.doesNotMatch(html, /data-booking-phone-indicator/);
+  assert.doesNotMatch(bookingScript, /fetchPhoneValidation/);
+  assert.doesNotMatch(bookingScript, /\/api\/phone\/validate/);
+  assert.match(bookingScript, /const getPhoneDigits = \(value\) => value\.replace\(\/\\D\/g, ""\);/);
+  assert.match(bookingScript, /phone: getPhoneDigits\(String\(formData\.get\("phone"\) \|\| ""\)\)/);
 });
 
-test("phone validate endpoint detects and validates international numbers", async () => {
+test("preserved phone validation endpoint detects international numbers", async () => {
   const cases = [
     {
       label: "Moldova",
@@ -1533,7 +1532,7 @@ test("create endpoint books each selected time", async () => {
         {
           name: "O'Connor-Мария Попеску Jr.",
           email: "guest@example.com",
-          phone: "+37368884689",
+          phone: "37368884689",
         },
         {
           people_field_hash: 2,
@@ -1550,7 +1549,7 @@ test("create endpoint books each selected time", async () => {
         {
           name: "O'Connor-Мария Попеску Jr.",
           email: "guest@example.com",
-          phone: "+37368884689",
+          phone: "37368884689",
         },
         {
           people_field_hash: 2,
@@ -1958,7 +1957,7 @@ test("payment-required mode forces a forged booking request through maib", async
   assert.equal(storedOrder.nextSetCount, 1);
 });
 
-test("create endpoint requires a valid phone country prefix", async () => {
+test("create endpoint requires at least 8 phone digits", async () => {
   resetTokenCache();
 
   const previousFetch = global.fetch;
@@ -1966,17 +1965,12 @@ test("create endpoint requires a valid phone country prefix", async () => {
     {
       label: "too short",
       phone: "+3736",
-      message: "Введите корректный международный номер телефона.",
+      message: "Введите минимум 8 цифр.",
     },
     {
       label: "too short without plus",
       phone: "3736",
-      message: "Введите корректный международный номер телефона.",
-    },
-    {
-      label: "invalid prefix",
-      phone: "+999123456",
-      message: "Введите корректный международный номер телефона.",
+      message: "Введите минимум 8 цифр.",
     },
   ];
 

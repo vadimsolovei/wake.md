@@ -11,7 +11,6 @@ const {
 } = require("../_simplybook");
 const { getPaymentConfig } = require("../payments/_common");
 const { createDirectMaibPayment } = require("../payments/direct");
-const { getPhoneValidationResult } = require("../phone/_phone");
 const {
     getBookingPaymentRequired,
     resolveBookingPaymentMode,
@@ -54,6 +53,7 @@ const validatePayload = (body, paymentRequired) => {
     const rawEmail = String(body.email || "");
     const email = rawEmail.trim();
     const phone = String(body.phone || "").trim();
+    const phoneDigits = phone.replace(/\D/g, "");
     const comment = String(body.comment || "").trim();
     const date = String(body.date || "").trim();
     const paymentMode = resolveBookingPaymentMode(
@@ -146,7 +146,7 @@ const validatePayload = (body, paymentRequired) => {
         );
     }
 
-    if (!phone) {
+    if (!phoneDigits) {
         throw new BookingError(
             "Введите номер телефона.",
             400,
@@ -154,11 +154,9 @@ const validatePayload = (body, paymentRequired) => {
         );
     }
 
-    const phoneValidation = getPhoneValidationResult(phone);
-
-    if (!phoneValidation.valid) {
+    if (phoneDigits.length < 8) {
         throw new BookingError(
-            phoneValidation.message || "Введите корректный номер телефона.",
+            "Введите минимум 8 цифр.",
             400,
             "INVALID_PHONE",
         );
@@ -192,7 +190,7 @@ const validatePayload = (body, paymentRequired) => {
         clientData: {
             name,
             email,
-            phone: phoneValidation.e164,
+            phone,
         },
         date,
         times,

@@ -37,13 +37,18 @@
   const privacyCloseButtons = privacyPopup?.querySelectorAll(
     "[data-booking-privacy-close]",
   );
+  const footerTermsOpenButton = document.querySelector(
+    "[data-footer-terms-open]",
+  );
+  const footerPrivacyOpenButton = document.querySelector(
+    "[data-footer-privacy-open]",
+  );
   const submitActions = form?.querySelector("[data-booking-submit-actions]");
   const submitButtons = Array.from(
     form?.querySelectorAll("[data-booking-submit]") || [],
   );
   const termsCheckbox = form?.querySelector("input[name='terms']");
   const phoneInput = form?.querySelector("input[name='phone']");
-  const phoneIndicator = form?.querySelector("[data-booking-phone-indicator]");
   const submitPlaceholder = form?.querySelector(
     "[data-booking-submit-placeholder]",
   );
@@ -53,9 +58,8 @@
 
   const FIRST_SET_PRICE = 600;
   const NEXT_SET_PRICE = 400;
-  const DEFAULT_PHONE_PREFIX = "373";
   const PHONE_REQUIRED_MESSAGE = "Введите номер телефона.";
-  const PHONE_VALIDATION_DEBOUNCE_MS = 500;
+  const PHONE_MIN_DIGITS_MESSAGE = "Введите минимум 8 цифр.";
   const BOOKING_UNAVAILABLE_MESSAGE =
     "Сервис бронирования временно недоступен.";
   const FLATPICKR_STYLE_URL =
@@ -70,18 +74,13 @@
   let lastFocusedInfoElement = null;
   let lastFocusedTermsElement = null;
   let lastFocusedPrivacyElement = null;
+  let legalPopupOpenedFromFooter = false;
   let datepicker = null;
   let flatpickrAssetsPromise = null;
   let activeDatesRequest = 0;
   let activeTimesRequest = 0;
-  let activePhoneRequest = 0;
-  let phoneValidationTimer = 0;
   let isBookingReady = false;
   let lockedScrollY = 0;
-  let phoneValidation = {
-    input: "",
-    result: null,
-  };
 
   const bookingState = {
     selectedDate: "",
@@ -235,15 +234,6 @@
     return Array.isArray(data.times) ? data.times : [];
   };
 
-  const fetchPhoneValidation = async (phone) => {
-    const params = new URLSearchParams({ phone });
-    const data = await fetch(`/api/phone/validate?${params.toString()}`, {
-      cache: "no-store",
-    }).then(readJsonResponse);
-
-    return data.phone || null;
-  };
-
   const submitBooking = async (payload) => {
     const response = await fetch("/api/booking/create", {
       method: "POST",
@@ -259,105 +249,25 @@
   const formatPrice = (amount, unit = "лей") =>
     `${new Intl.NumberFormat("ru-RU").format(amount)} ${unit}`;
 
-  const sanitizePhoneInput = (value) => {
-    let sanitized = value.replace(/[^\d()+\-\s]/g, "");
+  const getPhoneDigits = (value) => value.replace(/\D/g, "");
 
-    if (sanitized.includes("+")) {
-      sanitized =
-        sanitized.slice(0, sanitized.indexOf("+") + 1) +
-        sanitized.slice(sanitized.indexOf("+") + 1).replace(/\+/g, "");
-    }
-
-    return sanitized;
-  };
-
-  const isPhoneMissing = (value) =>
-    !value.trim() || value.replace(/\D/g, "") === DEFAULT_PHONE_PREFIX;
-
-  const updatePhoneRequiredValidity = () => {
+  const updatePhoneValidity = () => {
     if (!phoneInput) return true;
 
-    if (isPhoneMissing(phoneInput.value)) {
+    const digits = getPhoneDigits(phoneInput.value);
+
+    if (!digits) {
       phoneInput.setCustomValidity(PHONE_REQUIRED_MESSAGE);
+      return false;
+    }
+
+    if (digits.length < 8) {
+      phoneInput.setCustomValidity(PHONE_MIN_DIGITS_MESSAGE);
       return false;
     }
 
     phoneInput.setCustomValidity("");
     return true;
-  };
-
-  const updatePhoneIndicator = (result = null) => {
-    if (!phoneIndicator) return;
-
-    phoneIndicator.textContent = result?.flag ? `${result.flag} +` : "+";
-  };
-
-  const applyPhoneValidationResult = (input, result) => {
-    phoneValidation = { input, result };
-    updatePhoneIndicator(result);
-
-    if (!phoneInput) return;
-
-    phoneInput.setCustomValidity(result?.valid ? "" : result?.message || "");
-  };
-
-  const validateCurrentPhone = async ({ report = false } = {}) => {
-    if (!phoneInput) return null;
-
-    const input = phoneInput.value.trim();
-
-    if (isPhoneMissing(input)) {
-      phoneValidation = { input: "", result: null };
-      phoneInput.setCustomValidity(PHONE_REQUIRED_MESSAGE);
-      if (!input) {
-        updatePhoneIndicator();
-      }
-      if (report) {
-        phoneInput.reportValidity();
-      }
-      return null;
-    }
-
-    if (phoneValidation.input === input && phoneValidation.result) {
-      if (report && !phoneValidation.result.valid) {
-        phoneInput.reportValidity();
-      }
-      return phoneValidation.result;
-    }
-
-    const requestId = ++activePhoneRequest;
-
-    try {
-      const result = await fetchPhoneValidation(input);
-
-      if (requestId !== activePhoneRequest) return null;
-
-      applyPhoneValidationResult(input, result);
-
-      if (report && !result?.valid) {
-        phoneInput.reportValidity();
-      }
-
-      return result;
-    } catch (error) {
-      if (requestId !== activePhoneRequest) return null;
-
-      phoneValidation = { input, result: null };
-      phoneInput.setCustomValidity("Не удалось проверить номер телефона.");
-
-      if (report) {
-        phoneInput.reportValidity();
-      }
-
-      return null;
-    }
-  };
-
-  const schedulePhoneValidation = () => {
-    window.clearTimeout(phoneValidationTimer);
-    phoneValidationTimer = window.setTimeout(() => {
-      validateCurrentPhone();
-    }, PHONE_VALIDATION_DEBOUNCE_MS);
   };
 
   const calculateBookingPrice = () => {
@@ -945,6 +855,8 @@
   const closeTermsPopup = ({ restoreFocus = true } = {}) => {
     if (!termsPopup || termsPopup.hidden) return;
 
+    const shouldCloseModal = legalPopupOpenedFromFooter;
+
     termsPopup.setAttribute("aria-hidden", "true");
     termsPopup.hidden = true;
 
@@ -953,6 +865,9 @@
     }
 
     lastFocusedTermsElement = null;
+    legalPopupOpenedFromFooter = false;
+
+    if (shouldCloseModal) closeModal();
   };
 
   const isPrivacyPopupOpen = () =>
@@ -973,6 +888,8 @@
   const closePrivacyPopup = ({ restoreFocus = true } = {}) => {
     if (!privacyPopup || privacyPopup.hidden) return;
 
+    const shouldCloseModal = legalPopupOpenedFromFooter;
+
     privacyPopup.setAttribute("aria-hidden", "true");
     privacyPopup.hidden = true;
 
@@ -981,6 +898,26 @@
     }
 
     lastFocusedPrivacyElement = null;
+    legalPopupOpenedFromFooter = false;
+
+    if (shouldCloseModal) closeModal();
+  };
+
+  const setupPopupTableOfContents = (popup) => {
+    popup
+      ?.querySelectorAll(".booking-terms-popup__toc a[href^='#']")
+      .forEach((link) => {
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+
+          const targetId = link.getAttribute("href")?.slice(1);
+          const target = targetId ? document.getElementById(targetId) : null;
+
+          if (target && popup.contains(target)) {
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        });
+      });
   };
 
   const openModal = () => {
@@ -1001,6 +938,7 @@
   };
 
   const closeModal = () => {
+    legalPopupOpenedFromFooter = false;
     closeInfoPopup({ restoreFocus: false });
     closeTermsPopup({ restoreFocus: false });
     closePrivacyPopup({ restoreFocus: false });
@@ -1042,9 +980,26 @@
 
   privacyOpenButton?.addEventListener("click", openPrivacyPopup);
 
+  footerTermsOpenButton?.addEventListener("click", (event) => {
+    event.preventDefault();
+    legalPopupOpenedFromFooter = true;
+    openModal();
+    openTermsPopup();
+  });
+
+  footerPrivacyOpenButton?.addEventListener("click", (event) => {
+    event.preventDefault();
+    legalPopupOpenedFromFooter = true;
+    openModal();
+    openPrivacyPopup();
+  });
+
   privacyCloseButtons?.forEach((button) => {
     button.addEventListener("click", () => closePrivacyPopup());
   });
+
+  setupPopupTableOfContents(termsPopup);
+  setupPopupTableOfContents(privacyPopup);
 
   peopleMinus?.addEventListener("click", () => {
     setPeopleCount(bookingState.peopleCount - 1);
@@ -1056,13 +1011,7 @@
 
   termsCheckbox?.addEventListener("change", updateSubmitState);
   phoneInput?.addEventListener("input", () => {
-    phoneInput.value = sanitizePhoneInput(phoneInput.value);
-    phoneInput.setCustomValidity("");
-    phoneValidation = { input: "", result: null };
-    if (!phoneInput.value.trim()) {
-      updatePhoneIndicator();
-    }
-    schedulePhoneValidation();
+    updatePhoneValidity();
   });
   window.addEventListener("resize", () => {
     updatePriceSummary();
@@ -1096,13 +1045,9 @@
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    updatePhoneRequiredValidity();
+    updatePhoneValidity();
 
     if (!form.reportValidity()) return;
-
-    const phoneResult = await validateCurrentPhone({ report: true });
-
-    if (!phoneResult?.valid) return;
 
     if (!bookingState.selectedDate) {
       await window.showAppAlert({
@@ -1142,7 +1087,7 @@
     const payload = {
       name: String(formData.get("name") || "").trim(),
       email: String(formData.get("email") || "").trim(),
-      phone: phoneResult.e164,
+      phone: getPhoneDigits(String(formData.get("phone") || "")),
       comment: String(formData.get("comment") || "").trim(),
       peopleCount: bookingState.peopleCount,
       date: bookingState.selectedDate,

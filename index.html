@@ -877,8 +877,8 @@
                 <div class="footer__row">
                     <p>© 2026 Wake.md <span class="emoji">😎</span></p>
                     <nav class="footer__links" aria-label="Legal">
-                        <a href="#">Политика конфиденциальности</a>
-                        <a href="#">Условия использования</a>
+                        <a href="#" data-footer-privacy-open>Политика конфиденциальности</a>
+                        <a href="#" data-footer-terms-open>Условия использования</a>
                         <div class="footer__payments" aria-label="Способы оплаты">
                             <img src="assets/design/payments/visa.webp" alt="Visa" loading="lazy" decoding="async" />
                             <img src="assets/design/payments/mastercard.webp" alt="Mastercard" loading="lazy"
@@ -1007,12 +1007,10 @@
                                 <input name="name" autocomplete="name" maxlength="80" aria-required="true"
                                     placeholder="Имя *" title="Символы &lt; и &gt; не допускаются" required />
                             </label>
-                            <label class="booking-field booking-phone">
+                            <label class="booking-field">
                                 <span>Телефон</span>
-                                <span class="booking-phone__code" data-booking-phone-indicator aria-hidden="true">🇲🇩
-                                    +</span>
-                                <input name="phone" type="tel" autocomplete="tel" inputmode="tel" aria-required="true"
-                                    value="373" placeholder="373 68 884 689 *" title="Введите номер с кодом страны"
+                                <input name="phone" type="number" autocomplete="tel" inputmode="numeric" min="0" step="1"
+                                    aria-required="true" placeholder="Номер телефона *" title="Введите минимум 8 цифр"
                                     required />
                             </label>
                             <label class="booking-field booking-field--wide">

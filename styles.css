@@ -2358,19 +2358,15 @@ body.has-booking-modal {
     color: rgba(15, 27, 46, 0.6);
 }
 
-.booking-phone {
-    gap: 8px;
+.booking-field input[name="phone"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
 }
 
-.booking-phone .booking-phone__code {
-    position: static;
-    width: auto;
-    height: auto;
+.booking-field input[name="phone"]::-webkit-inner-spin-button,
+.booking-field input[name="phone"]::-webkit-outer-spin-button {
     margin: 0;
-    clip: auto;
-    overflow: visible;
-    flex: 0 0 auto;
-    color: #0f1b2e;
+    -webkit-appearance: none;
 }
 
 .booking-people {
