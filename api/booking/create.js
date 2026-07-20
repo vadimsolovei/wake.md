@@ -7,6 +7,7 @@ const {
     isValidDate,
     json,
     normalizePeopleCount,
+    requireSimplyBookAdminConfig,
     toSimplyBookTime,
 } = require("../_simplybook");
 const { getPaymentConfig } = require("../payments/_common");
@@ -213,8 +214,16 @@ const formatSlotCount = (count) => {
     return `${count} ${slotLabel}`;
 };
 
-const buildAdditionalFields = ({ peopleCount, comment }, config) => {
+const buildAdditionalFields = (
+    { peopleCount, comment },
+    config,
+    { handleInvoice = false } = {},
+) => {
     const additionalFields = {};
+
+    if (handleInvoice) {
+        additionalFields.handle_invoice = true;
+    }
 
     if (config.peopleFieldName) {
         additionalFields[config.peopleFieldName] = peopleCount;
@@ -256,29 +265,33 @@ const normalizeBookingResult = (result) => {
     };
 };
 
-const findPaymentUrlForBookings = async ({
+const getInvoiceId = (result) => {
+    const invoice = result?.invoice ?? result?.order;
+    const value =
+        invoice && typeof invoice === "object"
+            ? invoice.id ??
+              invoice.invoice_id ??
+              invoice.invoiceId ??
+              invoice.order_id ??
+              invoice.orderId
+            : invoice ?? result?.invoice_id ?? result?.invoiceId;
+    const invoiceId = Number(value);
+
+    return Number.isSafeInteger(invoiceId) && invoiceId > 0 ? invoiceId : 0;
+};
+
+const createPaymentUrlForBookings = async ({
     bookings,
+    invoiceIds,
     peopleCount,
-    bookingConfig,
     paymentConfig,
     clientData,
     req,
 }) => {
-    const bookingIds = bookings.map((booking) => booking.id).filter(Boolean);
-
-    if (!bookingIds.length) return "";
-
-    const cart = await callSimplyBook({
-        method: "getBookingCart",
-        params: [bookingIds],
-        config: bookingConfig,
-    });
-
     return createDirectMaibPayment({
-        cart,
+        invoiceIds,
         bookings,
         peopleCount,
-        bookingConfig,
         paymentConfig,
         clientData,
         req,
@@ -366,15 +379,13 @@ module.exports = async function handler(req, res) {
             ? getPaymentConfig(process.env, { requireSbpay: false })
             : null;
 
-        if (shouldCreatePayment && !config.apiSecretKey) {
-            throw new BookingError(
-                "Missing SimplyBook configuration: SIMPLYBOOK_API_SECRET_KEY",
-                500,
-                "CONFIG_ERROR",
-            );
+        if (shouldCreatePayment) {
+            requireSimplyBookAdminConfig(config);
         }
 
-        const additionalFields = buildAdditionalFields(payload, config);
+        const additionalFields = buildAdditionalFields(payload, config, {
+            handleInvoice: shouldCreatePayment,
+        });
         const results = [];
 
         for (const time of payload.times) {
@@ -406,13 +417,24 @@ module.exports = async function handler(req, res) {
                           Boolean(bookingResult?.require_confirm),
                       ),
                   };
+        const invoiceIds = shouldCreatePayment
+            ? results.map(getInvoiceId)
+            : [];
+
+        if (shouldCreatePayment && invoiceIds.some((invoiceId) => !invoiceId)) {
+            throw new BookingError(
+                "SimplyBook did not return payment invoice data.",
+                502,
+                "PAYMENT_INVOICE_ERROR",
+            );
+        }
 
         let responseBody = normalizeBookingResult(result);
         const paymentUrl = shouldCreatePayment
-            ? await findPaymentUrlForBookings({
+            ? await createPaymentUrlForBookings({
                   bookings: responseBody.bookings,
+                  invoiceIds,
                   peopleCount: payload.peopleCount,
-                  bookingConfig: config,
                   paymentConfig,
                   clientData: payload.clientData,
                   req,

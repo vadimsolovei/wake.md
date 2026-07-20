@@ -1,35 +1,26 @@
 const crypto = require("node:crypto");
-const { BookingError, callSimplyBook } = require("../_simplybook");
+const {
+    BookingError,
+    callSimplyBook,
+    callSimplyBookAdmin,
+    requireSimplyBookAdminConfig,
+} = require("../_simplybook");
 const { PaymentError, buildPublicUrl } = require("./_common");
 const { createMaibCheckout } = require("./_maib");
 const { createPaymentStore } = require("./_store");
 
-const DIRECT_PAYMENT_SOURCE = "simplybook_cart";
+const DIRECT_PAYMENT_SOURCE = "simplybook_invoice";
+const LEGACY_CART_PAYMENT_SOURCE = "simplybook_cart";
+const INVOICE_PAYMENT_PROCESSOR = "MAIB";
 const FIRST_SET_PRICE = 600;
 const NEXT_SET_PRICE = 400;
 const WAKE_MD_PAYMENT_CURRENCY = "MDL";
 const WAKE_MD_PRICING_SOURCE = "wakemd_formula";
 
-const normalizeAmount = (value) => {
-    const amount = Number(value);
-
-    if (!Number.isFinite(amount) || amount <= 0) {
-        throw new BookingError(
-            "SimplyBook returned an invalid payment amount.",
-            502,
-            "PAYMENT_AMOUNT_ERROR",
-        );
-    }
-
-    return Math.round(amount * 100) / 100;
-};
-
-const normalizeCurrency = (value) => String(value || "").trim().toUpperCase();
-
 const normalizePositiveInteger = (value) => {
     const number = Number(value);
 
-    return Number.isInteger(number) && number > 0 ? number : 0;
+    return Number.isSafeInteger(number) && number > 0 ? number : 0;
 };
 
 const calculateWakeMdBookingPrice = ({ peopleCount, setCount }) => {
@@ -69,12 +60,6 @@ const calculateWakeMdBookingPrice = ({ peopleCount, setCount }) => {
         nextSetPrice: NEXT_SET_PRICE,
     };
 };
-
-const getCartId = (cart) =>
-    cart?.cart_id ?? cart?.cartId ?? cart?.id ?? cart?.cart?.id ?? "";
-
-const getCartHash = (cart) =>
-    cart?.cart_hash ?? cart?.cartHash ?? cart?.hash ?? cart?.cart?.hash ?? "";
 
 const buildWakeMdPricingItems = (price) => {
     const items = [
@@ -134,54 +119,51 @@ const requireSimplyBookPaymentSecret = (bookingConfig, ErrorClass) => {
 };
 
 const createDirectMaibPayment = async ({
-    cart,
+    invoiceIds,
     bookings,
     peopleCount,
-    bookingConfig,
     paymentConfig,
     clientData,
     req,
 }) => {
-    requireSimplyBookPaymentSecret(bookingConfig, BookingError);
+    const normalizedInvoiceIds = Array.from(
+        new Set(
+            (invoiceIds || [])
+                .map(normalizePositiveInteger)
+                .filter(Boolean),
+        ),
+    );
 
-    const cartId = getCartId(cart);
-    const cartHash = getCartHash(cart);
-
-    if (!cartId) {
+    if (!normalizedInvoiceIds.length) {
         throw new BookingError(
-            "SimplyBook did not return a payment cart id.",
+            "SimplyBook did not return payment invoice data.",
             502,
-            "PAYMENT_CART_ERROR",
-        );
-    }
-
-    if (!cartHash) {
-        throw new BookingError(
-            "SimplyBook did not return a payment cart hash.",
-            502,
-            "PAYMENT_CART_ERROR",
-        );
-    }
-
-    const simplybookAmount = normalizeAmount(cart.amount);
-    const currency = normalizeCurrency(cart.currency);
-
-    if (currency !== WAKE_MD_PAYMENT_CURRENCY) {
-        throw new BookingError(
-            "Only MDL payments are supported.",
-            400,
-            "UNSUPPORTED_CURRENCY",
+            "PAYMENT_INVOICE_ERROR",
         );
     }
 
     const bookingIds = bookings.map((booking) => booking.id).filter(Boolean);
     const bookingCodes = bookings.map((booking) => booking.code).filter(Boolean);
+
+    if (
+        !bookingIds.length ||
+        normalizedInvoiceIds.length !== bookings.length ||
+        bookingIds.length !== bookings.length
+    ) {
+        throw new BookingError(
+            "SimplyBook returned incomplete invoice booking data.",
+            502,
+            "PAYMENT_INVOICE_ERROR",
+        );
+    }
+
     const price = calculateWakeMdBookingPrice({
         peopleCount,
         setCount: bookingIds.length,
     });
-    const orderId = `simplybook-cart-${cartId}`;
-    const description = `Wake.md booking cart ${cartId}`;
+    const currency = price.currency;
+    const orderId = `simplybook-invoice-${normalizedInvoiceIds[0]}`;
+    const description = `Wake.md booking invoice ${normalizedInvoiceIds[0]}`;
     const callbackUrl = buildPublicUrl(
         paymentConfig,
         "/api/payments/maib/callback",
@@ -215,20 +197,18 @@ const createDirectMaibPayment = async ({
         config: paymentConfig,
     });
     const store = createPaymentStore(paymentConfig.paymentStorePath);
-    const paymentProcessor = bookingConfig.paymentProcessorName;
 
     store.save({
         orderId,
         source: DIRECT_PAYMENT_SOURCE,
         checkoutId: checkout.checkoutId,
         payId: null,
-        cartId,
-        cartHash,
+        invoiceIds: normalizedInvoiceIds,
+        confirmedInvoiceIds: [],
         bookingIds,
         bookingCodes,
-        paymentProcessor,
+        paymentProcessor: INVOICE_PAYMENT_PROCESSOR,
         amount: price.amount,
-        simplybookAmount,
         currency,
         pricingSource: price.pricingSource,
         peopleCount: price.peopleCount,
@@ -246,7 +226,17 @@ const createDirectMaibPayment = async ({
 };
 
 const isDirectMaibPaymentOrder = (order) =>
-    order?.source === DIRECT_PAYMENT_SOURCE && order.cartId && order.cartHash;
+    isInvoiceMaibPaymentOrder(order) || isLegacyCartMaibPaymentOrder(order);
+
+const isInvoiceMaibPaymentOrder = (order) =>
+    order?.source === DIRECT_PAYMENT_SOURCE &&
+    Array.isArray(order.invoiceIds) &&
+    order.invoiceIds.length > 0;
+
+const isLegacyCartMaibPaymentOrder = (order) =>
+    order?.source === LEGACY_CART_PAYMENT_SOURCE &&
+    order.cartId &&
+    order.cartHash;
 
 const confirmDirectMaibPaymentOrder = async ({ order, bookingConfig }) => {
     requireSimplyBookPaymentSecret(bookingConfig, PaymentError);
@@ -268,11 +258,58 @@ const confirmDirectMaibPaymentOrder = async ({ order, bookingConfig }) => {
     });
 };
 
+const confirmInvoiceMaibPaymentOrder = async ({
+    order,
+    bookingConfig,
+    store,
+}) => {
+    requireSimplyBookAdminConfig(bookingConfig);
+
+    const confirmedInvoiceIds = new Set(
+        (order.confirmedInvoiceIds || [])
+            .map(normalizePositiveInteger)
+            .filter(Boolean),
+    );
+    let updatedOrder = order;
+
+    for (const invoiceId of order.invoiceIds) {
+        const normalizedInvoiceId = normalizePositiveInteger(invoiceId);
+
+        if (
+            !normalizedInvoiceId ||
+            confirmedInvoiceIds.has(normalizedInvoiceId)
+        ) {
+            continue;
+        }
+
+        await callSimplyBookAdmin({
+            method: "confirmInvoice",
+            params: [
+                normalizedInvoiceId,
+                order.paymentProcessor || INVOICE_PAYMENT_PROCESSOR,
+            ],
+            config: bookingConfig,
+        });
+
+        confirmedInvoiceIds.add(normalizedInvoiceId);
+        updatedOrder = store.save({
+            ...updatedOrder,
+            confirmedInvoiceIds: Array.from(confirmedInvoiceIds),
+            status: "confirmation_pending",
+        });
+    }
+
+    return updatedOrder;
+};
+
 module.exports = {
     DIRECT_PAYMENT_SOURCE,
     calculateWakeMdBookingPrice,
     confirmDirectMaibPaymentOrder,
+    confirmInvoiceMaibPaymentOrder,
     createCartSignature,
     createDirectMaibPayment,
     isDirectMaibPaymentOrder,
+    isInvoiceMaibPaymentOrder,
+    isLegacyCartMaibPaymentOrder,
 };

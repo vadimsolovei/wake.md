@@ -1,10 +1,15 @@
 const LOGIN_URL = "https://user-api.simplybook.me/login";
 const API_URL = "https://user-api.simplybook.me";
+const ADMIN_API_URL = "https://user-api.simplybook.me/admin/";
 
 let cachedToken = "";
 let cachedTokenConfigKey = "";
 let cachedTokenPromise = null;
 let cachedTokenPromiseConfigKey = "";
+let cachedAdminToken = "";
+let cachedAdminTokenConfigKey = "";
+let cachedAdminTokenPromise = null;
+let cachedAdminTokenPromiseConfigKey = "";
 
 class BookingError extends Error {
     constructor(message, status = 500, code = "BOOKING_ERROR") {
@@ -26,6 +31,8 @@ const getConfig = (env = process.env) => {
         companyLogin: env.SIMPLYBOOK_COMPANY_LOGIN,
         apiKey: env.SIMPLYBOOK_API_KEY,
         apiSecretKey: env.SIMPLYBOOK_API_SECRET_KEY || "",
+        adminUserLogin: env.SIMPLYBOOK_ADMIN_USER_LOGIN || "",
+        adminApiUserKey: env.SIMPLYBOOK_ADMIN_API_USER_KEY || "",
         paymentProcessorName:
             env.SIMPLYBOOK_PAYMENT_PROCESSOR_NAME || "Custom Payment",
         serviceId: Number(env.SIMPLYBOOK_SERVICE_ID),
@@ -203,6 +210,131 @@ const callSimplyBook = async ({
         cachedTokenConfigKey = "";
         cachedTokenPromise = null;
         cachedTokenPromiseConfigKey = "";
+
+        return doRequest(true);
+    }
+};
+
+const requireSimplyBookAdminConfig = (config = getConfig()) => {
+    const missing = [];
+
+    if (!config.adminUserLogin) missing.push("SIMPLYBOOK_ADMIN_USER_LOGIN");
+    if (!config.adminApiUserKey) {
+        missing.push("SIMPLYBOOK_ADMIN_API_USER_KEY");
+    }
+
+    if (missing.length) {
+        throw new BookingError(
+            `Missing SimplyBook configuration: ${missing.join(", ")}`,
+            500,
+            "CONFIG_ERROR",
+        );
+    }
+
+    return config;
+};
+
+const getAdminToken = async ({
+    config,
+    fetchImpl = fetch,
+    forceRefresh = false,
+}) => {
+    requireSimplyBookAdminConfig(config);
+
+    const configKey = `${config.companyLogin}:${config.adminUserLogin}:${config.adminApiUserKey}`;
+
+    if (
+        !forceRefresh &&
+        cachedAdminToken &&
+        cachedAdminTokenConfigKey === configKey
+    ) {
+        return cachedAdminToken;
+    }
+
+    if (
+        !forceRefresh &&
+        cachedAdminTokenPromise &&
+        cachedAdminTokenPromiseConfigKey === configKey
+    ) {
+        return cachedAdminTokenPromise;
+    }
+
+    cachedAdminTokenPromiseConfigKey = configKey;
+    cachedAdminTokenPromise = rpcRequest({
+        url: LOGIN_URL,
+        method: "getUserToken",
+        params: [
+            config.companyLogin,
+            config.adminUserLogin,
+            config.adminApiUserKey,
+        ],
+        fetchImpl,
+    })
+        .then((token) => {
+            if (!token || typeof token !== "string") {
+                throw new BookingError(
+                    "SimplyBook admin authentication did not return a token.",
+                    502,
+                    "AUTH_RESPONSE_ERROR",
+                );
+            }
+
+            cachedAdminToken = token;
+            cachedAdminTokenConfigKey = configKey;
+
+            return cachedAdminToken;
+        })
+        .finally(() => {
+            cachedAdminTokenPromise = null;
+            cachedAdminTokenPromiseConfigKey = "";
+        });
+
+    return cachedAdminTokenPromise;
+};
+
+const callSimplyBookAdmin = async ({
+    method,
+    params = [],
+    config = getConfig(),
+    fetchImpl = fetch,
+}) => {
+    const doRequest = async (forceRefresh = false) => {
+        const token = await getAdminToken({
+            config,
+            fetchImpl,
+            forceRefresh,
+        });
+
+        return rpcRequest({
+            url: ADMIN_API_URL,
+            method,
+            params,
+            headers: {
+                "X-Company-Login": config.companyLogin,
+                "X-User-Token": token,
+            },
+            fetchImpl,
+        });
+    };
+
+    try {
+        return await doRequest(false);
+    } catch (error) {
+        const code = String(error?.code || "").toLowerCase();
+        const message = String(error?.message || "").toLowerCase();
+        const isAuthError =
+            code.includes("401") ||
+            code.includes("403") ||
+            (code === "-32600" && message.includes("access denied")) ||
+            message.includes("token") ||
+            message.includes("auth");
+
+        if (!isAuthError) throw error;
+
+        cachedAdminToken = "";
+        cachedAdminTokenConfigKey = "";
+        cachedAdminTokenPromise = null;
+        cachedAdminTokenPromiseConfigKey = "";
 
         return doRequest(true);
     }
@@ -701,6 +833,10 @@ const resetTokenCache = () => {
     cachedTokenConfigKey = "";
     cachedTokenPromise = null;
     cachedTokenPromiseConfigKey = "";
+    cachedAdminToken = "";
+    cachedAdminTokenConfigKey = "";
+    cachedAdminTokenPromise = null;
+    cachedAdminTokenPromiseConfigKey = "";
 };
 
 module.exports = {
@@ -708,6 +844,7 @@ module.exports = {
     buildSlotTimes,
     buildSlotTimesFromPattern,
     callSimplyBook,
+    callSimplyBookAdmin,
     getConfig,
     getAvailabilityMonthRange,
     getDateParts,
@@ -725,6 +862,7 @@ module.exports = {
     normalizeSlotMatrixTimes,
     normalizeTime,
     normalizeWorkCalendarTimes,
+    requireSimplyBookAdminConfig,
     resetTokenCache,
     toSimplyBookTime,
 };

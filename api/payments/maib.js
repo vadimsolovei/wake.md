@@ -16,9 +16,13 @@ const {
 const { createPaymentStore } = require("./_store");
 const {
     confirmDirectMaibPaymentOrder,
+    confirmInvoiceMaibPaymentOrder,
     isDirectMaibPaymentOrder,
+    isInvoiceMaibPaymentOrder,
 } = require("./direct");
 const { approveSbpayOrder } = require("./_sbpay");
+
+const orderFinalizationLocks = new Map();
 
 const requireMethod = (req, res, method) => {
     if (req.method === method) return true;
@@ -60,7 +64,8 @@ const appendBookingPaymentStatus = (baseUrl, status) => {
 
 const isDirectMaibReturnOrder = ({ order, orderId }) =>
     isDirectMaibPaymentOrder(order) ||
-    String(orderId || "").startsWith("simplybook-cart-");
+    String(orderId || "").startsWith("simplybook-cart-") ||
+    String(orderId || "").startsWith("simplybook-invoice-");
 
 const getDirectMaibReturnStatus = ({ target, checkoutStatus, order }) => {
     if (!order) return "error";
@@ -69,15 +74,130 @@ const getDirectMaibReturnStatus = ({ target, checkoutStatus, order }) => {
         return "failed";
     }
 
-    if (
-        target === "success" ||
-        checkoutStatus === "completed" ||
-        order.status === "approved"
-    ) {
+    if (order.status === "approved") {
+        return "success";
+    }
+
+    if (isInvoiceMaibPaymentOrder(order)) return "error";
+
+    if (target === "success" || checkoutStatus === "completed") {
         return "success";
     }
 
     return "error";
+};
+
+const withOrderFinalizationLock = (orderId, task) => {
+    const key = String(orderId);
+    const previous = orderFinalizationLocks.get(key) || Promise.resolve();
+    const current = previous.catch(() => {}).then(task);
+
+    orderFinalizationLocks.set(key, current);
+
+    return current.finally(() => {
+        if (orderFinalizationLocks.get(key) === current) {
+            orderFinalizationLocks.delete(key);
+        }
+    });
+};
+
+const sanitizeStoredErrorValue = (value, maxLength) =>
+    String(value || "")
+        .replace(/[\u0000-\u001f\u007f]/g, " ")
+        .slice(0, maxLength);
+
+const toStoredConfirmationError = (error) => ({
+    code: sanitizeStoredErrorValue(
+        error?.code || "PAYMENT_INVOICE_CONFIRMATION_ERROR",
+        100,
+    ),
+    message: sanitizeStoredErrorValue(
+        error?.message || "SimplyBook invoice confirmation failed.",
+        500,
+    ),
+});
+
+const finalizeCompletedMaibOrder = async ({
+    orderId,
+    checkoutId,
+    checkout,
+    store,
+    paymentConfig,
+}) => {
+    let storedOrder = store.get(orderId);
+    const payId = getMaibPaymentId(checkout);
+
+    if (storedOrder?.status === "approved") return storedOrder;
+
+    if (isInvoiceMaibPaymentOrder(storedOrder)) {
+        storedOrder = store.save({
+            ...storedOrder,
+            checkoutId,
+            payId: payId || storedOrder.payId || null,
+            status: "confirmation_pending",
+            paymentReceivedAt:
+                storedOrder.paymentReceivedAt || new Date().toISOString(),
+        });
+
+        try {
+            storedOrder = await confirmInvoiceMaibPaymentOrder({
+                order: storedOrder,
+                bookingConfig: getSimplyBookConfig(),
+                store,
+            });
+        } catch (error) {
+            const currentOrder = store.get(orderId) || storedOrder;
+            const reviewOrder = store.save({
+                ...currentOrder,
+                checkoutId,
+                payId: payId || currentOrder.payId || null,
+                status: "manual_action_required",
+                confirmationError: toStoredConfirmationError(error),
+            });
+
+            console.error(
+                "[PAYMENT_INVOICE_REVIEW_REQUIRED]",
+                JSON.stringify({
+                    orderId: reviewOrder.orderId,
+                    checkoutId: reviewOrder.checkoutId,
+                    payId: reviewOrder.payId,
+                    invoiceIds: reviewOrder.invoiceIds,
+                    confirmedInvoiceIds: reviewOrder.confirmedInvoiceIds || [],
+                    bookingIds: reviewOrder.bookingIds || [],
+                    error: reviewOrder.confirmationError,
+                }),
+            );
+
+            throw new PaymentError(
+                "SimplyBook invoice confirmation requires manual review.",
+                502,
+                "PAYMENT_INVOICE_CONFIRMATION_ERROR",
+            );
+        }
+    } else if (isDirectMaibPaymentOrder(storedOrder)) {
+        await confirmDirectMaibPaymentOrder({
+            order: storedOrder,
+            bookingConfig: getSimplyBookConfig(),
+        });
+    } else {
+        requireSbpayConfig(paymentConfig);
+        await approveSbpayOrder({
+            orderId,
+            reason: "Payment processed by maib.",
+            transactionId: payId || checkoutId,
+            config: paymentConfig,
+        });
+    }
+
+    return store.save({
+        ...(store.get(orderId) || storedOrder || {}),
+        orderId,
+        checkoutId,
+        payId: payId || storedOrder?.payId || null,
+        status: "approved",
+        confirmationError: null,
+        approvedAt: new Date().toISOString(),
+    });
 };
 
 const maibCallbackHandler = async (req, res) => {
@@ -128,42 +248,34 @@ const maibCallbackHandler = async (req, res) => {
         const payId = getMaibPaymentId(checkout);
 
         if (!isCompletedExecutedCheckout(checkout)) {
+            if (storedOrder?.status === "approved") {
+                json(res, 200, { ok: true, approved: true });
+                return;
+            }
+
             store.save({
                 ...(storedOrder || {}),
                 orderId,
                 checkoutId,
                 payId: payId || storedOrder?.payId || null,
-                status: String(checkout.status || "pending").toLowerCase(),
+                status:
+                    storedOrder?.status === "manual_action_required"
+                        ? storedOrder.status
+                        : String(checkout.status || "pending").toLowerCase(),
             });
             json(res, 200, { ok: true, approved: false });
             return;
         }
 
-        if (isDirectMaibPaymentOrder(storedOrder)) {
-            if (storedOrder.status !== "approved") {
-                await confirmDirectMaibPaymentOrder({
-                    order: storedOrder,
-                    bookingConfig: getSimplyBookConfig(),
-                });
-            }
-        } else if (storedOrder?.status !== "approved") {
-            requireSbpayConfig(config);
-            await approveSbpayOrder({
+        await withOrderFinalizationLock(orderId, () =>
+            finalizeCompletedMaibOrder({
                 orderId,
-                reason: "Payment processed by maib.",
-                transactionId: payId || checkoutId,
-                config,
-            });
-        }
-
-        store.save({
-            ...(storedOrder || {}),
-            orderId,
-            checkoutId,
-            payId: payId || storedOrder?.payId || null,
-            status: "approved",
-            approvedAt: new Date().toISOString(),
-        });
+                checkoutId,
+                checkout,
+                store,
+                paymentConfig: config,
+            }),
+        );
 
         json(res, 200, { ok: true, approved: true });
     } catch (error) {
@@ -171,7 +283,7 @@ const maibCallbackHandler = async (req, res) => {
     }
 };
 
-const maibReturnHandler = (req, res) => {
+const maibReturnHandler = async (req, res) => {
     if (!requireMethod(req, res, "GET")) return;
 
     try {
@@ -181,11 +293,46 @@ const maibReturnHandler = (req, res) => {
         const orderId = query.orderId || query.order_id || "";
         const target = String(query.target || "").toLowerCase();
         const checkoutStatus = String(query.checkoutStatus || "").toLowerCase();
-        const order = orderId ? store.get(orderId) : null;
-        const success =
-            target === "success" ||
-            checkoutStatus === "completed" ||
-            order?.status === "approved";
+        let order = orderId ? store.get(orderId) : null;
+
+        if (
+            target === "success" &&
+            isInvoiceMaibPaymentOrder(order) &&
+            order.status !== "approved" &&
+            order.checkoutId
+        ) {
+            try {
+                const checkout = await getMaibCheckout({
+                    checkoutId: order.checkoutId,
+                    config,
+                });
+
+                if (isCompletedExecutedCheckout(checkout)) {
+                    await withOrderFinalizationLock(orderId, () =>
+                        finalizeCompletedMaibOrder({
+                            orderId,
+                            checkoutId: order.checkoutId,
+                            checkout,
+                            store,
+                            paymentConfig: config,
+                        }),
+                    );
+                }
+            } catch (error) {
+                console.error(
+                    "[PAYMENT_RETURN_RECONCILIATION_ERROR]",
+                    error.message,
+                );
+            }
+
+            order = store.get(orderId);
+        }
+
+        const success = isInvoiceMaibPaymentOrder(order)
+            ? order?.status === "approved"
+            : target === "success" ||
+              checkoutStatus === "completed" ||
+              order?.status === "approved";
         const location = isDirectMaibReturnOrder({ order, orderId })
             ? appendBookingPaymentStatus(
                   config.publicBaseUrl,
@@ -203,6 +350,8 @@ const maibReturnHandler = (req, res) => {
 };
 
 module.exports = {
+    finalizeCompletedMaibOrder,
     maibCallbackHandler,
     maibReturnHandler,
+    withOrderFinalizationLock,
 };
