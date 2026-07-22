@@ -12,6 +12,7 @@ const {
 } = require("../_simplybook");
 const { getPaymentConfig } = require("../payments/_common");
 const { createDirectMaibPayment } = require("../payments/direct");
+const { normalizePhoneForSimplyBook } = require("../phone/_phone");
 const {
     getBookingPaymentRequired,
     resolveBookingPaymentMode,
@@ -53,7 +54,7 @@ const validatePayload = (body, paymentRequired) => {
     const name = String(body.name || "").trim();
     const rawEmail = String(body.email || "");
     const email = rawEmail.trim();
-    const phone = String(body.phone || "").trim();
+    const phone = normalizePhoneForSimplyBook(body.phone);
     const phoneDigits = phone.replace(/\D/g, "");
     const comment = String(body.comment || "").trim();
     const date = String(body.date || "").trim();

@@ -28,6 +28,7 @@ const datesHandler = require("../api/booking/dates");
 const timesHandler = require("../api/booking/times");
 const createHandler = require("../api/booking/create");
 const phoneValidateHandler = require("../api/phone/validate");
+const { normalizePhoneForSimplyBook } = require("../api/phone/_phone");
 const {
   resetMaibTokenCache,
   verifyMaibCallbackSignature,
@@ -563,6 +564,13 @@ test("preserved phone validation endpoint detects international numbers", async 
       assert.equal(body.phone.country, testCase.expected.country, testCase.label);
     }
   }
+});
+
+test("normalizes Moldovan phone numbers for SimplyBook", () => {
+  assert.equal(normalizePhoneForSimplyBook("69751295"), "+37369751295");
+  assert.equal(normalizePhoneForSimplyBook("069751295"), "+37369751295");
+  assert.equal(normalizePhoneForSimplyBook("37369751295"), "+37369751295");
+  assert.equal(normalizePhoneForSimplyBook("+40722123456"), "+40722123456");
 });
 
 test("booking calendar avoids mobile browser focus zoom traps", () => {
@@ -1544,7 +1552,7 @@ test("create endpoint books each selected time", async () => {
     body: {
       name: "O'Connor-Мария Попеску Jr.",
       email: "guest@example.com",
-      phone: "37368884689",
+      phone: "68884689",
       comment: '  Позвоните, пожалуйста! "Будем на месте" (к 09:00) - спасибо.\nДо встречи.  ',
       peopleCount: 2,
       date: "2026-06-10",
@@ -1601,7 +1609,7 @@ test("create endpoint books each selected time", async () => {
         {
           name: "O'Connor-Мария Попеску Jr.",
           email: "guest@example.com",
-          phone: "37368884689",
+          phone: "+37368884689",
         },
         {
           people_field_hash: 2,
@@ -1618,7 +1626,7 @@ test("create endpoint books each selected time", async () => {
         {
           name: "O'Connor-Мария Попеску Jr.",
           email: "guest@example.com",
-          phone: "37368884689",
+          phone: "+37368884689",
         },
         {
           people_field_hash: 2,

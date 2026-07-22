@@ -38,6 +38,36 @@ const normalizePhoneInput = (value) => {
     return digits ? `+${digits}` : input;
 };
 
+const normalizePhoneForSimplyBook = (value) => {
+    const input = String(value || "").trim();
+    const digits = input.replace(/\D/g, "");
+
+    if (!digits) return input;
+
+    const moldovanNationalNumber =
+        digits.length === 9 && digits.startsWith("0")
+            ? digits.slice(1)
+            : digits;
+
+    if (moldovanNationalNumber.length === 8) {
+        const moldovanPhone = parsePhoneNumberFromString(
+            moldovanNationalNumber,
+            "MD",
+        );
+
+        if (moldovanPhone?.isValid()) return moldovanPhone.number;
+    }
+
+    const internationalDigits = digits.startsWith("00")
+        ? digits.slice(2)
+        : digits;
+    const internationalPhone = parsePhoneNumberFromString(
+        `+${internationalDigits}`,
+    );
+
+    return internationalPhone?.isValid() ? internationalPhone.number : input;
+};
+
 const getPrefixDetails = (value) => {
     const input = normalizePhoneInput(value);
 
@@ -114,4 +144,5 @@ const getPhoneValidationResult = (value) => {
 
 module.exports = {
     getPhoneValidationResult,
+    normalizePhoneForSimplyBook,
 };
