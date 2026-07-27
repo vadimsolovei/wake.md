@@ -56,8 +56,7 @@
   const priceTotal = modal?.querySelector("[data-booking-price-total]");
   const priceDetails = modal?.querySelector("[data-booking-price-details]");
 
-  const FIRST_SET_PRICE = 600;
-  const NEXT_SET_PRICE = 400;
+  const SET_PRICE = 600;
   const PHONE_REQUIRED_MESSAGE = "Введите номер телефона.";
   const PHONE_MIN_DIGITS_MESSAGE = "Введите минимум 8 цифр.";
   const BOOKING_UNAVAILABLE_MESSAGE =
@@ -275,16 +274,7 @@
 
     if (!setCount) return 0;
 
-    const firstSetCount = Math.min(
-      bookingState.peopleCount,
-      setCount,
-    );
-    const nextSetCount = Math.max(
-      setCount - bookingState.peopleCount,
-      0,
-    );
-
-    return firstSetCount * FIRST_SET_PRICE + nextSetCount * NEXT_SET_PRICE;
+    return setCount * SET_PRICE;
   };
 
   const isMobileBookingLayout = () =>
@@ -367,7 +357,9 @@
 
       submitButton.toggleAttribute(
         "disabled",
-        bookingState.isSubmitting || !hasSelectedDateAndTime,
+        bookingState.isSubmitting ||
+          !hasSelectedDateAndTime ||
+          !hasMinimumSelectedTimes(),
       );
       submitButton.classList.toggle("is-loading", bookingState.isSubmitting);
       submitButton.setAttribute("aria-busy", String(bookingState.isSubmitting));

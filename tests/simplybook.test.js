@@ -5,6 +5,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
+const vm = require("node:vm");
 const {
   BookingError,
   buildSlotTimes,
@@ -221,8 +222,11 @@ test("payment-required mode overrides every client-selected mode", () => {
   assert.equal(resolveBookingPaymentMode("pay", false), "pay");
 });
 
-test("booking submit state disables only until date and time are selected", () => {
+test("booking submit state requires one selected slot per person", () => {
   const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
+  const hasMinimumSelectedTimes = bookingScript.match(
+    /const hasMinimumSelectedTimes = \(\) =>[\s\S]*?;/,
+  )?.[0];
   const updateSubmitState = bookingScript.match(
     /const updateSubmitState = \(\) => \{[\s\S]*?if \(submitLabel\)/,
   )?.[0];
@@ -233,6 +237,43 @@ test("booking submit state disables only until date and time are selected", () =
     /const refreshAvailabilityForPeople = \(\) => \{[\s\S]*?\};/,
   )?.[0];
 
+  assert.ok(hasMinimumSelectedTimes);
+  for (const testCase of [
+    { peopleCount: 1, selectedTimes: [], expected: false },
+    { peopleCount: 1, selectedTimes: ["09:00"], expected: true },
+    { peopleCount: 2, selectedTimes: ["09:00"], expected: false },
+    {
+      peopleCount: 2,
+      selectedTimes: ["09:00", "09:15"],
+      expected: true,
+    },
+    {
+      peopleCount: 3,
+      selectedTimes: ["09:00", "09:15"],
+      expected: false,
+    },
+    {
+      peopleCount: 3,
+      selectedTimes: ["09:00", "09:15", "09:30"],
+      expected: true,
+    },
+  ]) {
+    const result = vm.runInNewContext(
+      `${hasMinimumSelectedTimes} hasMinimumSelectedTimes();`,
+      {
+        bookingState: {
+          peopleCount: testCase.peopleCount,
+          selectedTimes: testCase.selectedTimes,
+        },
+      },
+    );
+
+    assert.equal(
+      result,
+      testCase.expected,
+      `${testCase.peopleCount} people with ${testCase.selectedTimes.length} slots`,
+    );
+  }
   assert.ok(updateSubmitState);
   assert.match(
     updateSubmitState,
@@ -240,10 +281,9 @@ test("booking submit state disables only until date and time are selected", () =
   );
   assert.match(
     updateSubmitState,
-    /bookingState\.isSubmitting \|\| !hasSelectedDateAndTime/,
+    /bookingState\.isSubmitting \|\|\s+!hasSelectedDateAndTime \|\|\s+!hasMinimumSelectedTimes\(\)/,
   );
   assert.doesNotMatch(updateSubmitState, /termsCheckbox\?\.checked/);
-  assert.doesNotMatch(updateSubmitState, /hasMinimumSelectedTimes\(\)/);
   assert.match(
     updateSubmitState,
     /submitActions\.hidden = shouldShowMobilePlaceholder/,
@@ -595,34 +635,60 @@ test("booking calendar avoids mobile browser focus zoom traps", () => {
   assert.match(bookingScript, /dateInput\.blur\(\);/);
 });
 
-test("booking price counts first sets per selected slot before repeat sets", () => {
+test("booking price charges a flat amount for every selected set", () => {
   const bookingScript = fs.readFileSync("assets/js/booking.js", "utf8");
   const calculateBookingPrice = bookingScript.match(
-    /const calculateBookingPrice = \(\) => \{[\s\S]*?\n    \};/,
+    /const calculateBookingPrice = \(\) => \{[\s\S]*?\n  \};/,
   )?.[0];
 
   assert.ok(calculateBookingPrice);
-  assert.match(
-    calculateBookingPrice,
-    /const firstSetCount = Math\.min\(\s*bookingState\.peopleCount,?\s*setCount,?\s*\);/,
-  );
-  assert.match(
-    calculateBookingPrice,
-    /const nextSetCount = Math\.max\(\s*setCount - bookingState\.peopleCount,?\s*0,?\s*\);/,
-  );
-  assert.match(
-    calculateBookingPrice,
-    /firstSetCount \* FIRST_SET_PRICE \+\s*nextSetCount \* NEXT_SET_PRICE/,
-  );
+  assert.match(calculateBookingPrice, /return setCount \* SET_PRICE/);
+  assert.doesNotMatch(calculateBookingPrice, /bookingState\.peopleCount/);
 });
 
-test("backend booking price matches Wake.md first and repeat set formula", () => {
+test("booking pricing copy presents one flat-price session", () => {
+  const html = fs.readFileSync("index.html", "utf8");
+  const css = fs.readFileSync("styles.css", "utf8");
+
+  assert.match(
+    html,
+    /<p class="booking-price-card__eyebrow">Одна сессия<\/p>/,
+  );
+  assert.match(
+    html,
+    /<p class="booking-price-card__value">600 л — 15 минут<\/p>/,
+  );
+  assert.match(
+    html,
+    /Персональный инструктор, гидрокостюм и все оборудование включены в стоимость\./,
+  );
+  assert.match(html, /<h4>Продолжительность и стоимость<\/h4>/);
+  assert.match(
+    html,
+    /Одна сессия \(сет\) длится 15 минут и стоит 600 леев\./,
+  );
+  assert.match(
+    html,
+    /Сессия начинается строго в забронированное время\./,
+  );
+  assert.doesNotMatch(html, /booking-price-row/);
+  assert.doesNotMatch(html, /400 л/);
+  assert.doesNotMatch(html, /Стоимость первого сета/);
+  assert.doesNotMatch(html, /Стоимость последующих сетов/);
+  assert.doesNotMatch(html, /Один сет длится 10 минут/);
+  assert.match(css, /\.booking-price-card__eyebrow/);
+  assert.match(css, /\.booking-price-card__value/);
+  assert.match(css, /\.booking-price-card__description/);
+  assert.doesNotMatch(css, /\.booking-price-row/);
+});
+
+test("backend booking price charges 600 MDL per set regardless of people count", () => {
   const cases = [
     { peopleCount: 1, setCount: 1, amount: 600 },
-    { peopleCount: 1, setCount: 2, amount: 1000 },
+    { peopleCount: 1, setCount: 2, amount: 1200 },
     { peopleCount: 2, setCount: 2, amount: 1200 },
-    { peopleCount: 2, setCount: 3, amount: 1600 },
-    { peopleCount: 3, setCount: 5, amount: 2600 },
+    { peopleCount: 2, setCount: 3, amount: 1800 },
+    { peopleCount: 3, setCount: 5, amount: 3000 },
   ];
 
   for (const testCase of cases) {
@@ -2000,34 +2066,30 @@ test("payment-required mode forces a forged booking request through maib", async
     calls.some((call) => call.body?.method === "getBookingCartPaymentPageUrl"),
     false,
   );
-  assert.equal(checkoutBody.amount, 1000);
+  assert.equal(checkoutBody.amount, 1200);
   assert.equal(checkoutBody.orderInfo.id, "simplybook-invoice-301");
-  assert.equal(checkoutBody.orderInfo.orderAmount, 1000);
+  assert.equal(checkoutBody.orderInfo.orderAmount, 1200);
   assert.deepEqual(checkoutBody.orderInfo.items, [
     {
-      externalId: "first-sets",
-      title: "Wake.md first sets",
+      externalId: "sets",
+      title: "Wake.md sets",
       amount: 600,
       currency: "MDL",
-      quantity: 1,
-    },
-    {
-      externalId: "repeat-sets",
-      title: "Wake.md repeat sets",
-      amount: 400,
-      currency: "MDL",
-      quantity: 1,
+      quantity: 2,
     },
   ]);
   assert.equal(storedOrder.source, "simplybook_invoice");
   assert.deepEqual(storedOrder.invoiceIds, [301, 302]);
   assert.deepEqual(storedOrder.confirmedInvoiceIds, []);
-  assert.equal(storedOrder.amount, 1000);
+  assert.equal(storedOrder.amount, 1200);
   assert.equal(storedOrder.pricingSource, "wakemd_formula");
   assert.equal(storedOrder.peopleCount, 1);
   assert.equal(storedOrder.setCount, 2);
-  assert.equal(storedOrder.firstSetCount, 1);
-  assert.equal(storedOrder.nextSetCount, 1);
+  assert.equal(storedOrder.setPrice, 600);
+  assert.equal(Object.hasOwn(storedOrder, "firstSetCount"), false);
+  assert.equal(Object.hasOwn(storedOrder, "nextSetCount"), false);
+  assert.equal(Object.hasOwn(storedOrder, "firstSetPrice"), false);
+  assert.equal(Object.hasOwn(storedOrder, "nextSetPrice"), false);
 });
 
 test("payment mode requires SimplyBook admin credentials before booking", async () => {

@@ -12,8 +12,7 @@ const { createPaymentStore } = require("./_store");
 const DIRECT_PAYMENT_SOURCE = "simplybook_invoice";
 const LEGACY_CART_PAYMENT_SOURCE = "simplybook_cart";
 const INVOICE_PAYMENT_PROCESSOR = "MAIB";
-const FIRST_SET_PRICE = 600;
-const NEXT_SET_PRICE = 400;
+const SET_PRICE = 600;
 const WAKE_MD_PAYMENT_CURRENCY = "MDL";
 const WAKE_MD_PRICING_SOURCE = "wakemd_formula";
 
@@ -43,10 +42,7 @@ const calculateWakeMdBookingPrice = ({ peopleCount, setCount }) => {
         );
     }
 
-    const firstSetCount = Math.min(normalizedPeopleCount, normalizedSetCount);
-    const nextSetCount = Math.max(normalizedSetCount - normalizedPeopleCount, 0);
-    const amount =
-        firstSetCount * FIRST_SET_PRICE + nextSetCount * NEXT_SET_PRICE;
+    const amount = normalizedSetCount * SET_PRICE;
 
     return {
         pricingSource: WAKE_MD_PRICING_SOURCE,
@@ -54,36 +50,19 @@ const calculateWakeMdBookingPrice = ({ peopleCount, setCount }) => {
         currency: WAKE_MD_PAYMENT_CURRENCY,
         peopleCount: normalizedPeopleCount,
         setCount: normalizedSetCount,
-        firstSetCount,
-        nextSetCount,
-        firstSetPrice: FIRST_SET_PRICE,
-        nextSetPrice: NEXT_SET_PRICE,
+        setPrice: SET_PRICE,
     };
 };
 
-const buildWakeMdPricingItems = (price) => {
-    const items = [
-        {
-            externalId: "first-sets",
-            title: "Wake.md first sets",
-            amount: FIRST_SET_PRICE,
-            currency: price.currency,
-            quantity: price.firstSetCount,
-        },
-    ];
-
-    if (price.nextSetCount > 0) {
-        items.push({
-            externalId: "repeat-sets",
-            title: "Wake.md repeat sets",
-            amount: NEXT_SET_PRICE,
-            currency: price.currency,
-            quantity: price.nextSetCount,
-        });
-    }
-
-    return items;
-};
+const buildWakeMdPricingItems = (price) => [
+    {
+        externalId: "sets",
+        title: "Wake.md sets",
+        amount: price.setPrice,
+        currency: price.currency,
+        quantity: price.setCount,
+    },
+];
 
 const getPayerInfo = ({ clientData, req }) => {
     const payerInfo = {};
@@ -213,10 +192,7 @@ const createDirectMaibPayment = async ({
         pricingSource: price.pricingSource,
         peopleCount: price.peopleCount,
         setCount: price.setCount,
-        firstSetCount: price.firstSetCount,
-        nextSetCount: price.nextSetCount,
-        firstSetPrice: price.firstSetPrice,
-        nextSetPrice: price.nextSetPrice,
+        setPrice: price.setPrice,
         returnUrl: paymentConfig.publicBaseUrl,
         cancelUrl: paymentConfig.publicBaseUrl,
         status: "checkout_created",

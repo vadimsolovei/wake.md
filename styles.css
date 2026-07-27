@@ -2272,7 +2272,6 @@ body.has-booking-modal {
     background: rgba(255, 255, 255, 0.34);
 }
 
-.booking-price-card h3,
 .booking-time-card h3 {
     margin: 0 0 24px;
     color: #0f1b2e;
@@ -2281,25 +2280,29 @@ body.has-booking-modal {
     line-height: 24px;
 }
 
-.booking-price-row {
-    display: grid;
-    grid-template-columns: 80px 1fr;
-    gap: 8px;
-    align-items: start;
-    margin-top: 20px;
+.booking-price-card__eyebrow,
+.booking-price-card__value,
+.booking-price-card__description {
+    margin: 0;
 }
 
-.booking-price-row strong {
-    color: #0f1b2e;
-    font-size: 20px;
+.booking-price-card__eyebrow,
+.booking-price-card__description {
+    color: rgba(27, 26, 86, 0.6);
+    font-size: 16px;
     line-height: 24px;
+}
+
+.booking-price-card__value {
+    margin-top: 8px;
+    color: #0f1b2e;
+    font-size: 24px;
+    line-height: 28px;
     font-weight: 500;
 }
 
-.booking-price-row span {
-    color: rgba(27, 26, 86, 0.6);
-    font-size: 16px;
-    line-height: 20px;
+.booking-price-card__description {
+    margin-top: 10px;
 }
 
 .booking-fields {
